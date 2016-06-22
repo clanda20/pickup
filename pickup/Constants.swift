@@ -17,8 +17,9 @@ let SHADOW_COLOR: CGFloat = 157.0 / 255.0
 let KEY_UID = "uid"
 
 
-var ref = FIRDatabase.database().reference()
+let ref = FIRDatabase.database().reference()
 var postRef  =  (ref.child("posts"))
+var userRef = ref.child("users")
 
 
 //STORAGE
@@ -32,3 +33,5 @@ let SEGUE_LOGGED_IN = "loggedIn"
 
 //Status Codes
 let STATUS_ACCOUNT_NONEXIST = 17011
+
+

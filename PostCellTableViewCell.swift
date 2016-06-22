@@ -8,6 +8,7 @@
 
 import UIKit
 import Alamofire
+import Firebase
 
 class PostCellTableViewCell: UITableViewCell {
     
@@ -15,14 +16,36 @@ class PostCellTableViewCell: UITableViewCell {
     @IBOutlet weak var showcaseImg: UIImageView!
     @IBOutlet weak var descriptionText: UITextView!
     @IBOutlet weak var likeLbl: UILabel!
-  //  @IBOutlet weak var likeImage: UIImageView!
+    @IBOutlet weak var likeImage: UIImageView!
+    
+    @IBOutlet weak var dislikeLbl: UILabel!
+    @IBOutlet weak var dislikeImage: UIImageView!
+    @IBOutlet weak var commentBtn: UIButton!
     
     var post: Post!
     var request: Request?
+    var likeRef: FIRDatabaseReference!
+    var dislikeRef: FIRDatabaseReference!
 
     override func awakeFromNib() {
         super.awakeFromNib()
-        // Initialization code
+
+        let tap = UITapGestureRecognizer(target: self, action: "likeTapped:")
+        tap.numberOfTapsRequired = 1
+        likeImage.addGestureRecognizer(tap)
+        likeImage.userInteractionEnabled = true
+        
+       
+        
+        let tap2 = UITapGestureRecognizer(target: self, action: "dislikeTapped:")
+        tap2.numberOfTapsRequired = 1
+        dislikeImage.addGestureRecognizer(tap2)
+        dislikeImage.userInteractionEnabled = true
+        
+        
+        
+        
+        
     }
 
     override func drawRect(rect: CGRect) {
@@ -35,8 +58,14 @@ class PostCellTableViewCell: UITableViewCell {
     func  configureCell(post: Post, img: UIImage?) {
         self.post = post
         
+        likeRef = DataService.ds.REF_USER_CURRENT.child("likes").child(post.postKey)
+        
+        dislikeRef = DataService.ds.REF_USER_CURRENT.child("dislikes").child(post.postKey)  // check ojo
+        
         self.descriptionText.text = post.postDescription
         self.likeLbl.text = "\(post.likes)"
+        
+        self.dislikeLbl.text = "\(post.dislikes)"
         
         if post.imageUrl != nil {
             
@@ -56,6 +85,87 @@ class PostCellTableViewCell: UITableViewCell {
             
             } else {
                 self.showcaseImg.hidden = true
-    }
+        }
+        
+        
+        likeRef.observeSingleEventOfType(.Value, withBlock: { snapshot in
+            
+            if (snapshot.value as? NSNull) != nil {   //WE don't like the current post
+                self.likeImage.image = UIImage(named: "heart-empty")
+                
+            } else {
+                self.likeImage.image = UIImage(named: "heart-full")
+            }
+        
+        
+        })
+        
+        dislikeRef.observeSingleEventOfType(.Value, withBlock: { snapshot in
+            
+            if(snapshot.value as? NSNull) != nil {
+                self.dislikeImage.image = UIImage(named: "heart2-empty")    //  "Thumbs_down_Off"
+            } else {
+                self.dislikeImage.image = UIImage(named: "heart2-full")    //  "Thumbs_down_ON"
+            }
+        })
+        
+        
   }
+    
+    func likeTapped(sender: UITapGestureRecognizer){
+        
+        likeRef.observeSingleEventOfType(.Value, withBlock: { snapshot in
+            
+            if (snapshot.value as? NSNull) != nil {   //WE don't like the current post
+                self.likeImage.image = UIImage(named: "heart-full")
+                self.post.adjustLikes(true)
+                self.likeRef.setValue(true)
+                
+               self.dislikeImage.userInteractionEnabled = false
+                
+                
+            } else {
+                self.likeImage.image = UIImage(named: "heart-empty")
+                self.post.adjustLikes(false)
+                self.likeRef.removeValue()
+                
+               self.dislikeImage.userInteractionEnabled = true
+                
+            }
+            
+            
+        })
+        
+    }
+    
+    func dislikeTapped(sender: UITapGestureRecognizer){
+        
+         dislikeRef.observeSingleEventOfType(.Value, withBlock: { snapshot in
+            
+            if (snapshot.value as? NSNull) != nil {
+                self.dislikeImage.image = UIImage(named: "heart2-full")
+                self.post.adjustDislikes(true)
+                self.dislikeRef.setValue(true)
+                
+                
+           self.likeImage.userInteractionEnabled = false
+
+                
+                
+            }else {
+                self.dislikeImage.image = UIImage(named: "heart2-empty")
+                self.post.adjustDislikes(false)
+                self.dislikeRef.removeValue()
+                
+                self.likeImage.userInteractionEnabled = true
+               
+               
+            }
+        })
+        
+    }
 }
+
+
+
+

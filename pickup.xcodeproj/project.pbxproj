@@ -12,10 +12,11 @@
 		AA1B0FA31CF37A9400561E54 /* Bolts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA1B0FA01CF37A9400561E54 /* Bolts.framework */; };
 		AA1B0FA41CF37A9400561E54 /* FBSDKCoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA1B0FA11CF37A9400561E54 /* FBSDKCoreKit.framework */; };
 		AA1B0FA51CF37A9400561E54 /* FBSDKLoginKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA1B0FA21CF37A9400561E54 /* FBSDKLoginKit.framework */; };
+		AA1CE86F1D1320B000CA8F68 /* images.jpg in Resources */ = {isa = PBXBuildFile; fileRef = AA1CE86E1D1320B000CA8F68 /* images.jpg */; };
 		AA60F55B1CEFFEC8007B215D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA60F55A1CEFFEC8007B215D /* AppDelegate.swift */; };
-		AA60F5601CEFFEC8007B215D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA60F55E1CEFFEC8007B215D /* Main.storyboard */; };
 		AA60F5621CEFFEC8007B215D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA60F5611CEFFEC8007B215D /* Assets.xcassets */; };
 		AA60F5651CEFFEC8007B215D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA60F5631CEFFEC8007B215D /* LaunchScreen.storyboard */; };
+		AA74BABD1D18B74F0069E11F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA74BABB1D18B74F0069E11F /* Main.storyboard */; };
 		AA8EB02C1CF4318700B5E542 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AA8EB02B1CF4318700B5E542 /* GoogleService-Info.plist */; };
 		AA8EB02E1CF5224E00B5E542 /* FeedVCViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8EB02D1CF5224E00B5E542 /* FeedVCViewController.swift */; };
 		AA8EB0301CF5237E00B5E542 /* PostCellTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8EB02F1CF5237E00B5E542 /* PostCellTableViewCell.swift */; };
@@ -34,13 +35,14 @@
 		AA1B0FA01CF37A9400561E54 /* Bolts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Bolts.framework; sourceTree = "<group>"; };
 		AA1B0FA11CF37A9400561E54 /* FBSDKCoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = FBSDKCoreKit.framework; sourceTree = "<group>"; };
 		AA1B0FA21CF37A9400561E54 /* FBSDKLoginKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = FBSDKLoginKit.framework; sourceTree = "<group>"; };
+		AA1CE86E1D1320B000CA8F68 /* images.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = images.jpg; sourceTree = "<group>"; };
 		AA60F5571CEFFEC8007B215D /* pickup.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = pickup.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA60F55A1CEFFEC8007B215D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		AA60F55C1CEFFEC8007B215D /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ViewController.swift; path = pickup/ViewController.swift; sourceTree = "<group>"; };
-		AA60F55F1CEFFEC8007B215D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		AA60F5611CEFFEC8007B215D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AA60F5641CEFFEC8007B215D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		AA60F5661CEFFEC8007B215D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AA74BABC1D18B74F0069E11F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		AA8EB02B1CF4318700B5E542 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		AA8EB02D1CF5224E00B5E542 /* FeedVCViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FeedVCViewController.swift; sourceTree = "<group>"; };
 		AA8EB02F1CF5237E00B5E542 /* PostCellTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PostCellTableViewCell.swift; sourceTree = "<group>"; };
@@ -79,11 +81,12 @@
 			path = ..;
 			sourceTree = "<group>";
 		};
-		AA4B52301CF416B100506763 /* Supporting Files */ = {
+		AA4B52301CF416B100506763 /* Support-files */ = {
 			isa = PBXGroup;
 			children = (
+				AA1CE86E1D1320B000CA8F68 /* images.jpg */,
 			);
-			name = "Supporting Files";
+			name = "Support-files";
 			sourceTree = "<group>";
 		};
 		AA60F54E1CEFFEC8007B215D = {
@@ -107,7 +110,7 @@
 		AA60F5591CEFFEC8007B215D /* pickup */ = {
 			isa = PBXGroup;
 			children = (
-				AA4B52301CF416B100506763 /* Supporting Files */,
+				AA4B52301CF416B100506763 /* Support-files */,
 				AAED90B91CF3CEB4006C4EFE /* Services */,
 				AAED90B21CF3B7B7006C4EFE /* Util */,
 				AA1B0F991CF3794600561E54 /* Framework */,
@@ -117,9 +120,9 @@
 				AAED90AE1CF3A8AA006C4EFE /* Resources */,
 				AA60F55A1CEFFEC8007B215D /* AppDelegate.swift */,
 				AA8EB02B1CF4318700B5E542 /* GoogleService-Info.plist */,
-				AA60F55E1CEFFEC8007B215D /* Main.storyboard */,
 				AA60F5611CEFFEC8007B215D /* Assets.xcassets */,
 				AA60F5631CEFFEC8007B215D /* LaunchScreen.storyboard */,
+				AA74BABB1D18B74F0069E11F /* Main.storyboard */,
 				AA60F5661CEFFEC8007B215D /* Info.plist */,
 			);
 			path = pickup;
@@ -205,12 +208,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = AA60F5691CEFFEC8007B215D /* Build configuration list for PBXNativeTarget "pickup" */;
 			buildPhases = (
-				F5052FEFF8A7F9BC640A1D7C /* 📦 Check Pods Manifest.lock */,
+				F5052FEFF8A7F9BC640A1D7C /* [CP] Check Pods Manifest.lock */,
 				AA60F5531CEFFEC8007B215D /* Sources */,
 				AA60F5541CEFFEC8007B215D /* Frameworks */,
 				AA60F5551CEFFEC8007B215D /* Resources */,
-				EA1D1B05AA34820866462D41 /* 📦 Embed Pods Frameworks */,
-				D926D613B826539EAAC13F17 /* 📦 Copy Pods Resources */,
+				EA1D1B05AA34820866462D41 /* [CP] Embed Pods Frameworks */,
+				D926D613B826539EAAC13F17 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -260,23 +263,24 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA60F5651CEFFEC8007B215D /* LaunchScreen.storyboard in Resources */,
+				AA74BABD1D18B74F0069E11F /* Main.storyboard in Resources */,
+				AA1CE86F1D1320B000CA8F68 /* images.jpg in Resources */,
 				AA8EB02C1CF4318700B5E542 /* GoogleService-Info.plist in Resources */,
 				AA60F5621CEFFEC8007B215D /* Assets.xcassets in Resources */,
-				AA60F5601CEFFEC8007B215D /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		D926D613B826539EAAC13F17 /* 📦 Copy Pods Resources */ = {
+		D926D613B826539EAAC13F17 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Copy Pods Resources";
+			name = "[CP] Copy Pods Resources";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -284,14 +288,14 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-pickup/Pods-pickup-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		EA1D1B05AA34820866462D41 /* 📦 Embed Pods Frameworks */ = {
+		EA1D1B05AA34820866462D41 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Embed Pods Frameworks";
+			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -299,14 +303,14 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-pickup/Pods-pickup-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		F5052FEFF8A7F9BC640A1D7C /* 📦 Check Pods Manifest.lock */ = {
+		F5052FEFF8A7F9BC640A1D7C /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Check Pods Manifest.lock";
+			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -337,20 +341,20 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
-		AA60F55E1CEFFEC8007B215D /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				AA60F55F1CEFFEC8007B215D /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
 		AA60F5631CEFFEC8007B215D /* LaunchScreen.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
 				AA60F5641CEFFEC8007B215D /* Base */,
 			);
 			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		AA74BABB1D18B74F0069E11F /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				AA74BABC1D18B74F0069E11F /* Base */,
+			);
+			name = Main.storyboard;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */

@@ -25,9 +25,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
        
-        FIRApp.configure()
+       FIRApp.configure()
         
-        //return true
+     // return true
         
         return FBSDKApplicationDelegate.sharedInstance().application(application, didFinishLaunchingWithOptions: launchOptions)
         
@@ -35,7 +35,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         // [START firebase_configure]
         // Use Firebase library to configure APIs
-      //  FIRApp.configure()
+       // FIRApp.configure()
         // [END firebase_configure]
       // return  FBSDKApplicationDelegate.sharedInstance().application(application, didFinishLaunchingWithOptions:launchOptions)
         
@@ -67,7 +67,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     func application(application: UIApplication, openURL url: NSURL, sourceApplication: String?, annotation: AnyObject) -> Bool {
         return FBSDKApplicationDelegate.sharedInstance().application(application, openURL: url, sourceApplication: sourceApplication, annotation: annotation)
-    }
+    }  
 
 }
 

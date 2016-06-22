@@ -52,12 +52,12 @@ class ViewController: UIViewController {
                // print("Sucessfully logged in with facebook. \(accessToken)")
                 
                //  [START headless_facebook_auth]
-              // let credential = FIRFacebookAuthProvider.credentialWithAccessToken(FBSDKAccessToken.currentAccessToken().tokenString)
+ 
                 let credential = FIRFacebookAuthProvider.credentialWithAccessToken(FBSDKAccessToken.currentAccessToken().tokenString)
                 
                 // [END headless_facebook_auth]
               //  self.firebaseLogin(credential)
-                FIRAuth.auth()?.signInWithCredential(credential) { (authData, error) in
+                FIRAuth.auth()?.signInWithCredential(credential, completion: { (authData, error) in
                 
                     if error != nil {
                         print("Login Failed. \(error)")
@@ -66,14 +66,15 @@ class ViewController: UIViewController {
                         
                         //Write DataBase
                         
-                        let user = ["provider": authData?.providerID, "blah":"test"]
+                       // let user = ["provider": authData?.providerID, "blah":"test"]
+                           let user = ["provider": credential.provider]
                         self.createFirebaseUser((authData?.uid)!, user: user as! Dictionary<String, String>)
                         
                         
                         NSUserDefaults.standardUserDefaults().setValue(authData?.uid, forKey: KEY_UID)
                         self.performSegueWithIdentifier(SEGUE_LOGGED_IN, sender: nil)
                     }
-                }
+                })
             }
         
     }

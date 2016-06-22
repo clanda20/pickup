@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Firebase
 
 class Post {
     private var _postDescription: String!
@@ -14,6 +15,9 @@ class Post {
     private var _likes: Int!
     private var _username: String!
     private var _postKey: String!
+    private var _postRef: FIRDatabaseReference!
+    private var _dislikes: Int!
+    
     
     var postDescription: String{
         return _postDescription
@@ -35,6 +39,14 @@ class Post {
         return _postKey
     }
     
+    var postRef: FIRDatabaseReference{
+        return _postRef
+    }
+    
+    var dislikes: Int {
+        return _dislikes
+    }
+    
     
     init(description: String, imageUrl: String?, username: String) {
         self._postDescription = description
@@ -49,6 +61,10 @@ class Post {
             self._likes = likes
         }
         
+        if let dislikes = dictionary["dislikes"] as? Int {
+            self._dislikes = dislikes
+        }
+        
         if let imgUrl = dictionary["imageUrl"] as? String {
             self._imageUrl = imgUrl
         }
@@ -56,8 +72,37 @@ class Post {
         if let desc = dictionary["description"] as? String {
             self._postDescription = desc 
         }
+        
+        self._postRef = DataService.ds.REF_POSTS.child(self._postKey)
     }
     
+    func adjustLikes(addLike: Bool) {
+        
+        if addLike {
+            _likes = _likes + 1
+            
+        } else {
+            _likes = _likes - 1
+        }
+        
+        _postRef.child("likes").setValue(_likes)
+        
+        
+        
+    }
+    
+    func adjustDislikes(addDislikes: Bool) {
+        
+        if addDislikes {
+            _dislikes = _dislikes + 1
+        }else {
+            _dislikes = _dislikes - 1
+        }
+        
+        _postRef.child("dislikes").setValue(_dislikes)
+        
+        
+    }
 }
 
 
