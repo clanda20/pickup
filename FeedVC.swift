@@ -14,15 +14,29 @@ import FirebaseAuth
 import FirebaseStorage
 import Alamofire
 
-class FeedVCViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate{
+import FirebaseDatabaseUI
+import FirebaseAuthUI
+
+
+class FeedVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
-    @IBOutlet weak var tableView: UITableView!
+   @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var postField: MaterialTextField!
-    @IBOutlet weak var imageSelectorImage: UIImageView!
+   @IBOutlet weak var imageSelectorImage: UIImageView!
+    
+    
+    
+    let kSectionComments = 1
+    let kSectionPost = 0
+    
+    
 //    @IBOutlet weak var commentField: MaterialTextField!
   // @IBOutlet weak var commentBtn: UIButton!
     
     var imagePicker: UIImagePickerController!
+    
+    //var dataSource: FirebaseTableViewDataSource?
+    
     
     var imageSelected = false
     
@@ -44,11 +58,8 @@ class FeedVCViewController: UIViewController, UITableViewDelegate, UITableViewDa
         let storage = FIRStorage.storage()
         storageRef = storage.referenceForURL("gs://pickup-9b67a.appspot.com")
         
-        
       postRef.observeEventType(FIRDataEventType.Value, withBlock: { (snapshot) in
         
-        
-
            // print(snapshot.value)
         
         self.posts = []
@@ -56,7 +67,7 @@ class FeedVCViewController: UIViewController, UITableViewDelegate, UITableViewDa
         if let snapshots = snapshot.children.allObjects as? [FIRDataSnapshot]  {
             
             for snap in snapshots {
-              //  print("SNAP: \(snap)")
+               print("SNAP: \(snap)")
                 
               //  if  let postDict = snapshot.value as? Dictionary <String, AnyObject> {
                 
@@ -65,20 +76,25 @@ class FeedVCViewController: UIViewController, UITableViewDelegate, UITableViewDa
             
                     let key = snap.key
                     let post = Post(postKey: key, dictionary: postDict)
+                    
+                    // print("SNAP post1: \(postDict)")
+                    
                     self.posts.append(post)
                     
+                    print("PostKey Jueves: \(key)")
+                 //  NSUserDefaults.standardUserDefaults().setValue(key, forKey: "postKEY")
+                   //print("PostKEY-Outside: \(postKEY)")
                 }
             }
         }
             self.tableView.reloadData()
-            
-        })
         
+      })
+    
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
     
     func numberOfSectionsInTableView(tableView: UITableView) -> Int {
@@ -92,27 +108,32 @@ class FeedVCViewController: UIViewController, UITableViewDelegate, UITableViewDa
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         
         let post = posts[indexPath.row]
-        print(post.postDescription)
+      //  print(post.postDescription)
         
-        if let cell =  tableView.dequeueReusableCellWithIdentifier("PostCell") as? PostCellTableViewCell {
+        if let cell =  tableView.dequeueReusableCellWithIdentifier("PostCell") as? PostCell {
+            
+            
             
             cell.request?.cancel()
             
             var img: UIImage?
             
             if let url = post.imageUrl {
-               img = FeedVCViewController.imageCache.objectForKey(url) as? UIImage
+               img = FeedVC.imageCache.objectForKey(url) as? UIImage
             }
             
             cell.configureCell(post, img: img)
-            //added 6-16-2016
-            cell.commentBtn.layer.setValue(indexPath, forKey: "nil")
             
             return cell
+            
         }else {
-            return PostCellTableViewCell()
+            return PostCell()
         }
     }
+    
+ 
+    
+    
     func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
         
         let post = posts[indexPath.row]
@@ -122,18 +143,19 @@ class FeedVCViewController: UIViewController, UITableViewDelegate, UITableViewDa
         }else{
             return tableView.estimatedRowHeight
         }
+        
+        
     }
     
-  /*  func imagePickerController(imagePicker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
-        
-        
-        imagePicker.dismissViewControllerAnimated(true, completion:nil)
-        
-        let tempImage = info[UIImagePickerControllerOriginalImage] as! UIImage
-        
-        imageSelectorImage.image = tempImage
+    //MARK - Navigation
     
-    } */
+ /*   override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        let index = tableView.indexPathForSelectedRow
+        let commentSelected = posts[index!.row]
+    }
+   
+ */
+  
     
     
     @IBAction func makePost(sender: AnyObject) {
@@ -156,16 +178,11 @@ class FeedVCViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 imagePicker.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
             }
             
-           // presentViewController(picker, animated: true, completion:nil)
-          /*  } else {
-                self.postToFirebase(nil) */
+        
  
     }
     
- /*   func imagePickerController(picker: UIImagePickerController, didFinishPickingImage image: UIImage, editingInfo: [String : AnyObject]?) {
-        imagePicker.dismissViewControllerAnimated(true, completion: nil)
-        imageSelectorImage.image = image
-    } */
+ 
     
     func imagePickerController(imagePicker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
      
@@ -306,27 +323,33 @@ class FeedVCViewController: UIViewController, UITableViewDelegate, UITableViewDa
         // self.downloadPicButton.enabled = true
     }
     
-   //click comment button
+  
     
-    @IBAction func commentBtn_click(sender: AnyObject) {
+ 
     
-     // call index of button 
-  //  let i = sender.layer.valueForKey("index") as! NSIndexPath
     
-    //call cell to call further cell data
-  //  let cell = tableView.cellForRowAtIndexPath(i) as! FeedVCViewController
-        
-    // send related data to global variables
-        
-        
-    // go to comments. present vc 
-        
-  //  let comment = self.storyboard?.instantiateViewControllerWithIdentifier("commentVC") as! CommentsVC
-  //  self.navigationController?.pushViewController(comment, animated: true)
     
-    }
+    
+    
+    
+    
+    
     
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

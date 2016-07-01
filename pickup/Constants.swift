@@ -16,10 +16,12 @@ let SHADOW_COLOR: CGFloat = 157.0 / 255.0
 
 let KEY_UID = "uid"
 
+// var POST_KEY_ID = "postKey"
 
 let ref = FIRDatabase.database().reference()
 var postRef  =  (ref.child("posts"))
 var userRef = ref.child("users")
+//var commentRef = ref.child("post-comments")
 
 
 //STORAGE

@@ -20,6 +20,8 @@ class DataService {
     private var _REF_BASE = URL_BASE
     private var _REF_POSTS = URL_BASE.child("posts")
     private var _REF_USERS = URL_BASE.child("user")
+    private var _REF_POSTCOMMENTS = URL_BASE.child("post-comments")
+    
     
   
     
@@ -35,16 +37,41 @@ class DataService {
         return _REF_USERS
     }
     
+    var REF_POSTCOMMENTS: FIRDatabaseReference{
+        return _REF_POSTCOMMENTS
+    }
+    
     var REF_USER_CURRENT: FIRDatabaseReference{
         let uid = NSUserDefaults.standardUserDefaults().valueForKey(KEY_UID) as? String
         let user = URL_BASE.child("users").child(uid!)
         return user
         
     }
+  /* var REF_POST_KEY: FIRDatabaseReference{
     
-    func createFirebase(uid: String, user: Dictionary<String, String>) {
-        REF_USERS.child(uid).updateChildValues(user)
+     let postID = NSUserDefaults.standardUserDefaults().valueForKey(postKey) as! String
+         let postKey2 = URL_BASE.child("post-comments").child(postID)
+     return postKey2
+    }  */
+ 
+    func createFirebaseUser(uid: String, user: Dictionary<String, String>) {
+        REF_USERS.child(uid).setValue(user)
     }
+    
+    func createfirebasePostID( PostID: String, user: Dictionary<String, String>) {
+        REF_POSTCOMMENTS.child(PostID)
+    }
+    
+  //  func RER_USER_
+    // commentsRef = ref.child("post-comments").child(postKey)
+    
+  /*  var REF_COMMENT_USER:  FIRDatabaseReference {
+    
+        
+        return
+        
+    }  */
+
     
 }
 

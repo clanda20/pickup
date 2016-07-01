@@ -10,7 +10,10 @@ import UIKit
 import Alamofire
 import Firebase
 
-class PostCellTableViewCell: UITableViewCell {
+
+
+
+class PostCell: UITableViewCell {
     
     @IBOutlet weak var profileImg: UIImageView!
     @IBOutlet weak var showcaseImg: UIImageView!
@@ -26,6 +29,10 @@ class PostCellTableViewCell: UITableViewCell {
     var request: Request?
     var likeRef: FIRDatabaseReference!
     var dislikeRef: FIRDatabaseReference!
+    var postRefKey: FIRDatabaseReference!
+    
+    var tapAction: ((UITableViewCell) -> Void)?
+    
 
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -55,12 +62,26 @@ class PostCellTableViewCell: UITableViewCell {
         showcaseImg.clipsToBounds = true
     }
     
+    override func setSelected(selected: Bool, animated: Bool) {
+        super.setSelected(selected, animated: animated)
+    }
+    
+    
     func  configureCell(post: Post, img: UIImage?) {
-        self.post = post
+        
+        self.post = post        
         
         likeRef = DataService.ds.REF_USER_CURRENT.child("likes").child(post.postKey)
         
         dislikeRef = DataService.ds.REF_USER_CURRENT.child("dislikes").child(post.postKey)  // check ojo
+        
+        postRefKey = DataService.ds.REF_POSTS.child(post.postKey)  //added 6-29-16
+        
+         print("PostKey PostCell: \(post.postKey)")
+        
+        
+        
+    //    let postID = NSUserDefaults.standardUserDefaults().valueForKey(post.postKey) as! String
         
         self.descriptionText.text = post.postDescription
         self.likeLbl.text = "\(post.likes)"
@@ -77,7 +98,7 @@ class PostCellTableViewCell: UITableViewCell {
                     if err == nil {
                         let img = UIImage(data: data!)!
                         self.showcaseImg.image = img
-                        FeedVCViewController.imageCache.setObject(img, forKey: self.post.imageUrl!)
+                        FeedVC.imageCache.setObject(img, forKey: self.post.imageUrl!)
                     }
                 })
             }
@@ -164,8 +185,25 @@ class PostCellTableViewCell: UITableViewCell {
         })
         
     }
+    
+    @IBAction func commentBtn_click(sender: AnyObject) {
+        
+        tapAction?(self)
+            
+        
+  /*    FeedVC.performSegueWithIdentifier("segue_pass_postKey", sender: nil)
+        
+            postRefKey = DataService.ds.REF_POSTS.child(post.postKey)  //added 6-29-16
+            
+            print("PostKey PostCell button: \(post.postKey)")
+           // print("PostKey PostCell button: \( postRefKey)")
+    */
+    
+
+    
+    }
+
+
 }
-
-
 
 
