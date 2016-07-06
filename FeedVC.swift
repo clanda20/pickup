@@ -24,7 +24,9 @@ class FeedVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIIm
     @IBOutlet weak var postField: MaterialTextField!
    @IBOutlet weak var imageSelectorImage: UIImageView!
     
+    var postKey: String!
     
+   
     
     let kSectionComments = 1
     let kSectionPost = 0
@@ -81,16 +83,15 @@ class FeedVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIIm
                     
                     self.posts.append(post)
                     
-                    print("PostKey Jueves: \(key)")
-                 //  NSUserDefaults.standardUserDefaults().setValue(key, forKey: "postKEY")
-                   //print("PostKEY-Outside: \(postKEY)")
+                   
+                
                 }
             }
         }
             self.tableView.reloadData()
         
       })
-    
+ 
     }
 
     override func didReceiveMemoryWarning() {
@@ -105,14 +106,52 @@ class FeedVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIIm
         return posts.count
     }
     
+   
+    
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         
-        let post = posts[indexPath.row]
+        let post = posts[indexPath.row]  //keys are stored here
       //  print(post.postDescription)
         
-        if let cell =  tableView.dequeueReusableCellWithIdentifier("PostCell") as? PostCell {
+        if let cell =  tableView.dequeueReusableCellWithIdentifier("PostCell", forIndexPath: indexPath) as? PostCell {
+       
+           // let currentCell = tableView.cellForRowAtIndexPath(indexPath) as! PostCell
+             postKey = post.postKey
+            NSUserDefaults.standardUserDefaults().setValue(postKey, forKey: "postKey")
+            NSUserDefaults.standardUserDefaults().synchronize()
+          
+            
+        //    performSegueWithIdentifier("SEGUE_COMMENT", sender: postKey)
+            
+       /*     PostCell.did = { (cell) in
+                let indexPath = tableView.indexPathForCell(cell)
+                let objectToSend = postsArray[indexPath.row] as? 
+                // Show your Comment view controller here, and set object to send her
+            }  */
+            
+         //  cell.commentBtn.titleLabel = "Comment \(indexPath.row)"
+            //print("PostKEY-Outside: \(postKEY)")
             
             
+          /*  cell.postRefKey = postKey
+            cell.tapAction = { (cell) in
+                
+               func prepareForSegue(segue: UIStoryboardSegue!, sender: AnyObject!) {
+                    if (segue.identifier == "SEGUE_COMMENT") {
+                        // pass data to next view
+                        
+                        
+                        
+                        let NewxCommentVC = (segue.destinationViewController as! CommentVC)
+                        NewxCommentVC.value =  self.postKey as! FIRDatabaseReference
+                        print("PostKEY-Outside: \(self.postKey)")
+                       // print("I am Here")
+                    }
+                }
+            
+            }  */
+            
+            cell.commentBtn.layer.setValue(indexPath, forKey: "index")
             
             cell.request?.cancel()
             
@@ -121,8 +160,15 @@ class FeedVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIIm
             if let url = post.imageUrl {
                img = FeedVC.imageCache.objectForKey(url) as? UIImage
             }
+         //   NSUserDefaults.standardUserDefaults().setValue(post.postKey, forKey: postKey)
             
+            print("PostKEY-Outside----------------------: \(post.postKey)")
             cell.configureCell(post, img: img)
+            
+            
+            
+            
+            
             
             return cell
             
@@ -147,6 +193,19 @@ class FeedVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIIm
         
     }
     
+    
+ /*   func tableView(tableView: UITableView, accessoryButtonTappedForRowWithIndexPath indexPath: NSIndexPath){
+        let currentCell = tableView.cellForRowAtIndexPath(indexPath) as! FeedVC
+        postKey = currentCell.postKey
+        performSegueWithIdentifier("SEGUE_COMMENT", sender: postKey)
+    }  */
+    
+    
+   
+        
+        //passing the postKey to AcceptVC's postKey
+    
+    
     //MARK - Navigation
     
  /*   override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
@@ -156,7 +215,34 @@ class FeedVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIIm
    
  */
   
+    // Clicked comment button 
     
+    @IBAction func Comment_Btn(sender: AnyObject) {
+        
+     /*// call index of button
+        let i = sender.layer.valueForKey("index") as! NSIndexPath
+        
+        //call cell to call further cell data
+        
+        let cell = tableView.cellForRowAtIndexPath(i) as! PostCell
+       //  commentuuid.append(cell.post.postKey)
+        
+        //go to comments present VC
+        let comment = self.storyboard?.instantiateViewControllerWithIdentifier("CommentVC") as! CommentVC
+        self.navigationController?.pushViewController(comment, animated: true)
+    */
+        
+     /*   func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+            if segue.identifier == "SEGUE_COMMENT" {
+                let viewControllerAccept = segue.destinationViewController as! CommentVC
+                
+                
+                let postKey = sender as? String
+                viewControllerAccept.postKey = postKey!
+            }
+        } */
+ 
+    }
     
     @IBAction func makePost(sender: AnyObject) {
         

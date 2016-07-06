@@ -62,7 +62,7 @@ class ViewController: UIViewController {
                     if error != nil {
                         print("Login Failed. \(error)")
                     } else {
-                        print("Logged In!\(authData)")
+                        print("Logged In X!\(authData)")
                         
                         //Write DataBase
                         

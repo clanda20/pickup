@@ -32,6 +32,7 @@ class PostCell: UITableViewCell {
     var postRefKey: FIRDatabaseReference!
     
     var tapAction: ((UITableViewCell) -> Void)?
+    var didRequestToShowComment:((cell:UITableViewCell) -> ())?
     
 
     override func awakeFromNib() {
@@ -75,13 +76,13 @@ class PostCell: UITableViewCell {
         
         dislikeRef = DataService.ds.REF_USER_CURRENT.child("dislikes").child(post.postKey)  // check ojo
         
-        postRefKey = DataService.ds.REF_POSTS.child(post.postKey)  //added 6-29-16
+       var postRefKey = DataService.ds.REF_POSTS.child(post.postKey)  //added 6-29-16
         
          print("PostKey PostCell: \(post.postKey)")
         
         
         
-    //    let postID = NSUserDefaults.standardUserDefaults().valueForKey(post.postKey) as! String
+  
         
         self.descriptionText.text = post.postDescription
         self.likeLbl.text = "\(post.likes)"
@@ -129,6 +130,8 @@ class PostCell: UITableViewCell {
                 self.dislikeImage.image = UIImage(named: "heart2-full")    //  "Thumbs_down_ON"
             }
         })
+        
+    
         
         
   }
@@ -186,22 +189,6 @@ class PostCell: UITableViewCell {
         
     }
     
-    @IBAction func commentBtn_click(sender: AnyObject) {
-        
-        tapAction?(self)
-            
-        
-  /*    FeedVC.performSegueWithIdentifier("segue_pass_postKey", sender: nil)
-        
-            postRefKey = DataService.ds.REF_POSTS.child(post.postKey)  //added 6-29-16
-            
-            print("PostKey PostCell button: \(post.postKey)")
-           // print("PostKey PostCell button: \( postRefKey)")
-    */
-    
-
-    
-    }
 
 
 }

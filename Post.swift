@@ -16,6 +16,7 @@ class Post {
     private var _username: String!
     private var _postKey: String!
     private var _postRef: FIRDatabaseReference!
+    private var _commentPostRef: FIRDatabaseReference!
     private var _dislikes: Int!
     
     
@@ -73,8 +74,18 @@ class Post {
             self._postDescription = desc 
         }
         
-        self._postRef = DataService.ds.REF_POSTS.child(self._postKey)
+      self._postRef = DataService.ds.REF_POSTS.child(self._postKey)
+        
+        self._commentPostRef = DataService.ds.REF_POSTCOMMENTS.child(self._postKey)
     }
+    
+    
+    func comment_postRef() {
+        
+        _commentPostRef.childByAutoId()
+    }
+    
+    
     
     func adjustLikes(addLike: Bool) {
         

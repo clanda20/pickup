@@ -15,6 +15,7 @@ let SHADOW_COLOR: CGFloat = 157.0 / 255.0
 
 
 let KEY_UID = "uid"
+let postKey = "postKey"
 
 // var POST_KEY_ID = "postKey"
 

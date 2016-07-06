@@ -19,7 +19,11 @@ class CommentCell: UITableViewCell {
     var comment: Comment!
   //  var post: Post!
     
-  //  var postRefKey: FIRDatabaseReference!
+    var value: Int!
+    
+    var postRefKey: FIRDatabaseReference!
+    
+    var postKey:String?
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -45,7 +49,7 @@ class CommentCell: UITableViewCell {
         
         self.commentText.text = comment.commentDescription
         
-     //   postRefKey = DataService.ds.REF_POSTS.child(post.postKey)  //added 6-29-16
+        postRefKey = DataService.ds.REF_POSTS.child("postKey")  //added 6-29-16
         
       //  print("PostKey PostCell XX: \(post.postKey)")
         

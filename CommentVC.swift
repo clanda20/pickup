@@ -20,17 +20,21 @@ class CommentVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
    var post: Post!
     var comments = [Comment]()
-   // var postKey = ""
-  
+   
     
+    var PostID = ""
+    var value:  FIRDatabaseReference!
    lazy var ref: FIRDatabaseReference = FIRDatabase.database().reference()
    
   //  var postRef: FIRDatabaseReference!
    var commentsRef: FIRDatabaseReference!
   //  var refHandle: FIRDatabaseReference?
     
+    var postKey:String?
     
-    
+    var postKEY:String?
+     var commentuuid = [String]()
+    var  commentowner = [String]()
     
     
 
@@ -42,15 +46,19 @@ class CommentVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         
    //   postRef = ref.child("posts").child(postKey!)
         
-      commentsRef = ref.child("post-comments").child("KJ4XBGxp4nJpnmWVd0Q")
+   let   postID = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
         
-    //    var posterRef = ref.child("poster").child(POST_KEY_ID)
         
-//print("PostKey looking: \(Post.)")
-    //   print("PostKey   CommentVC: \(post.postKey)")
-    //   DataService.ds.REF_POSTCOMMENTS.observeEventType(.Value, withBlock:  { snapshot in
+     commentsRef = ref.child("post-comments").child(postID)
         
-       commentsRef.observeEventType(.Value, withBlock:  { snapshot in
+      //  commentsRef = ref.child("post-comments").child(tempKey)
+
+      print("Value Postkey3:------------>>>> \(postID)")
+        
+   
+    //  DataService.ds.REF_POSTCOMMENTS_ID.observeEventType(.Value, withBlock:  { snapshot in
+        
+      commentsRef.observeEventType(.Value, withBlock:  { snapshot in
         
        // posterRef.observeEventType(.Value, withBlock: { snapshot in
              print(snapshot.value)
@@ -62,17 +70,17 @@ class CommentVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
             if let snapshots = snapshot.children.allObjects as? [FIRDataSnapshot] {
                 
                 for snap in snapshots {
-                    print("SNAP CommentVC: \(snap)")
+                   // print("SNAP CommentVC: \(snap)")
                     
                     if let commentDict = snap.value as? Dictionary<String, AnyObject> {
                         let key = snap.key
                       
                          let comment = Comment(commentKey: key, dictionary: commentDict)
-                        print("SNAP Comment1: \(comment)")
+                      //  print("SNAP Comment1: \(comment)")
                         self.comments.append(comment)
-                         print("SNAP Comment2: \(commentDict)")
+                       //  print("SNAP Comment2: \(commentDict)")
                         
-                        print("SNAP Comment3: \(comment)")
+                       // print("SNAP Comment3: \(comment)")
                     }
                     
                     
@@ -120,14 +128,21 @@ class CommentVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     @IBAction func commentPost(sender: AnyObject) {
         
         let uid = FIRAuth.auth()?.currentUser?.uid
-        FIRDatabase.database().reference().child("users").child(uid!).observeSingleEventOfType(.Value, withBlock: { (snapshot) in
+    commentsRef.observeSingleEventOfType(.Value, withBlock: { (snapshot) in
+            
+       // DataService.ds.REF_POSTCOMMENTS.observeSingleEventOfType(.Value, withBlock: { (snapshot) in
+    
             if let uid = uid, commentField = self.commentField, user = snapshot.value as? [String : AnyObject] {
+                
+                print("Snapshot CommentVC--------: \(snapshot)")
                 let comment = [
                     "uid": uid,
                   //  "author": user["username"] as! String,
                     "text": commentField.text!
                 ]
+              //  self.commentsRef.childByAutoId().setValue(comment)
                 self.commentsRef.childByAutoId().setValue(comment)
+
                 commentField.text = ""
             }
         })
@@ -135,6 +150,11 @@ class CommentVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     }
     
     
+    
+    func postCommentToFirebase(commentPost: String!)
+    {
+        
+    }
 }
 
 
