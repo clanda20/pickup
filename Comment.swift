@@ -73,7 +73,7 @@ import Firebase
             self._commentDescription = desc
         }
         
-        self._commentRef = DataService.ds.REF_POSTCOMMENTS_ID.child(self._commentKey)
+        self._commentRef = DataService.ds.REF_POSTCOMMENTS.child(self._commentKey)
         
     }
 }

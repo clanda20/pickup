@@ -24,9 +24,14 @@ class DataService {
     private var _REF_POSTS = URL_BASE.child("posts")
     private var _REF_USERS = URL_BASE.child("user")
     private var _REF_POSTCOMMENTS = URL_BASE.child("post-comments")
-    private var _REF_POSTCOMMENTS_ID = URL_BASE.child("post-comments")    
+    private var _REF_POSTCOMMENTS_ID = URL_BASE.child("post-comments")
     
-  
+  //  let postID  = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
+    
+    
+    
+    
+   // commentsRef = ref.child("post-comments").child(postID)
     
     var  REF_BASE: FIRDatabaseReference{
         return _REF_BASE

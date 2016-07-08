@@ -10,7 +10,9 @@ import UIKit
 import Alamofire
 import Firebase
 
-
+protocol PostCellDelegate {
+    func callSegueFromCell(myData dataobject: AnyObject)
+}
 
 
 class PostCell: UITableViewCell {
@@ -23,16 +25,19 @@ class PostCell: UITableViewCell {
     
     @IBOutlet weak var dislikeLbl: UILabel!
     @IBOutlet weak var dislikeImage: UIImageView!
+   // @IBOutlet weak var commentBtn: UIButton!
     @IBOutlet weak var commentBtn: UIButton!
+    
+   var delegate : PostCellDelegate?
     
     var post: Post!
     var request: Request?
     var likeRef: FIRDatabaseReference!
     var dislikeRef: FIRDatabaseReference!
     var postRefKey: FIRDatabaseReference!
+    var postKey: String!
     
-    var tapAction: ((UITableViewCell) -> Void)?
-    var didRequestToShowComment:((cell:UITableViewCell) -> ())?
+   
     
 
     override func awakeFromNib() {
@@ -51,6 +56,11 @@ class PostCell: UITableViewCell {
         dislikeImage.userInteractionEnabled = true
         
         
+        let tap3 = UITapGestureRecognizer(target: self, action: #selector(PostCell.CommentBtnTapped(_:)))
+        tap3.numberOfTapsRequired = 1
+        commentBtn.addGestureRecognizer(tap3)
+        commentBtn.userInteractionEnabled = true
+        tap3.cancelsTouchesInView = false
         
         
         
@@ -68,7 +78,7 @@ class PostCell: UITableViewCell {
     }
     
     
-    func  configureCell(post: Post, img: UIImage?) {
+    func  configureCell(post: Post, img: UIImage?) {   // before it was configureCell(post: Post) { }
         
         self.post = post        
         
@@ -76,16 +86,18 @@ class PostCell: UITableViewCell {
         
         dislikeRef = DataService.ds.REF_USER_CURRENT.child("dislikes").child(post.postKey)  // check ojo
         
-       var postRefKey = DataService.ds.REF_POSTS.child(post.postKey)  //added 6-29-16
+        postRefKey = DataService.ds.REF_POSTCOMMENTS.child(post.postKey)  //added 6-29-16
         
-         print("PostKey PostCell: \(post.postKey)")
+         print("PostKey PostCell July 6: \(post.postKey)")
         
         
-        
-  
-        
+         // let postKey = post.postKey
+      //  NSUserDefaults.standardUserDefaults().setValue(postKey, forKey: "postKey")
+      //  NSUserDefaults.standardUserDefaults().synchronize()
+     
         self.descriptionText.text = post.postDescription
         self.likeLbl.text = "\(post.likes)"
+       // self.commentBtn.buttonType
         
         self.dislikeLbl.text = "\(post.dislikes)"
         
@@ -135,6 +147,43 @@ class PostCell: UITableViewCell {
         
         
   }
+    
+    
+  
+   @IBAction func Comment_Post_Btn(sender: AnyObject) {
+        
+    let postKey = post.postKey
+    print("SNaps July 7 POstKeyxxxxxxxxxxxxxxxx  :\(postKey)")
+    
+    //let postKey =  post.postKey
+    NSUserDefaults.standardUserDefaults().setValue(postKey, forKey: "postKey")
+    NSUserDefaults.standardUserDefaults().synchronize()
+    if(self.delegate != nil){ //Just to be safe.
+        self.delegate!.callSegueFromCell(myData: postKey)
+        
+       }
+    }
+    
+    func CommentBtnTapped(sender: UITapGestureRecognizer){
+        
+        postRefKey.observeEventType(.Value, withBlock: { snapshot in
+            
+            print("SNaps July 6 :\(snapshot)")
+            
+        
+     let postKey =  self.post.postKey
+            
+         
+    
+       NSUserDefaults.standardUserDefaults().setValue(postKey, forKey: "postKey")
+       // NSUserDefaults.standardUserDefaults().synchronize()
+           
+           // FeedVC.performSegueWithIdentifier("segue_commentVC, sender: sender)
+            
+            
+        })
+    }
+    
     
     func likeTapped(sender: UITapGestureRecognizer){
         
