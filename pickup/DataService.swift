@@ -22,7 +22,7 @@ class DataService {
     
     private var _REF_BASE = URL_BASE
     private var _REF_POSTS = URL_BASE.child("posts")
-    private var _REF_USERS = URL_BASE.child("user")
+    private var _REF_USERS = URL_BASE.child("users")
     private var _REF_POSTCOMMENTS = URL_BASE.child("post-comments")
     private var _REF_POSTCOMMENTS_ID = URL_BASE.child("post-comments")
     
@@ -54,7 +54,7 @@ class DataService {
     }
     
     var REF_USER_CURRENT: FIRDatabaseReference{
-        let uid = NSUserDefaults.standardUserDefaults().valueForKey(KEY_UID) as? String
+        let uid = NSUserDefaults.standardUserDefaults().valueForKey("uid") as? String
         let user = URL_BASE.child("users").child(uid!)
         return user
         
@@ -73,15 +73,7 @@ class DataService {
         REF_POSTCOMMENTS.child(PostID).setValue(PostID)
     }
     
-  //  func RER_USER_
-    // commentsRef = ref.child("post-comments").child(postKey)
-    
-  /*  var REF_COMMENT_USER:  FIRDatabaseReference {
-    
-        
-        return
-        
-    }  */
+  
 
     
 }

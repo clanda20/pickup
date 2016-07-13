@@ -49,11 +49,14 @@ class Post {
     }
     
     
+    
     init(description: String, imageUrl: String?, username: String) {
         self._postDescription = description
         self._imageUrl = imageUrl
         self._username = username
     }
+    
+    
     
     init(postKey: String, dictionary: Dictionary<String, AnyObject>){
         self._postKey = postKey

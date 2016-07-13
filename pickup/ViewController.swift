@@ -34,7 +34,7 @@ class ViewController: UIViewController {
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
         
-        if NSUserDefaults.standardUserDefaults().valueForKey(KEY_UID) != nil {
+        if NSUserDefaults.standardUserDefaults().valueForKey("uid") != nil {
             self.performSegueWithIdentifier(SEGUE_LOGGED_IN, sender: nil)
         }
     }
@@ -62,16 +62,16 @@ class ViewController: UIViewController {
                     if error != nil {
                         print("Login Failed. \(error)")
                     } else {
-                        print("Logged In X!\(authData)")
+                        print("Logged In Xxxxxxxxx!\(authData?.uid)")
+                         let authID = authData?.uid
                         
                         //Write DataBase
                         
-                       // let user = ["provider": authData?.providerID, "blah":"test"]
-                           let user = ["provider": credential.provider]
-                        self.createFirebaseUser((authData?.uid)!, user: user as! Dictionary<String, String>)
+                        let user = ["provider": credential.provider, "firstName": "FirstName", "lastName":"lastName", "username": "username", "avatar": "avatar" ,"likes":"0", "dislikes":"0", "email": "___@youremail.com","postNumber":"0", "followers": "0", "following": "0"]
+                        DataService.ds.createFirebaseUser(authID!, user: user )
                         
                         
-                        NSUserDefaults.standardUserDefaults().setValue(authData?.uid, forKey: KEY_UID)
+                        NSUserDefaults.standardUserDefaults().setValue(authData?.uid, forKey: "uid")
                         self.performSegueWithIdentifier(SEGUE_LOGGED_IN, sender: nil)
                     }
                 })
@@ -82,9 +82,10 @@ class ViewController: UIViewController {
 
  }
     
-    @IBAction func emailBtnPressed(sender: UIButton!){
+    @IBAction func emailBtnPressed(sender: AnyObject!){
         
         if let email = emailField.text where email != "", let pwd = passwordField.text where pwd != "" {
+            
             
             FIRAuth.auth()?.signInWithEmail(email, password: pwd, completion: { authData, error in
                 
@@ -101,18 +102,23 @@ class ViewController: UIViewController {
                                 self.showErrorAlert("Could not create account", msg: "Problem creating account. Try something else. This Email might be attached to Facebook")
                                 
                             } else{
+                                print("Logged In Xxxxxxxxx!\(authData?.uid)")
                                 
-                                NSUserDefaults.standardUserDefaults().setValue(authData!.uid, forKey: KEY_UID)
+                                let authID = authData?.uid
+                                print("Logged In Xxxxxxxxx!\(email)")
+                              //  NSUserDefaults.standardUserDefaults().setValue(authData!.uid, forKey: "uid")
                                 
                               //  FIRAuth.auth()?.signInWithEmail(email, password: pwd, completion: nil)
                                     
                                 FIRAuth.auth()?.signInWithEmail(email, password: pwd, completion: { authData, error in
                                 
-                                    let user = ["provider": authData!.providerID, "blah":"emailTest"]
-                                    self.createFirebaseUser((authData?.uid)!, user: user as! Dictionary<String, String>)
+                                    let user = ["provider": authData!.providerID, "firstName": "firstName", "lastName":"lastName", "username": "username", "avatar": "avatar" ,"likes":"0", "dislikes":"0", "email": "___@youremail.com","postNumber":"0", "followers": "0", "following": "0"]
+                                   // self.createFirebaseUser(authID!, user: user as! Dictionary<String, String>)
+                                DataService.ds.createFirebaseUser(authID!, user: user )
+                                 NSUserDefaults.standardUserDefaults().setValue(authData?.uid, forKey: "uid")                                })
                                 
-                                })
-                                    
+                                print("Logged In 2 xxxxxxXxxxxxxxx!\(authData?.uid)")
+                                
                                 self.performSegueWithIdentifier(SEGUE_LOGGED_IN, sender: nil)
                             }
                             
@@ -129,8 +135,9 @@ class ViewController: UIViewController {
                 self.performSegueWithIdentifier(SEGUE_LOGGED_IN, sender: nil)
                 
                 }
-            })
             
+        }) // end spinner
+        
         } else {
             showErrorAlert("Email and Password Required", msg: "You must enter an email and a password")
         }

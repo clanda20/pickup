@@ -80,9 +80,13 @@ class PostCell: UITableViewCell {
     
     func  configureCell(post: Post, img: UIImage?) {   // before it was configureCell(post: Post) { }
         
-        self.post = post        
+        self.post = post
+        
+        
         
         likeRef = DataService.ds.REF_USER_CURRENT.child("likes").child(post.postKey)
+        
+        
         
         dislikeRef = DataService.ds.REF_USER_CURRENT.child("dislikes").child(post.postKey)  // check ojo
         
@@ -91,13 +95,11 @@ class PostCell: UITableViewCell {
          print("PostKey PostCell July 6: \(post.postKey)")
         
         
-         // let postKey = post.postKey
-      //  NSUserDefaults.standardUserDefaults().setValue(postKey, forKey: "postKey")
-      //  NSUserDefaults.standardUserDefaults().synchronize()
+        
      
         self.descriptionText.text = post.postDescription
         self.likeLbl.text = "\(post.likes)"
-       // self.commentBtn.buttonType
+       
         
         self.dislikeLbl.text = "\(post.dislikes)"
         

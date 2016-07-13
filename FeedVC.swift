@@ -86,10 +86,10 @@ class FeedVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIIm
                     let key = snap.key
                     let post = Post(postKey: key, dictionary: postDict)
                     
-                    // print("SNAP post1: \(postDict)")
+                    
                     
                     self.posts.append(post)
-                    
+                     print("SNAP post1xxxxxx: \(postDict)")
                    
                 
                 }
@@ -166,40 +166,7 @@ class FeedVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIIm
         }
     }
     
-  /*  @IBAction func Comment_VC(segue:UIStoryboardSegue) {
-
-            
-        
-            
-        self.performSegueWithIdentifier("segue_commentVC", sender: self)
-        
-        
-    }  */
-    
- /*   func myPerformeCode(Timer : NSTimer) {
-    
-   // func editRow() {
-      //    self.performSegueWithIdentifier("segue_commentVC", sender: self)
-        let seconds = 1.0
-        let delay = seconds * Double(NSEC_PER_SEC)  // nanoseconds per seconds
-        let dispatchTime = dispatch_time(DISPATCH_TIME_NOW, Int64(delay))
-        
-        dispatch_after(dispatchTime, dispatch_get_main_queue(), {
-            self.performSegueWithIdentifier("segue_commentVC", sender: self)
-            // here code perfomed with delay
-            
-        })
-            
-
-      //  }
-        
-        
-    }  */
- /*   func runAfterDelay(delay: NSTimeInterval, block: dispatch_block_t) {
-        let time = dispatch_time(DISPATCH_TIME_NOW, Int64(delay * Double(NSEC_PER_SEC)))
-        dispatch_after(time, dispatch_get_main_queue(), block)
-    }
-    */
+  
 
     func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
         
