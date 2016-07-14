@@ -26,6 +26,7 @@ class DataService {
     private var _REF_POSTCOMMENTS = URL_BASE.child("post-comments")
     private var _REF_POSTCOMMENTS_ID = URL_BASE.child("post-comments")
     
+    
   //  let postID  = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
     
     
@@ -74,7 +75,7 @@ class DataService {
     }
     
   
-
+    
     
 }
 

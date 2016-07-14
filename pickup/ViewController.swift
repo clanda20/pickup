@@ -67,7 +67,7 @@ class ViewController: UIViewController {
                         
                         //Write DataBase
                         
-                        let user = ["provider": credential.provider, "firstName": "FirstName", "lastName":"lastName", "username": "username", "avatar": "avatar" ,"likes":"0", "dislikes":"0", "email": "___@youremail.com","postNumber":"0", "followers": "0", "following": "0"]
+                        let user = ["provider": credential.provider,"id": "\(authID!)", "firstName": "FirstName", "lastName":"lastName", "username": "username", "avatar": "avatar" ,"likes":"0", "dislikes":"0", "email": "___@youremail.com","postNumber":"0", "followers": "0", "following": "0"]
                         DataService.ds.createFirebaseUser(authID!, user: user )
                         
                         
@@ -109,10 +109,10 @@ class ViewController: UIViewController {
                               //  NSUserDefaults.standardUserDefaults().setValue(authData!.uid, forKey: "uid")
                                 
                               //  FIRAuth.auth()?.signInWithEmail(email, password: pwd, completion: nil)
-                                    
+                                
                                 FIRAuth.auth()?.signInWithEmail(email, password: pwd, completion: { authData, error in
                                 
-                                    let user = ["provider": authData!.providerID, "firstName": "firstName", "lastName":"lastName", "username": "username", "avatar": "avatar" ,"likes":"0", "dislikes":"0", "email": "___@youremail.com","postNumber":"0", "followers": "0", "following": "0"]
+                                    let user = ["provider": authData!.providerID,"id": "\(authID!)", "firstName": "firstName", "lastName":"lastName", "username": "username", "avatar": "avatar" ,"likes":"0", "dislikes":"0", "email": "___@youremail.com","postNumber":"0", "followers": "0", "following": "0"]
                                    // self.createFirebaseUser(authID!, user: user as! Dictionary<String, String>)
                                 DataService.ds.createFirebaseUser(authID!, user: user )
                                  NSUserDefaults.standardUserDefaults().setValue(authData?.uid, forKey: "uid")                                })

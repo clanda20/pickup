@@ -100,7 +100,7 @@ class ContactsVC: UIViewController, UITableViewDataSource {
              print("ContactKEY-Outside-----xxxxx-----------------: \(contactSelected.contactKey)")
             let destinationVC = segue.destinationViewController as! contactProfileVC
             
-                 destinationVC.contactX   = contactSelected.contactKey
+                 destinationVC.contactId   = contactSelected.contactKey
             
            // NSUserDefaults.standardUserDefaults().setValue(contactSelected, forKey: "contactSelected")
             

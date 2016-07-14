@@ -17,6 +17,9 @@ class ProfileVC: UIViewController {
     @IBOutlet weak var followingLabel: UILabel!
     
    
+   // var followingsReg: FIRDatabaseReference?
+    
+    
 
     
     var activeUserInfo: NSDictionary?
@@ -74,6 +77,12 @@ class ProfileVC: UIViewController {
     
     
   
+    
+    
+    
+    
+    
+    
     
     // downloading profile image from Facebook
     
