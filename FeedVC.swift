@@ -64,12 +64,11 @@ class FeedVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIIm
         storageRef = storage.referenceForURL("gs://pickup-9b67a.appspot.com")
         
    //     var timer = NSTimer.scheduledTimerWithTimeInterval(0.1, target: self, selector: Selector("editRow"), userInfo: nil, repeats: false)
-      postRef.observeEventType(FIRDataEventType.Value, withBlock: { (snapshot) in
+     
+        
+        postRef.observeEventType(FIRDataEventType.Value, withBlock: { (snapshot) in
         
            // print(snapshot.value)
-        
-      
-        
         
         self.posts = []
         
@@ -85,6 +84,7 @@ class FeedVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIIm
             
                     let key = snap.key
                     let post = Post(postKey: key, dictionary: postDict)
+                
                     
                     
                     
@@ -157,7 +157,6 @@ class FeedVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIIm
             
            print("SNaps July 6 :\(post.postKey)")
            
-            //NSUserDefaults.standardUserDefaults().setValue(postKey, forKey: "postKey")
             
             return cell
             
@@ -177,14 +176,8 @@ class FeedVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIIm
         }else{
             return tableView.estimatedRowHeight
         }
-        
-        
     }
     
-    
-   
- 
-  
     
     
     @IBAction func makePost(sender: AnyObject) {
@@ -322,10 +315,12 @@ class FeedVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIIm
     
     func postToFirebase(imgUrl: String?){
         
+         let  activeUserId  = NSUserDefaults.standardUserDefaults().valueForKey("uid") as! String
         var post: Dictionary<String, AnyObject> = [
             "description": postField.text!,
             "likes": 0,
             "dislikes": 0,
+            "uid":  activeUserId,
           //  "comment": commentBtn.!
         ]
         
@@ -335,6 +330,9 @@ class FeedVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIIm
         
         let firebasePost = postRef.childByAutoId()  //important ojo
         firebasePost.setValue(post)
+        
+        let firebase_User_Posts = DataService.ds.REF_USER_POSTS
+        firebase_User_Posts.setValue(post)
         
         postField.text = ""
       //  commentBtn.text = ""

@@ -17,6 +17,8 @@
 		AA1E7FBE1D1B5D8E0035EF2C /* CommentVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1E7FBD1D1B5D8D0035EF2C /* CommentVC.swift */; };
 		AA1E7FC01D1B5EA40035EF2C /* CommentCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1E7FBF1D1B5EA40035EF2C /* CommentCell.swift */; };
 		AA5730AF1D1C659B00B5CAD9 /* Comment.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5730AE1D1C659B00B5CAD9 /* Comment.swift */; };
+		AA5D7BB01D383D8D00B25496 /* FriendsVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5D7BAF1D383D8D00B25496 /* FriendsVC.swift */; };
+		AA5D7BB21D383DC300B25496 /* FriendsCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5D7BB11D383DC300B25496 /* FriendsCell.swift */; };
 		AA5FEC591D306C9B002EA1CF /* ProfileVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5FEC581D306C9B002EA1CF /* ProfileVC.swift */; };
 		AA5FEC5F1D340CB2002EA1CF /* ContactsVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5FEC5E1D340CB2002EA1CF /* ContactsVC.swift */; };
 		AA60F55B1CEFFEC8007B215D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA60F55A1CEFFEC8007B215D /* AppDelegate.swift */; };
@@ -48,6 +50,8 @@
 		AA1E7FBD1D1B5D8D0035EF2C /* CommentVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommentVC.swift; sourceTree = "<group>"; };
 		AA1E7FBF1D1B5EA40035EF2C /* CommentCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommentCell.swift; sourceTree = "<group>"; };
 		AA5730AE1D1C659B00B5CAD9 /* Comment.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Comment.swift; sourceTree = "<group>"; };
+		AA5D7BAF1D383D8D00B25496 /* FriendsVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FriendsVC.swift; sourceTree = "<group>"; };
+		AA5D7BB11D383DC300B25496 /* FriendsCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FriendsCell.swift; sourceTree = "<group>"; };
 		AA5FEC581D306C9B002EA1CF /* ProfileVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ProfileVC.swift; path = pickup/ProfileVC.swift; sourceTree = "<group>"; };
 		AA5FEC5E1D340CB2002EA1CF /* ContactsVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContactsVC.swift; sourceTree = "<group>"; };
 		AA60F5571CEFFEC8007B215D /* pickup.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = pickup.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -153,6 +157,7 @@
 				AA5FEC581D306C9B002EA1CF /* ProfileVC.swift */,
 				AA5FEC5E1D340CB2002EA1CF /* ContactsVC.swift */,
 				AA0F36CA1D356F7000E65D41 /* contactProfileVC.swift */,
+				AA5D7BAF1D383D8D00B25496 /* FriendsVC.swift */,
 			);
 			name = Controller;
 			path = ..;
@@ -178,6 +183,7 @@
 				AA8EB02F1CF5237E00B5E542 /* PostCell.swift */,
 				AA1E7FBF1D1B5EA40035EF2C /* CommentCell.swift */,
 				AA82A10D1D347F4100A133B1 /* ContactCell.swift */,
+				AA5D7BB11D383DC300B25496 /* FriendsCell.swift */,
 			);
 			name = View;
 			path = ..;
@@ -350,6 +356,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA0D5B811CF73FD4005631A3 /* ViewController.swift in Sources */,
+				AA5D7BB01D383D8D00B25496 /* FriendsVC.swift in Sources */,
 				AA0F36CB1D356F7000E65D41 /* contactProfileVC.swift in Sources */,
 				AA82A10E1D347F4100A133B1 /* ContactCell.swift in Sources */,
 				AA82A1101D34858700A133B1 /* Contact.swift in Sources */,
@@ -359,6 +366,7 @@
 				AAED90B81CF3C4BD006C4EFE /* MaterialTextField.swift in Sources */,
 				AA8EB02E1CF5224E00B5E542 /* FeedVC.swift in Sources */,
 				AAED90BB1CF3CED2006C4EFE /* DataService.swift in Sources */,
+				AA5D7BB21D383DC300B25496 /* FriendsCell.swift in Sources */,
 				AAED90B01CF3B705006C4EFE /* MaterialView.swift in Sources */,
 				AA60F55B1CEFFEC8007B215D /* AppDelegate.swift in Sources */,
 				AA5730AF1D1C659B00B5CAD9 /* Comment.swift in Sources */,
