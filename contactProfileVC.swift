@@ -15,7 +15,7 @@ class contactProfileVC: UIViewController {
     var followingsRef: FIRDatabaseReference?
 
     
-    var contactId: String?
+    var contactId: String?  // from segue coming from FriendsVC
      var contacts = [Contact]()
     
     var activeUserInfo: NSDictionary?
@@ -43,11 +43,15 @@ class contactProfileVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        //Dismiss Keyboard
         
+        let tapGesture = UITapGestureRecognizer(target: self, action: Selector("hideKeyboard"))
+        tapGesture.cancelsTouchesInView = true
+        self.view.addGestureRecognizer(tapGesture)
         
         //REFERENCES FIREBASE
-        activeUserRef = DataService.ds.REF_USER_CURRENT
-        followingsRef = activeUserRef?.child("followings")
+        activeUserRef = DataService.ds.REF_USER_CURRENT   // user - userID
+        followingsRef = activeUserRef?.child("followings")   // followingsRef = users---> userID-----[avatar:, dislikes:, firstname, FOLLOWINGS:...]
         
         
         
@@ -123,19 +127,39 @@ class contactProfileVC: UIViewController {
     }
     
     func queryFollowing( completion:(following:Bool) -> ()) {
+    
+    activeUserRef?.child("followings").observeEventType(.Value, withBlock: { snapshot in
+        for child in snapshot.children {
+            let userID = child.key as String
+            print("USER ID IIIIiiiiiiiiiiiiiiiii: \(userID)")
+            
+            if userID ==  self.contactId {
+                
+                self.isFollowed = true
+            }
+        }
+        completion(following: self.isFollowed)
+        }, withCancelBlock: { (error) -> Void in
+    })
+    
+    }
+    
+   /* func queryFollowing( completion:(following:Bool) -> ()) {
         
         activeUserRef?.observeEventType(.Value, withBlock: { (snapshot) in
             
-            let item = snapshot as FIRDataSnapshot
+            let item = snapshot as FIRDataSnapshot    //user -> userID->(avatar,dislikes,email following, FOLLOWINGS, etc
             
-            if let dict = item.value as? NSDictionary {
+            if let dict = item.value as? NSDictionary {   // USER ID DICTIONARY(avatar,dislikes,email following, FOLLOWINGS, etc
                 
-                if let followings = dict["followings"] as? NSDictionary {
+               if let followings = dict["followings"] as? NSDictionary {  // followings = Dictinary (followings)
+              //  if let followings = dict as? NSDictionary {
                     
-                    for following in followings {
+                    for following in followings {         // iterate dict [followings = Dictinary (followings)]
                         
-                        let user = following.value as! NSDictionary
-                        let userID = user["id"] as! String
+                        let user = following.value   //as! NSDictionary
+                      //  let userID = user[ ] as! String
+                        let userID = user[]
                         
                         
                  //   print("UserIDZZZZZZZ:\(user)")
@@ -156,16 +180,22 @@ class contactProfileVC: UIViewController {
         })
         
     }
-    
+    */
     
     func followContact(isFollowing:Bool, completion:(followRef:FIRDatabaseReference!) -> ()) {
         
-      let followingRef = self.followingsRef?.child(contactId!)
+        // followingsRef = users---> userID-----[avatar:, dislikes:, firstname, FOLLOWINGS:...]
         
-        print("followigREFXXXXXX: \(followingRef)")
+      let followingRef = self.followingsRef?.child("\(self.activeUserInfo!["id"]!)")  //  puting contactId on child(contactId!) also works
         
-        let following = ["id": "\(self.activeUserInfo!["id"]!)", "firstName": "\(self.activeUserInfo!["firstName"]!)", "lastName":"\(self.activeUserInfo!["lastName"]!)", "username": "\(self.activeUserInfo!["username"]!)", "avatar": "\(self.activeUserInfo!["avatar"]!)" ,"likes":"\(self.activeUserInfo!["likes"])", "dislikes":"\(self.activeUserInfo!["dislikes"])", "email": "\(self.activeUserInfo!["email"]!)","postNumber":"\(self.activeUserInfo!["postNumber"]!)", "followers": "\(self.activeUserInfo!["followers"]!)", "following": "\(self.activeUserInfo!["following"]!)","followings": "\(self.activeUserInfo!["followings"])"]
+       // print("followigREFXXXXXX: \(followingRef)")
         
+       // let following = ["id": "\(self.activeUserInfo!["id"]!)", "firstName": "\(self.activeUserInfo!["firstName"]!)", "lastName":"\(self.activeUserInfo!["lastName"]!)", "username": "\(self.activeUserInfo!["username"]!)", "avatar": "\(self.activeUserInfo!["avatar"]!)" ,"likes":"\(self.activeUserInfo!["likes"])", "dislikes":"\(self.activeUserInfo!["dislikes"])", "email": "\(self.activeUserInfo!["email"]!)","postNumber":"\(self.activeUserInfo!["postNumber"]!)", "followers": "\(self.activeUserInfo!["followers"]!)", "following": "\(self.activeUserInfo!["following"]!)","followings": "\(self.activeUserInfo!["followings"])"]
+        
+      //  let following = "true"
+        
+        //let following = [ "\(self.activeUserInfo!["id"]!)": "true"]
+
         if isFollowing {
             
             followingRef?.removeValue()
@@ -175,7 +205,7 @@ class contactProfileVC: UIViewController {
             
         } else {
         
-            followingRef?.setValue(following)
+            followingRef?.setValue(true)
             self.followBtn.setTitle("Following", forState: .Normal)
             self.isFollowed = true
             
@@ -209,13 +239,24 @@ class contactProfileVC: UIViewController {
         request.resume()
     }
     
-
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        if segue.identifier == "segue_contactProfToPost"
+        {
+            if let destinationVC = segue.destinationViewController as? PostsByContactVC {
+               // let uid = NSUserDefaults.standardUserDefaults().valueForKey("uid") as? String
+                destinationVC.userID = contactId
+                print("USER ID IIIIiiiiiiiiiiiiiiiii: \(contactId)")            }
+        }
+    }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
     
-
-    
+    //Keyboard dismiss
+    func hideKeyboard()
+    {
+        self.view.endEditing(true)
+    }
 
 }

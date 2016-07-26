@@ -12,7 +12,7 @@ import FBSDKLoginKit
 import Firebase
 
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, UITextFieldDelegate{
     
     @IBOutlet weak var emailField: UITextField!
     @IBOutlet weak var passwordField: UITextField!
@@ -23,6 +23,10 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
   
+   //dismiss keyboard
+     self.emailField.delegate = self
+     self.passwordField.delegate = self
+        
      
     }
 
@@ -63,15 +67,17 @@ class ViewController: UIViewController {
                         print("Login Failed. \(error)")
                     } else {
                         print("Logged In Xxxxxxxxx!\(authData?.uid)")
-                         let authID = authData?.uid
                         
+                        let authID = authData?.uid
+                        NSUserDefaults.standardUserDefaults().setValue(authID, forKey: "uid")
+
                         //Write DataBase
                         
                         let user = ["provider": credential.provider,"id": "\(authID!)", "firstName": "FirstName", "lastName":"lastName", "username": "username", "avatar": "avatar" ,"likes":"0", "dislikes":"0", "email": "___@youremail.com","postNumber":"0", "followers": "0", "following": "0"]
-                        DataService.ds.createFirebaseUser(authID!, user: user )
+                      //  DataService.ds.createFirebaseUser(authID!, user: user )
+                        self.createFirebaseUser(authID!, user: user )
                         
-                        
-                        NSUserDefaults.standardUserDefaults().setValue(authData?.uid, forKey: "uid")
+                       // NSUserDefaults.standardUserDefaults().setValue(authData?.uid, forKey: "uid")
                         self.performSegueWithIdentifier(SEGUE_LOGGED_IN, sender: nil)
                     }
                 })
@@ -106,16 +112,21 @@ class ViewController: UIViewController {
                                 
                                 let authID = authData?.uid
                                 print("Logged In Xxxxxxxxx!\(email)")
-                              //  NSUserDefaults.standardUserDefaults().setValue(authData!.uid, forKey: "uid")
+                                NSUserDefaults.standardUserDefaults().setValue(authID, forKey: "uid")
                                 
                               //  FIRAuth.auth()?.signInWithEmail(email, password: pwd, completion: nil)
                                 
                                 FIRAuth.auth()?.signInWithEmail(email, password: pwd, completion: { authData, error in
                                 
                                     let user = ["provider": authData!.providerID,"id": "\(authID!)", "firstName": "firstName", "lastName":"lastName", "username": "username", "avatar": "avatar" ,"likes":"0", "dislikes":"0", "email": "___@youremail.com","postNumber":"0", "followers": "0", "following": "0"]
-                                   // self.createFirebaseUser(authID!, user: user as! Dictionary<String, String>)
-                                DataService.ds.createFirebaseUser(authID!, user: user )
-                                 NSUserDefaults.standardUserDefaults().setValue(authData?.uid, forKey: "uid")                                })
+                                   
+                                    self.createFirebaseUser(authID!, user: user as! Dictionary<String, String>)
+                                
+                              //   NSUserDefaults.standardUserDefaults().setValue(authData?.uid, forKey: "uid")
+                                    
+                                })
+                                
+                               // DataService.ds.createFirebaseUser(authID!, user: user )
                                 
                                 print("Logged In 2 xxxxxxXxxxxxxxx!\(authData?.uid)")
                                 
@@ -152,7 +163,21 @@ class ViewController: UIViewController {
     }
     
     func createFirebaseUser(uid: String, user: Dictionary<String, String>){
-        ref.child("users").childByAutoId().setValue(user)
+       // ref.child("users").childByAutoId().setValue(user)
+        ref.child("users").child(uid).setValue(user)
+
+    }
+    
+    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        self.view.endEditing(true)
+    }
+    
+    //dismiss keyboard
+    
+    func textFieldShouldReturn(textField: UITextField!) -> Bool {
+        textField.resignFirstResponder()
+        return true
+    
     }
 
 }

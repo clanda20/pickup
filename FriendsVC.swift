@@ -14,9 +14,10 @@ class FriendsVC: UIViewController, UITableViewDataSource {
     
     @IBOutlet weak var friendsTableView: UITableView!
     
-    
+   var snapshot2Dict = [String: String]()
     
     var contacts = [Contact]()
+    
     
     var contactInfo: NSDictionary?
     
@@ -26,43 +27,43 @@ class FriendsVC: UIViewController, UITableViewDataSource {
         
         friendsTableView.dataSource = self
         
+    DataService.ds.REF_USER_CURRENT.child("followings").observeEventType(.ChildAdded, withBlock:{ snapshot in
         
-        DataService.ds.REF_USER_CURRENT.child("followings").observeEventType(FIRDataEventType.Value, withBlock: { (snapshot) in
+       // print("new way: \(snapshot)")
+        self.contacts = []
+        let friendID = snapshot.key
+        let friendReference = DataService.ds.REF_USERS.child(friendID)
+        
+        friendReference.observeSingleEventOfType(.Value, withBlock: { (snapshot) in
             
-            print(snapshot.value)
+            print("new way: \(snapshot)")
             
-            
-            
-            self.contacts = []
-            
-            if let snapshots = snapshot.children.allObjects as? [FIRDataSnapshot]  {
+            if let contactDict = snapshot.value as? [String: AnyObject]
                 
-                for snap in snapshots {
-                    print("SNAP: \(snap)")
+            {
+                 print("dictionary \(contactDict)")
                     
                     
+                    let key = snapshot.key
+                    let contact = Contact(contactKey: key, dictionary: contactDict)
                     
-                    if let contactDict = snap.value as? [String : AnyObject]  {
-                        
-                        
-                        let key = snap.key
-                        let contact = Contact(contactKey: key, dictionary: contactDict)
-                        
-                        
-                        
-                        
-                        //  self.contacts.insert(contact, atIndex: 0)  //self.posts.append(post)
-                        self.contacts.append(contact)
-                        
-                        print("SNAP ContactsXXXXX: \(self.contacts)")
-                        print("ContactKEY-Outside----------------------: \(contact.contactKey)")                    }
+                    self.contacts.append(contact)
+                    
                 }
-            }
+
             self.friendsTableView.reloadData()
+
             
         })
         
-    }
+    }, withCancelBlock: nil)
+        
+
+        
+}
+
+        
+   
     
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -75,6 +76,7 @@ class FriendsVC: UIViewController, UITableViewDataSource {
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell{
         
         let contact = contacts[indexPath.row]
+        print("testing First Name: \(contact.firstName)")
         
         if let cell =  tableView.dequeueReusableCellWithIdentifier("friendsCell") as? FriendsCell {
             
@@ -102,7 +104,6 @@ class FriendsVC: UIViewController, UITableViewDataSource {
             
             destinationVC.contactId   = contactSelected.contactKey
             
-            // NSUserDefaults.standardUserDefaults().setValue(contactSelected, forKey: "contactSelected")
             
             
             

@@ -20,6 +20,7 @@ class Contact{
     private var _postNumber: Int!
     private var _following: Int!
     private var _followers: Int!
+    private var _followings: NSDictionary?
     private var _contactKey: String!
     private var _contactRef: FIRDatabaseReference!
     private var _contactAdd: NSDictionary!
@@ -46,7 +47,7 @@ class Contact{
         return _likes
     }
     
-    var dislikes: Int {
+    var dislikes: Int? {
         return _dislikes
     }
     
@@ -78,6 +79,9 @@ class Contact{
         return _contactAdd
     }
     
+    var followings: NSDictionary? {
+        return _followings
+    }
     
     init(data: NSDictionary){
         
@@ -86,7 +90,7 @@ class Contact{
     }
     
     
-    init(firstName: String,lastName: String, username: String, avatar: String?, likes: Int, email: String, postNumber: Int, following: Int, followers:Int) {
+    init(firstName: String,lastName: String, username: String, avatar: String?, likes: Int, dislikes: Int, email: String, postNumber: Int,followings: NSDictionary, following: Int, followers:Int) {
         self._firstName = firstName
         self._lastName = lastName
         self._username = username
@@ -96,6 +100,7 @@ class Contact{
         self._email = email
         self._postNumber = postNumber
         self._following = following
+        self._followings = followings
         self._followers = followers
         
     }
@@ -133,7 +138,7 @@ class Contact{
             self._email = email
         }
         
-        if let postNumber = dictionary["email"] as? Int {
+        if let postNumber = dictionary["postNumber"] as? Int {
             self._postNumber = postNumber
         }
         
@@ -146,11 +151,64 @@ class Contact{
             self._followers = followers
         }
         
+        if let followings = dictionary["followings"] as? NSDictionary {
+            self._followings = followings
+        }
+        
         
           self._contactRef = DataService.ds.REF_USERS.child(self._contactKey)
         
         // self._commentPostRef = DataService.ds.REF_POSTCOMMENTS.child(self._postKey)
     }
+    
+    
+    init(contactKey_Nesting: String, dictionary_Nesting: AnyObject){
+        
+        self._contactKey = contactKey_Nesting
+        
+        if let firstName = dictionary_Nesting["firstName"] as? String {
+            self._firstName = firstName
+        }
+        
+        if let lastName = dictionary_Nesting["lastName"] as? String {
+            self._lastName = lastName
+        }
+        
+        if let username = dictionary_Nesting["username"] as? String {
+            self._username = username
+        }
+        
+        if let avatar = dictionary_Nesting["avatar"] as? String {
+            self._avatar = avatar
+        }
+        
+       
+        
+        if let email = dictionary_Nesting["email"] as? String {
+            self._email = email
+        }
+        
+        if let postNumber = dictionary_Nesting["postNumber"] as? Int {
+            self._postNumber = postNumber
+        }
+        
+        
+        if let following = dictionary_Nesting["following"] as? Int {
+            self._following = following
+        }
+        
+        if let followers = dictionary_Nesting["followers"] as? Int {
+            self._followers = followers
+        }
+        
+       
+        
+        
+        self._contactRef = DataService.ds.REF_USERS.child(self._contactKey)
+        
+        // self._commentPostRef = DataService.ds.REF_POSTCOMMENTS.child(self._postKey)  
+    }
+
 }
 
 

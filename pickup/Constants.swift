@@ -23,12 +23,11 @@ let ref = FIRDatabase.database().reference()
 var postRef  =  (ref.child("posts"))
 var userRef = ref.child("users")
 //var commentRef = ref.child("post-comments")
-
-
+var user_postsRef = ref.child("user-posts")
 //STORAGE
 
-//let storage = FIRStorage.storage()
-//let storageRef = storage.referenceForURL("gs://pickup-9b67a.appspot.com")
+let storage = FIRStorage.storage()
+let storageRef = storage.referenceForURL("gs://pickup-9b67a.appspot.com")
 
 //Segues
 

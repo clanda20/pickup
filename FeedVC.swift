@@ -18,11 +18,15 @@ import FirebaseDatabaseUI
 import FirebaseAuthUI
 
 
-class FeedVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate, PostCellDelegate {
+class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITableViewDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate, PostCellDelegate {
     
    @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var postField: MaterialTextField!
    @IBOutlet weak var imageSelectorImage: UIImageView!
+    
+    var imageData = NSData()
+    var imageSaved: String?
+    
     
     var postKey: String!
     
@@ -45,6 +49,10 @@ class FeedVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIIm
     
     var posts = [Post]()
     static var imageCache = NSCache()
+    var image: UIImage!
+    let imagePC = UIImagePickerController()
+    var popover:UIPopoverController? = nil
+    var referenceUrl: AnyObject!
     
     var storageRef:FIRStorageReference!
     
@@ -63,44 +71,119 @@ class FeedVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIIm
         let storage = FIRStorage.storage()
         storageRef = storage.referenceForURL("gs://pickup-9b67a.appspot.com")
         
-   //     var timer = NSTimer.scheduledTimerWithTimeInterval(0.1, target: self, selector: Selector("editRow"), userInfo: nil, repeats: false)
-     
+        //Enable offline capabilities 
         
-        postRef.observeEventType(FIRDataEventType.Value, withBlock: { (snapshot) in
+      //  FIRDatabase.database().persistenceEnabled = true
         
-           // print(snapshot.value)
+        //Dismiss Keyboard
         
-        self.posts = []
+        let tapGesture = UITapGestureRecognizer(target: self, action: Selector("hideKeyboard"))
+        tapGesture.cancelsTouchesInView = true
+        self.view.addGestureRecognizer(tapGesture)
         
-        if let snapshots = snapshot.children.allObjects as? [FIRDataSnapshot]  {
+        
+        
+        self.postField.delegate = self
+       
+        self.tableView.reloadData()
+       QueryMyFriendsPost()
+        
+        
+       
             
-            for snap in snapshots {
-               print("SNAP: \(snap)")
-                
-              //  if  let postDict = snapshot.value as? Dictionary <String, AnyObject> {
-                
-                if let postDict = snap.value as? [String : AnyObject]  {
-                
+        
+        
+        
+        DataService.ds.REF_USER_POST.observeEventType(.ChildAdded, withBlock: { (snapshot) -> Void in
             
-                    let key = snap.key
-                    let post = Post(postKey: key, dictionary: postDict)
-                
-                    
-                    
-                    
-                    self.posts.append(post)
-                     print("SNAP post1xxxxxx: \(postDict)")
-                   
-                
-                }
-            }
-        }
             self.tableView.reloadData()
+        })
+    }
+    override func viewDidAppear(animated: Bool) {
+        super.viewDidAppear(animated)
+    
+        QueryMyFriendsPost()        
         
-      })
- 
+        
     }
     
+    
+    
+    
+    
+    
+    
+    
+        func QueryMyFriendsPost() {
+            // self.posts = []
+            
+            DataService.ds.REF_USER_CURRENT.child("followings").observeEventType(.ChildAdded, withBlock:{ snapshots2 in
+                //for snapshot2 in snapshots2.children {
+                
+                self.posts = []
+                print("new wayxx: \(snapshots2)")
+                
+              // if snapshot.childrenCount > 0  {
+                    
+                let friendID = snapshots2.key
+                
+                let friendReference = DataService.ds.REF_USER_POST.child(friendID)
+                
+                
+                
+                friendReference.observeEventType(.Value , withBlock: { (snapshot) in  //observeSingleEventOfType
+                 //  self.posts = []
+                    
+                    print("new way 2: \(snapshot)")
+                    
+                   
+                        
+                        
+                    if let snapshots = snapshot.children.allObjects as? [FIRDataSnapshot]  {
+                        
+                     // if let snapshots = snapshot.value as? [FIRDataSnapshot]  {
+                        
+                        for snap in snapshots {
+                            print("SNAP: \(snap)")
+                            
+                            //  if  let postDict = snapshot.value as? Dictionary <String, AnyObject> {
+                            
+                            if let postDict = snap.value as? [String : AnyObject]  {
+                                
+                                
+                                let key = snap.key
+                                let post = Post(postKey: key, dictionary: postDict)
+                                
+                                
+                                
+                                self.posts.append(post)
+                                print("SNAP post1xxxxxx: \(postDict)")
+                                
+                                                            }
+                            
+                            dispatch_async(dispatch_get_main_queue(), {
+                                self.tableView.reloadData()
+                            })
+                        }
+                        
+                        
+                        
+                    }
+                    
+                   dispatch_async(dispatch_get_main_queue(), {
+                        self.tableView.reloadData()
+                    })
+                    
+                    
+                    
+                }, withCancelBlock: nil)
+               // }// loop to childrencount > 0
+            // self.tableView.reloadData()
+                
+         //   }
+            
+                }, withCancelBlock: nil)
+        }
     
  /*   override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated) // No need for semicolon
@@ -115,7 +198,6 @@ class FeedVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIIm
     }
     
     
-   
     
     func numberOfSectionsInTableView(tableView: UITableView) -> Int {
         return 1
@@ -125,6 +207,9 @@ class FeedVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIIm
         return posts.count
     }
     
+    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        return tableView.reloadData()
+    }
    
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
@@ -135,6 +220,10 @@ class FeedVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIIm
         if let cell =  tableView.dequeueReusableCellWithIdentifier("PostCell") as? PostCell {
             
             cell.delegate = self // july 7, 2016
+            
+        //    NSUserDefaults.standardUserDefaults().setValue(post.uid, forKey: "post_userID")
+         //   NSUserDefaults.standardUserDefaults().synchronize()
+
             
            // cell.commentBtn.tag = indexPath.row
            // cell.commentBtn.addTarget(self, action: "runAfterDelay(delay):", forControlEvents: .TouchUpInside)
@@ -156,7 +245,9 @@ class FeedVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIIm
             //let postKey =  post.postKey
             
            print("SNaps July 6 :\(post.postKey)")
-           
+           print("SNaps July 24 :\(post.uid)")
+            
+            //self.tableView.reloadData()
             
             return cell
             
@@ -182,134 +273,127 @@ class FeedVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIIm
     
     @IBAction func makePost(sender: AnyObject) {
         
-        
-   
-         // if let txt = postField.text where txt != "" {
-          //  if let img = cameraSelector.image where imageSelected == true
-        //}
-   // }
-          //  let picker = UIImagePickerController()
-            self.imagePicker = UIImagePickerController()
-            //picker.delegate = self
-            imagePicker.delegate = self
-            if (UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.Camera)) {
-                //picker.sourceType = UIImagePickerControllerSourceType.Camera
-                imagePicker.sourceType = UIImagePickerControllerSourceType.Camera
-            } else {
-                //picker.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
-                imagePicker.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
-            }
-            
-        
- 
-    }
-    
- 
-    
-    func imagePickerController(imagePicker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
-     
-     
-        
-        imagePicker.dismissViewControllerAnimated(true, completion:nil)
-        
-        let tempImage = info[UIImagePickerControllerOriginalImage] as! UIImage
-        
-        imageSelectorImage.image = tempImage
-        
         imageSelected = true
         
-        // urlTextView.text = "Beginning Upload";
         
-        // if it's a photo from the library, not an image from the camera
-         if let txt = postField.text where txt != "" {
+        if let txt = postField.text where txt != "" {
+        
+        if let img = imageSelectorImage.image where imageSelected == true {
             
-            if let img = imageSelectorImage.image where imageSelected == true {
-            
-            
-        if #available(iOS 8.0, *), let referenceUrl = info[UIImagePickerControllerReferenceURL] {
-            let assets = PHAsset.fetchAssetsWithALAssetURLs([referenceUrl as! NSURL], options: nil)
-            let asset = assets.firstObject
-            asset?.requestContentEditingInputWithOptions(nil, completionHandler: { (contentEditingInput,info) in
+        
+        
+        self.dismissViewControllerAnimated(true, completion: nil)
+            self.tableView.reloadData()
+        
+        // let avatarRef = DataService.ds.REF_USER_CURRENT
+        
+       // let filePath = "\(FIRAuth.auth()!.currentUser!.uid)/\("userPhoto")"
+      //  let imageFile = contentEditingInput?.fullSizeImageURL
+        let filePath = FIRAuth.auth()!.currentUser!.uid + "/\(Int(NSDate.timeIntervalSinceReferenceDate() * 1000))"
+        let metaData = FIRStorageMetadata()
+        metaData.contentType = "image/jpg"
+        storageRef.child(filePath).putData(imageData, metadata: metaData){(metaData,error) in
+            if let error = error {
+                print(error.localizedDescription)
                 
-                 let imageFile = contentEditingInput?.fullSizeImageURL
-                 let filePath = FIRAuth.auth()!.currentUser!.uid + "/\(Int(NSDate.timeIntervalSinceReferenceDate() * 1000))/\(imageFile!.lastPathComponent!)"
-               
+                return
+            }else{
+                //store downloadURL
+                let downloadURL = metaData!.downloadURL()!.absoluteString
+                //store downloadURL at database
+               // DataService.ds.REF_USER_POSTS_USERID .updateChildValues(["avatar": downloadURL])
+                self.postToFirebase( downloadURL)
+                self.tableView.reloadData()
+                print("LINK_URLString: \(downloadURL)")
+                            }
             
-                // [START uploadimage]
-                
-                self.storageRef.child(filePath).putFile(imageFile!, metadata: nil) { (metadata, error) in
-                        if let error = error {
-                            print("Error uploading: \(error)")
-                            return
-                        }
-                        self.uploadSuccess(metadata!, storagePath: filePath)
-                       // self.postToFirebase(filePath)
-                        print("LINK: \(filePath)")
-                    
-                    
-                    // Create a reference to the file you want to download
-                    let starsRef = self.storageRef.child(filePath)
-                    // Fetch the download URL
-                    starsRef.downloadURLWithCompletion { (URL, error) -> Void in
-                        if (error != nil) {
-                            // Handle any errors
-                        } else {
-                            // Get the download URL for 'images/stars.jpg'
-                            print("LINK_URL: \(URL)")
-                            let urlString: String = (URL?.absoluteString)!
-                            
-                            self.postToFirebase( urlString)
-                            print("LINK_URLString: \(urlString)")
-                        }
-                    }
-                    
-                }
-                // [END uploadimage]
-            })
+          
+            
+            
         }
-            else {
-            let image = info[UIImagePickerControllerOriginalImage] as! UIImage
-            let imageData = UIImageJPEGRepresentation(image, 0.1)
-            let imagePath = FIRAuth.auth()!.currentUser!.uid + "/\(Int(NSDate.timeIntervalSinceReferenceDate() * 1000)).jpg"
-            let metadata = FIRStorageMetadata()
-            metadata.contentType = "image/jpeg"
-            self.storageRef.child(imagePath).putData(imageData!, metadata: metadata) { (metadata, error) in
-                    if let error = error {
-                        print("Error uploading: \(error)")
-                        
-                        // self.urlTextView.text = "Upload Failed"
-                        return
-                    }
-                    self.uploadSuccess(metadata!, storagePath: imagePath)
-                   // print("LINK: \(imagePath)")
-                // Create a reference to the file you want to download
-                let starsRef = self.storageRef.child(imagePath)
-                // Fetch the download URL
-                starsRef.downloadURLWithCompletion { (URL, error) -> Void in
-                    if (error != nil) {
-                        // Handle any errors
-                    } else {
-                        // Get the download URL for 'images/stars.jpg'
-                        print("LINK_URL: \(URL)")
-                        let urlString: String = (URL?.absoluteString)!
-                        
-                        self.postToFirebase( urlString)
-                        print("LINK_URLString: \(urlString)")
-                    }
-                }
+   
+        }
+    }
+        }
+    
+    
+    func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]){
+        
+        
+        referenceUrl = info[UIImagePickerControllerReferenceURL]
+         image = info[UIImagePickerControllerOriginalImage] as! UIImage
+        imageSelectorImage.image = image
+        //  var imageData = NSData()
+        
+        imageData = UIImageJPEGRepresentation(image, 0.2)!
+        imageSaved = imageData.base64EncodedStringWithOptions([])
+        
+        self.dismissViewControllerAnimated(true, completion: nil)
+        
+    }
+    
+    @IBAction func  selectImage(sender: UITapGestureRecognizer) {
+       // presentViewController(imagePicker, animated: true, completion: nil)
+        
+        let alert:UIAlertController=UIAlertController(title: "Choose Image", message: nil, preferredStyle: UIAlertControllerStyle.ActionSheet)
+        let cameraAction = UIAlertAction(title: "Camera", style: UIAlertActionStyle.Default)
+        {
+            UIAlertAction in
+            self.openCamera()
+        }
+        let gallaryAction = UIAlertAction(title: "Gallery", style: UIAlertActionStyle.Default)
+        {
+            UIAlertAction in
+            self.openGallary()
+        }
+        let cancelAction = UIAlertAction(title: "Cancel", style: UIAlertActionStyle.Cancel)
+        {
+            UIAlertAction in
+        }
+        // Add the actions
+        self.imagePC.delegate = self
+        alert.addAction(cameraAction)
+        alert.addAction(gallaryAction)
+        alert.addAction(cancelAction)
+        // Present the controller
+        if UIDevice.currentDevice().userInterfaceIdiom == .Phone
+        {
+            self.presentViewController(alert, animated: true, completion: nil)
+        }
+        else
+        {
+            popover = UIPopoverController(contentViewController: alert)
+            popover!.presentPopoverFromRect(imageSelectorImage.frame, inView: self.view, permittedArrowDirections: UIPopoverArrowDirection.Any, animated: true)
+        }
+        
+    }
 
-                
-            }
+    func openCamera()
+    {
+        if(UIImagePickerController .isSourceTypeAvailable(UIImagePickerControllerSourceType.Camera))
+        {
+            self.imagePC.sourceType = UIImagePickerControllerSourceType.Camera
+            self .presentViewController(self.imagePC, animated: true, completion: nil)
         }
-            } else {
-                self.postToFirebase(nil)
-            }
+        else
+        {
+            openGallary()
         }
     }
     
     
-    @IBAction func  selectImage(sender: UITapGestureRecognizer) {
-        presentViewController(imagePicker, animated: true, completion: nil)
+    func openGallary()
+    {
+        self.imagePC.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
+        if UIDevice.currentDevice().userInterfaceIdiom == .Phone
+        {
+            self.presentViewController(self.imagePC, animated: true, completion: nil)
+        }
+        else
+        {
+            popover=UIPopoverController(contentViewController: self.imagePC)
+            popover!.presentPopoverFromRect(imageSelectorImage.frame, inView: self.view, permittedArrowDirections: UIPopoverArrowDirection.Any, animated: true)
+        }
     }
     
     
@@ -328,11 +412,11 @@ class FeedVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIIm
             post["imageUrl"] = imgUrl
         }
         
-        let firebasePost = postRef.childByAutoId()  //important ojo
-        firebasePost.setValue(post)
+   
         
-        let firebase_User_Posts = DataService.ds.REF_USER_POSTS
-        firebase_User_Posts.setValue(post)
+     let firebasePost2 = DataService.ds.REF_USER_POSTS_USERID.childByAutoId()  //important ojo
+       firebasePost2.setValue(post)
+        
         
         postField.text = ""
       //  commentBtn.text = ""
@@ -342,11 +426,15 @@ class FeedVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIIm
         tableView.reloadData()
     }
     
+ 
+    
+    
     func uploadSuccess(metadata: FIRStorageMetadata, storagePath: String) {
         print("Upload Succeeded!")
         //  self.urlTextView.text = metadata.downloadURL()!.absoluteString
         NSUserDefaults.standardUserDefaults().setObject(storagePath, forKey: "storagePath")
         NSUserDefaults.standardUserDefaults().synchronize()
+        self.tableView.reloadData()
         // self.downloadPicButton.enabled = true
     }
     
@@ -362,12 +450,18 @@ class FeedVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIIm
         self.performSegueWithIdentifier("segue_commentVC", sender:dataobject )
         
     }
+    // Dismiss keyBoard
     
+    func hideKeyboard()
+    {
+        self.view.endEditing(true)
+    }
     
-    
-    
-    
-    
+    func textFieldShouldReturn(textField: UITextField!) -> Bool {
+        textField.resignFirstResponder()
+        return true
+        
+    }
     
     
 }

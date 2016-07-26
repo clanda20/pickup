@@ -32,6 +32,13 @@ class ProfileVC: UIViewController {
         
         var image: String?
         
+        
+        // Add Edit Button
+        
+        let editButton = UIBarButtonItem(barButtonSystemItem: .Edit, target: self, action: "editProfile")
+        
+        self.tabBarController?.navigationItem.rightBarButtonItem = editButton
+        
         DataService.ds.REF_USER_CURRENT.observeEventType(.Value, withBlock: { (snapshot)  in
             
             let item = snapshot as FIRDataSnapshot
@@ -74,9 +81,26 @@ class ProfileVC: UIViewController {
 
     
     
+    func editProfile(){
+        
+        print("edit profile")
+        
+        self.performSegueWithIdentifier("segue_EditPost", sender: self)
+        
+        
+    }
+
     
-    
-  
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        if segue.identifier == "segue_passID"
+        {
+            if let destinationVC = segue.destinationViewController as? PostsByUserVC {
+                let uid = NSUserDefaults.standardUserDefaults().valueForKey("uid") as? String
+                destinationVC.userID = uid
+                
+            }
+        }
+    }
     
     
     

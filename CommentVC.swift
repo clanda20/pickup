@@ -11,7 +11,7 @@ import Firebase
 
 
 
-class CommentVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UITableViewDataSource {
     
     
     @IBOutlet weak var tableView: UITableView!
@@ -41,7 +41,10 @@ class CommentVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         tableView.dataSource = self
         
   
-        
+       //Keyboard dismiss
+        let tapGesture = UITapGestureRecognizer(target: self, action: Selector("hideKeyboard"))
+        tapGesture.cancelsTouchesInView = true
+        self.view.addGestureRecognizer(tapGesture)
        
         
      postID  = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
@@ -179,6 +182,12 @@ class CommentVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     func postCommentToFirebase(commentPost: String!)
     {
         
+    }
+    
+    //Keyboard dismiss
+    func hideKeyboard()
+    {
+        self.view.endEditing(true)
     }
 }
 

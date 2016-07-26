@@ -10,6 +10,8 @@
 		6AB194BC1B8A1E7A8F60BF94 /* Pods_pickup.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E4F67677044964968D51B6AF /* Pods_pickup.framework */; };
 		AA0D5B811CF73FD4005631A3 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA60F55C1CEFFEC8007B215D /* ViewController.swift */; };
 		AA0F36CB1D356F7000E65D41 /* contactProfileVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0F36CA1D356F7000E65D41 /* contactProfileVC.swift */; };
+		AA1755EA1D3C311E00FD0782 /* PostsByContactCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1755E91D3C311E00FD0782 /* PostsByContactCell.swift */; };
+		AA1755EC1D3C31E000FD0782 /* PostsByContactVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1755EB1D3C31E000FD0782 /* PostsByContactVC.swift */; };
 		AA1B0FA31CF37A9400561E54 /* Bolts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA1B0FA01CF37A9400561E54 /* Bolts.framework */; };
 		AA1B0FA41CF37A9400561E54 /* FBSDKCoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA1B0FA11CF37A9400561E54 /* FBSDKCoreKit.framework */; };
 		AA1B0FA51CF37A9400561E54 /* FBSDKLoginKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA1B0FA21CF37A9400561E54 /* FBSDKLoginKit.framework */; };
@@ -17,8 +19,11 @@
 		AA1E7FBE1D1B5D8E0035EF2C /* CommentVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1E7FBD1D1B5D8D0035EF2C /* CommentVC.swift */; };
 		AA1E7FC01D1B5EA40035EF2C /* CommentCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1E7FBF1D1B5EA40035EF2C /* CommentCell.swift */; };
 		AA5730AF1D1C659B00B5CAD9 /* Comment.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5730AE1D1C659B00B5CAD9 /* Comment.swift */; };
+		AA57FC0F1D42E28300DB76F0 /* EditProfileVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA57FC0E1D42E28300DB76F0 /* EditProfileVC.swift */; };
 		AA5D7BB01D383D8D00B25496 /* FriendsVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5D7BAF1D383D8D00B25496 /* FriendsVC.swift */; };
 		AA5D7BB21D383DC300B25496 /* FriendsCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5D7BB11D383DC300B25496 /* FriendsCell.swift */; };
+		AA5D7BB41D38699700B25496 /* PostsByUserVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5D7BB31D38699700B25496 /* PostsByUserVC.swift */; };
+		AA5D7BB61D39A5CB00B25496 /* PostsByUserCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5D7BB51D39A5CB00B25496 /* PostsByUserCell.swift */; };
 		AA5FEC591D306C9B002EA1CF /* ProfileVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5FEC581D306C9B002EA1CF /* ProfileVC.swift */; };
 		AA5FEC5F1D340CB2002EA1CF /* ContactsVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5FEC5E1D340CB2002EA1CF /* ContactsVC.swift */; };
 		AA60F55B1CEFFEC8007B215D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA60F55A1CEFFEC8007B215D /* AppDelegate.swift */; };
@@ -43,6 +48,8 @@
 		21CB840AF98FDFB7288423B5 /* Pods-pickup.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-pickup.release.xcconfig"; path = "Pods/Target Support Files/Pods-pickup/Pods-pickup.release.xcconfig"; sourceTree = "<group>"; };
 		8E939FCC00DCD815771D58E7 /* Pods-pickup.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-pickup.debug.xcconfig"; path = "Pods/Target Support Files/Pods-pickup/Pods-pickup.debug.xcconfig"; sourceTree = "<group>"; };
 		AA0F36CA1D356F7000E65D41 /* contactProfileVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = contactProfileVC.swift; sourceTree = "<group>"; };
+		AA1755E91D3C311E00FD0782 /* PostsByContactCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PostsByContactCell.swift; sourceTree = "<group>"; };
+		AA1755EB1D3C31E000FD0782 /* PostsByContactVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PostsByContactVC.swift; sourceTree = "<group>"; };
 		AA1B0FA01CF37A9400561E54 /* Bolts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Bolts.framework; sourceTree = "<group>"; };
 		AA1B0FA11CF37A9400561E54 /* FBSDKCoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = FBSDKCoreKit.framework; sourceTree = "<group>"; };
 		AA1B0FA21CF37A9400561E54 /* FBSDKLoginKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = FBSDKLoginKit.framework; sourceTree = "<group>"; };
@@ -50,8 +57,11 @@
 		AA1E7FBD1D1B5D8D0035EF2C /* CommentVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommentVC.swift; sourceTree = "<group>"; };
 		AA1E7FBF1D1B5EA40035EF2C /* CommentCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommentCell.swift; sourceTree = "<group>"; };
 		AA5730AE1D1C659B00B5CAD9 /* Comment.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Comment.swift; sourceTree = "<group>"; };
+		AA57FC0E1D42E28300DB76F0 /* EditProfileVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EditProfileVC.swift; sourceTree = "<group>"; };
 		AA5D7BAF1D383D8D00B25496 /* FriendsVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FriendsVC.swift; sourceTree = "<group>"; };
 		AA5D7BB11D383DC300B25496 /* FriendsCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FriendsCell.swift; sourceTree = "<group>"; };
+		AA5D7BB31D38699700B25496 /* PostsByUserVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PostsByUserVC.swift; sourceTree = "<group>"; };
+		AA5D7BB51D39A5CB00B25496 /* PostsByUserCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PostsByUserCell.swift; sourceTree = "<group>"; };
 		AA5FEC581D306C9B002EA1CF /* ProfileVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ProfileVC.swift; path = pickup/ProfileVC.swift; sourceTree = "<group>"; };
 		AA5FEC5E1D340CB2002EA1CF /* ContactsVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContactsVC.swift; sourceTree = "<group>"; };
 		AA60F5571CEFFEC8007B215D /* pickup.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = pickup.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -158,6 +168,9 @@
 				AA5FEC5E1D340CB2002EA1CF /* ContactsVC.swift */,
 				AA0F36CA1D356F7000E65D41 /* contactProfileVC.swift */,
 				AA5D7BAF1D383D8D00B25496 /* FriendsVC.swift */,
+				AA5D7BB31D38699700B25496 /* PostsByUserVC.swift */,
+				AA1755EB1D3C31E000FD0782 /* PostsByContactVC.swift */,
+				AA57FC0E1D42E28300DB76F0 /* EditProfileVC.swift */,
 			);
 			name = Controller;
 			path = ..;
@@ -184,6 +197,8 @@
 				AA1E7FBF1D1B5EA40035EF2C /* CommentCell.swift */,
 				AA82A10D1D347F4100A133B1 /* ContactCell.swift */,
 				AA5D7BB11D383DC300B25496 /* FriendsCell.swift */,
+				AA5D7BB51D39A5CB00B25496 /* PostsByUserCell.swift */,
+				AA1755E91D3C311E00FD0782 /* PostsByContactCell.swift */,
 			);
 			name = View;
 			path = ..;
@@ -358,19 +373,24 @@
 				AA0D5B811CF73FD4005631A3 /* ViewController.swift in Sources */,
 				AA5D7BB01D383D8D00B25496 /* FriendsVC.swift in Sources */,
 				AA0F36CB1D356F7000E65D41 /* contactProfileVC.swift in Sources */,
+				AA1755EA1D3C311E00FD0782 /* PostsByContactCell.swift in Sources */,
 				AA82A10E1D347F4100A133B1 /* ContactCell.swift in Sources */,
 				AA82A1101D34858700A133B1 /* Contact.swift in Sources */,
 				AA8EB0301CF5237E00B5E542 /* PostCell.swift in Sources */,
 				AA5FEC591D306C9B002EA1CF /* ProfileVC.swift in Sources */,
 				AA1E7FBE1D1B5D8E0035EF2C /* CommentVC.swift in Sources */,
 				AAED90B81CF3C4BD006C4EFE /* MaterialTextField.swift in Sources */,
+				AA1755EC1D3C31E000FD0782 /* PostsByContactVC.swift in Sources */,
+				AA5D7BB41D38699700B25496 /* PostsByUserVC.swift in Sources */,
 				AA8EB02E1CF5224E00B5E542 /* FeedVC.swift in Sources */,
 				AAED90BB1CF3CED2006C4EFE /* DataService.swift in Sources */,
 				AA5D7BB21D383DC300B25496 /* FriendsCell.swift in Sources */,
 				AAED90B01CF3B705006C4EFE /* MaterialView.swift in Sources */,
 				AA60F55B1CEFFEC8007B215D /* AppDelegate.swift in Sources */,
+				AA5D7BB61D39A5CB00B25496 /* PostsByUserCell.swift in Sources */,
 				AA5730AF1D1C659B00B5CAD9 /* Comment.swift in Sources */,
 				AAED90B41CF3B7E3006C4EFE /* Constants.swift in Sources */,
+				AA57FC0F1D42E28300DB76F0 /* EditProfileVC.swift in Sources */,
 				AAED90B61CF3BD99006C4EFE /* MaterialButton.swift in Sources */,
 				AA8EB0321CF55D3000B5E542 /* Post.swift in Sources */,
 				AA1E7FC01D1B5EA40035EF2C /* CommentCell.swift in Sources */,

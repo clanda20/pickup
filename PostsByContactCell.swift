@@ -1,8 +1,8 @@
 //
-//  PostCellTableViewCell.swift
+//  PostsByContactCell.swift
 //  pickup
 //
-//  Created by christian landa on 5/24/16.
+//  Created by christian landa on 7/17/16.
 //  Copyright © 2016 christian landa. All rights reserved.
 //
 
@@ -10,12 +10,12 @@ import UIKit
 import Alamofire
 import Firebase
 
-protocol PostCellDelegate {
+protocol PostsByContactCellDelegate {
     func callSegueFromCell(myData dataobject: AnyObject)
 }
 
 
-class PostCell: UITableViewCell {
+class PostsByContactCell: UITableViewCell {
     
     @IBOutlet weak var profileImg: UIImageView!
     @IBOutlet weak var showcaseImg: UIImageView!
@@ -25,9 +25,11 @@ class PostCell: UITableViewCell {
     
     @IBOutlet weak var dislikeLbl: UILabel!
     @IBOutlet weak var dislikeImage: UIImageView!
+    // @IBOutlet weak var commentBtn: UIButton!
     @IBOutlet weak var commentBtn: UIButton!
     
-   var delegate : PostCellDelegate?
+    
+    var delegate : PostsByContactCellDelegate?
     
     var post: Post!
     var request: Request?
@@ -36,12 +38,12 @@ class PostCell: UITableViewCell {
     var postRefKey: FIRDatabaseReference!
     var postKey: String!
     
-   
     
-
+    
+    
     override func awakeFromNib() {
         super.awakeFromNib()
-
+        
         let tap = UITapGestureRecognizer(target: self, action: "likeTapped:")
         tap.numberOfTapsRequired = 1
         likeImage.addGestureRecognizer(tap)
@@ -64,7 +66,7 @@ class PostCell: UITableViewCell {
         
         
     }
-
+    
     override func drawRect(rect: CGRect) {
         profileImg.layer.cornerRadius = profileImg.frame.size.width / 2
         profileImg.clipsToBounds = true
@@ -81,32 +83,25 @@ class PostCell: UITableViewCell {
         
         self.post = post
         
-        let postUserID = post.uid
-        print("SNaps July 24  postUserIDxxxxxxxxxxxxxxxx  :\(postUserID)")
-        
-        //let postKey =  post.postKey
-     //  NSUserDefaults.standardUserDefaults().setValue(postUserID, forKey: "postUserID")
-      //  NSUserDefaults.standardUserDefaults().synchronize()
-        
-      // likeRef = DataService.ds.REF_USER_CURRENT.child("likes").child(post.postKey)   // check ojo for True or False 7-24 REF_USER_POSTS_BY_USER2
-        likeRef = DataService.ds.REF_USER_CURRENT.child("likes").child(post.postKey)
         
         
-       // likeRef = DataService.ds.REF_USER_POSTS_USERID.child("likes").child(post.postKey)
+        likeRef = DataService.ds.REF_USER_CURRENT.child("likes").child(post.postKey)   // check ojo for True or False
+        
+        // likeRef = DataService.ds.REF_USER_POSTS_USERID.child("likes").child(post.postKey)
         
         dislikeRef = DataService.ds.REF_USER_CURRENT.child("dislikes").child(post.postKey)  // check ojo for True or False
-       // dislikeRef = DataService.ds.REF_USER_POSTS_USERID.child("dislikes").child(post.postKey)
+        // dislikeRef = DataService.ds.REF_USER_POSTS_USERID.child("dislikes").child(post.postKey)
         
         postRefKey = DataService.ds.REF_POSTCOMMENTS.child(post.postKey)  //added 6-29-16
         
-         print("PostKey PostCell July 6: \(post.postKey)")
+        print("PostKey PostCell July 6: \(post.postKey)")
         
+      //  NSUserDefaults.standardUserDefaults().setValue(post.postKey, forKey: "postKeyByUser")
+      //  NSUserDefaults.standardUserDefaults().synchronize()
         
-        
-     
         self.descriptionText.text = post.postDescription
         self.likeLbl.text = "\(post.likes)"
-       
+        
         
         self.dislikeLbl.text = "\(post.dislikes)"
         
@@ -126,12 +121,12 @@ class PostCell: UITableViewCell {
             }
             
             
-            } else {
-                self.showcaseImg.hidden = true
+        } else {
+            self.showcaseImg.hidden = true
         }
         
         
-        likeRef.observeSingleEventOfType(.ChildAdded, withBlock: { snapshot in
+        likeRef.observeSingleEventOfType(.Value, withBlock: { snapshot in
             
             if (snapshot.value as? NSNull) != nil {   //WE don't like the current post
                 self.likeImage.image = UIImage(named: "heart-empty")
@@ -139,8 +134,8 @@ class PostCell: UITableViewCell {
             } else {
                 self.likeImage.image = UIImage(named: "heart-full")
             }
-        
-        
+            
+            
         })
         
         dislikeRef.observeSingleEventOfType(.Value, withBlock: { snapshot in
@@ -152,25 +147,25 @@ class PostCell: UITableViewCell {
             }
         })
         
-    
         
         
-  }
-    
-    
-  
-   @IBAction func Comment_Post_Btn(sender: AnyObject) {
         
-    let postKey = post.postKey
-    print("SNaps July 7 POstKeyxxxxxxxxxxxxxxxx  :\(postKey)")
+    }
     
-    //let postKey =  post.postKey
-    NSUserDefaults.standardUserDefaults().setValue(postKey, forKey: "postKey")
-    NSUserDefaults.standardUserDefaults().synchronize()
-    if(self.delegate != nil){ //Just to be safe.
-        self.delegate!.callSegueFromCell(myData: postKey)
+    
+    
+    @IBAction func Comment_Post_Btn(sender: AnyObject) {
         
-       }
+        let postKey = post.postKey
+        print("SNaps July 7 POstKeyxxxxxxxxxxxxxxxx  :\(postKey)")
+        
+        //let postKey =  post.postKey
+        NSUserDefaults.standardUserDefaults().setValue(postKey, forKey: "postKey")
+        NSUserDefaults.standardUserDefaults().synchronize()
+        if(self.delegate != nil){ //Just to be safe.
+            self.delegate!.callSegueFromCell(myData: postKey)
+            
+        }
     }
     
     func CommentBtnTapped(sender: UITapGestureRecognizer){
@@ -179,15 +174,15 @@ class PostCell: UITableViewCell {
             
             print("SNaps July 6 :\(snapshot)")
             
-        
-     let postKey =  self.post.postKey
             
-         
-    
-       NSUserDefaults.standardUserDefaults().setValue(postKey, forKey: "postKey")
-       // NSUserDefaults.standardUserDefaults().synchronize()
-           
-           // FeedVC.performSegueWithIdentifier("segue_commentVC, sender: sender)
+            let postKey =  self.post.postKey
+            
+            
+            
+            NSUserDefaults.standardUserDefaults().setValue(postKey, forKey: "postKey")
+            // NSUserDefaults.standardUserDefaults().synchronize()
+            
+            // FeedVC.performSegueWithIdentifier("segue_commentVC, sender: sender)
             
             
         })
@@ -196,29 +191,22 @@ class PostCell: UITableViewCell {
     
     func likeTapped(sender: UITapGestureRecognizer){
         
-        
-        let postUserID = post.uid
-        print("SNaps July 24  postUserIDxxxxxxxxxxxxxxxx  :\(postUserID)")
-        
-        //let postKey =  post.postKey
-         NSUserDefaults.standardUserDefaults().setValue(postUserID, forKey: "postUserID")
-        
-        
         likeRef.observeSingleEventOfType(.Value, withBlock: { snapshot in
             
             if (snapshot.value as? NSNull) != nil {   //WE don't like the current post
                 self.likeImage.image = UIImage(named: "heart-full")
-                self.post.adjustLikes(true)
+                self.post.adjustLikesByUser(true)
                 self.likeRef.setValue(true)
                 
-               self.dislikeImage.userInteractionEnabled = false
-  
+                self.dislikeImage.userInteractionEnabled = false
+                
+                
             } else {
                 self.likeImage.image = UIImage(named: "heart-empty")
-                self.post.adjustLikes(false)
+                self.post.adjustLikesByUser(false)
                 self.likeRef.removeValue()
                 
-               self.dislikeImage.userInteractionEnabled = true
+                self.dislikeImage.userInteractionEnabled = true
                 
             }
             
@@ -229,39 +217,30 @@ class PostCell: UITableViewCell {
     
     func dislikeTapped(sender: UITapGestureRecognizer){
         
-        let postUserID = post.uid
-        print("SNaps July 24  postUserIDxxxxxxxxxxxxxxxx  :\(postUserID)")
-        
-        //let postKey =  post.postKey
-        NSUserDefaults.standardUserDefaults().setValue(postUserID, forKey: "postUserID")
-        
-         dislikeRef.observeSingleEventOfType(.Value, withBlock: { snapshot in
+        dislikeRef.observeSingleEventOfType(.Value, withBlock: { snapshot in
             
             if (snapshot.value as? NSNull) != nil {
                 self.dislikeImage.image = UIImage(named: "heart2-full")
-                self.post.adjustDislikes(true)
+                self.post.adjustDislikesByUser(true)
                 self.dislikeRef.setValue(true)
                 
                 
-           self.likeImage.userInteractionEnabled = false
-
+                self.likeImage.userInteractionEnabled = false
+                
                 
                 
             }else {
                 self.dislikeImage.image = UIImage(named: "heart2-empty")
-                self.post.adjustDislikes(false)
+                self.post.adjustDislikesByUser(false)
                 self.dislikeRef.removeValue()
                 
                 self.likeImage.userInteractionEnabled = true
-               
-               
+                
+                
             }
         })
         
     }
     
-
-
+    
 }
-
-

@@ -25,7 +25,7 @@ class DataService {
     private var _REF_USERS = URL_BASE.child("users")
     private var _REF_POSTCOMMENTS = URL_BASE.child("post-comments")
     private var _REF_POSTCOMMENTS_ID = URL_BASE.child("post-comments")
-    private var _REF_USER_POSTS = URL_BASE.child("user-posts")
+    private var _REF_USER_POST = URL_BASE.child("user-posts")
     
     
   //  let postID  = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
@@ -55,15 +55,55 @@ class DataService {
         return _REF_POSTCOMMENTS_ID
     }
     
+    var REF_USER_POST: FIRDatabaseReference{
+        return _REF_USER_POST
+    }
+    
+    
+    var REF_USER_POSTS_USERID: FIRDatabaseReference{
+        let uid = NSUserDefaults.standardUserDefaults().valueForKey("uid") as? String
+       // let postID = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
+        
+        let USER_POSTS_USERID = URL_BASE.child("user-posts").child(uid!)
+        
+        
+        return USER_POSTS_USERID
+    }
+    
+    
     var REF_USER_POSTS: FIRDatabaseReference{
         let uid = NSUserDefaults.standardUserDefaults().valueForKey("uid") as? String
-        let postID = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
+       let postID = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
 
         let USER_POSTS_ID = URL_BASE.child("user-posts").child(uid!).child(postID)
         
         
         return USER_POSTS_ID
     }
+    
+    var REF_USER_POSTS_BY_USER: FIRDatabaseReference{
+        let userID = NSUserDefaults.standardUserDefaults().valueForKey("userID") as? String
+       // let postID = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
+        
+        let USER_POSTS_BY_USER = URL_BASE.child("user-posts").child(userID!) //.child(postID)
+        
+        
+        return USER_POSTS_BY_USER
+    }
+    
+    
+    var REF_USER_POSTS_BY_USER2: FIRDatabaseReference{
+        let postUserID = NSUserDefaults.standardUserDefaults().valueForKey("postUserID") as? String   //july 24 postUserID
+        // let postID = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
+        
+        let USER_POSTS_BY_USER2 = URL_BASE.child("user-posts").child(postUserID!) //.child(postID)
+        
+        
+        return USER_POSTS_BY_USER2
+    }
+    
+    //post-userID
+    
     
     var REF_USER_CURRENT: FIRDatabaseReference{
         let uid = NSUserDefaults.standardUserDefaults().valueForKey("uid") as? String

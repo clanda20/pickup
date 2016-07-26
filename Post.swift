@@ -18,6 +18,7 @@ class Post {
     private var _postRef: FIRDatabaseReference!
     private var _commentPostRef: FIRDatabaseReference!
     private var _user_posts_Ref: FIRDatabaseReference!
+    private var __post_REf_By_USER: FIRDatabaseReference!
     private var _dislikes: Int!
     private var _uid: String!
     
@@ -86,12 +87,17 @@ class Post {
             self._uid = uid
         }
         
-      self._postRef = DataService.ds.REF_POSTS.child(self._postKey)
+    //  self._postRef = DataService.ds.REF_POSTS.child(self._postKey)
+       // self._postRef = DataService.ds.REF_USER_POSTS_USERID.child(self._postKey)
         
         self._commentPostRef = DataService.ds.REF_POSTCOMMENTS.child(self._postKey)
     
-    self._user_posts_Ref = DataService.ds.REF_USER_POSTS.child(self._postKey)
-    }
+    self._user_posts_Ref = DataService.ds.REF_USER_POSTS_USERID.child(self._postKey)
+   // self._user_posts_Ref = DataService.ds.REF_USER_POSTS_BY_USER2.child(self._postKey)
+    
+    self.__post_REf_By_USER  =  DataService.ds.REF_USER_POSTS_BY_USER.child(self._postKey)
+    
+    }    //post on user-posts/userID/postID
     
     
     func comment_postRef() {
@@ -110,11 +116,13 @@ class Post {
             _likes = _likes - 1
         }
         
-        _postRef.child("likes").setValue(_likes)
+      //  _postRef.child("likes").setValue(_likes)
+      // _user_posts_Ref.child("likes").setValue(_likes)  ////post on user-posts/userID/postID
         
-        
+        DataService.ds.REF_USER_POSTS_BY_USER2.child(self._postKey).child("likes").setValue(_likes)
         
     }
+    
     
     func adjustDislikes(addDislikes: Bool) {
         
@@ -124,9 +132,39 @@ class Post {
             _dislikes = _dislikes - 1
         }
         
-        _postRef.child("dislikes").setValue(_dislikes)
+        //  _postRef.child("dislikes").setValue(_dislikes)
+       // _user_posts_Ref.child("dislikes").setValue(_dislikes)
+        DataService.ds.REF_USER_POSTS_BY_USER2.child(self._postKey).child("dislikes").setValue(_dislikes)
+    }
+    
+    
+    func adjustLikesByUser(addLike: Bool) {
+        
+        if addLike {
+            _likes = _likes + 1
+            
+        } else {
+            _likes = _likes - 1
+        }
+        
+        //  _postRef.child("likes").setValue(_likes)
+        __post_REf_By_USER.child("likes").setValue(_likes)  ////post on user-posts/userID/postID
         
         
+        
+        
+    }
+    
+    func adjustDislikesByUser(addDislikes: Bool) {
+        
+        if addDislikes {
+            _dislikes = _dislikes + 1
+        }else {
+            _dislikes = _dislikes - 1
+        }
+        
+      //  _postRef.child("dislikes").setValue(_dislikes)
+         __post_REf_By_USER.child("dislikes").setValue(_dislikes)
     }
 }
 
