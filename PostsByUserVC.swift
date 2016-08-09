@@ -22,6 +22,9 @@ class PostsByUserVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
     @IBOutlet weak var postField: MaterialTextField!
     @IBOutlet weak var imageSelectorImage: UIImageView!
     
+    
+    var followersRef: FIRDatabaseReference!
+    
     var postKey: String!
     
     var myData:String?
@@ -29,8 +32,7 @@ class PostsByUserVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
     var userID: String?   // from Segue
     
    
-    
-    
+     var friendsArray: [String] = []
     
     
     let kSectionComments = 1
@@ -374,6 +376,25 @@ class PostsByUserVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
             post["imageUrl"] = imgUrl
         }
         
+        
+        
+        
+        // To Here
+        
+        let key = ref.child("user-posts").childByAutoId().key
+        
+        let childUpadates = ["/posts/\(key)": post,
+                             "/user-posts/\(activeUserId)/\(key)/":post]
+        ref.updateChildValues(childUpadates)
+        
+        for friendID in friendsArray {
+            
+            let childUpadates2 =  ["/timeline/\(friendID)/\(key)/": post]
+            ref.updateChildValues(childUpadates2)
+            print(" Array inside \(friendID)")
+            
+        }
+        
         //    var uuid = NSUUID().UUIDString
         
         //let AutoIdString = "\(AutoId)"
@@ -448,10 +469,56 @@ class PostsByUserVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
     
     
     
+    override func viewWillDisappear(animated: Bool) {
+        self.navigationController?.setNavigationBarHidden(true, animated: animated);
+        super.viewWillDisappear(animated)
+    }
+    
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        self.navigationController?.setNavigationBarHidden(false, animated: animated)
+    }
     
     
-    
-    
+    func FirebaseFanout(){
+        
+        
+        // followingsRef = DataService.ds.REF_FOLLOWING_USERID
+        // followingsRef.observeEventType(.Value, withBlock:  { snapshot in
+        followersRef = DataService.ds.REF_FOLLOWER_USERID
+        followersRef.observeEventType(.Value, withBlock:  { snapshot in
+            
+            
+            print("new snapshot array: \(snapshot.key)")
+            
+            
+            self.friendsArray = []
+         //   self.usersLists = []
+            
+            for child in snapshot.children {
+                let friendID = child.key as String
+                print("friendID  Array IIIIiiiiiiiiiiiiiiiii: \(friendID)")
+                
+                self.friendsArray.append(friendID)
+                
+                _ = Post(followersList: self.friendsArray)
+                
+                // self.usersLists.append(usersList)
+                
+                for friendID in self.friendsArray {
+                    print(" Array friendID tonight \(friendID)")
+                }
+                
+            }
+            
+            
+            self.tableView.reloadData()
+            
+            }, withCancelBlock: { (error) ->  Void in
+                
+                
+        })
+    }
 
 
 }

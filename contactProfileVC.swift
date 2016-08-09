@@ -13,10 +13,13 @@ class contactProfileVC: UIViewController {
     
     var activeUserRef: FIRDatabaseReference?
     var followingsRef: FIRDatabaseReference?
+    var followersRef: FIRDatabaseReference?
 
     
     var contactId: String?  // from segue coming from FriendsVC
      var contacts = [Contact]()
+    
+    var posts_Array: [String] = []
     
     var activeUserInfo: NSDictionary?
     
@@ -32,7 +35,7 @@ class contactProfileVC: UIViewController {
         
                followContact(isFollowed) { (followRef) in
                 
-             print("You are now following \(self.activeUserInfo!["firstName"]!)   ")
+             print("You are now following \(self.activeUserInfo!["fullName"]!)   ")
                 
         }
             
@@ -42,6 +45,7 @@ class contactProfileVC: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         
         //Dismiss Keyboard
         
@@ -92,7 +96,7 @@ class contactProfileVC: UIViewController {
                 
                 //contact's information
                 
-                self.title = " \(self.activeUserInfo!["firstName"]!.uppercaseString!)'s Profile"
+                self.title = " \(self.activeUserInfo!["fullName"]!.uppercaseString!)'s Profile"
                 self.postsLabel.text = " \(self.activeUserInfo!["postNumber"]!) \n posts"
                 self.followersLabel.text = " \(self.activeUserInfo!["followers"]!) \n followers"
                 self.followingLabel.text = " \(self.activeUserInfo!["following"]!) \n following"
@@ -125,6 +129,8 @@ class contactProfileVC: UIViewController {
         
     
     }
+    
+   
     
     func queryFollowing( completion:(following:Bool) -> ()) {
     
@@ -187,6 +193,10 @@ class contactProfileVC: UIViewController {
         // followingsRef = users---> userID-----[avatar:, dislikes:, firstname, FOLLOWINGS:...]
         
       let followingRef = self.followingsRef?.child("\(self.activeUserInfo!["id"]!)")  //  puting contactId on child(contactId!) also works
+      let followingRef2 = DataService.ds.REF_FOLLOWING_USERID.child("\(self.activeUserInfo!["id"]!)")
+        let uid = NSUserDefaults.standardUserDefaults().valueForKey("uid") as? String
+        let followerRef = DataService.ds.REF_FOLLOWER.child(contactId!).child(uid!)
+       // let followerRef_Timeline = DataService.ds.REF_TIMELINE_POST.child(contactId!)
         
        // print("followigREFXXXXXX: \(followingRef)")
         
@@ -199,6 +209,21 @@ class contactProfileVC: UIViewController {
         if isFollowing {
             
             followingRef?.removeValue()
+            followingRef2.removeValue()
+            followerRef.removeValue()
+          
+            
+            // Removing all  posts of the unfollowed user.
+            
+            for postIDx in self.posts_Array {
+                
+                DataService.ds.REF_TIMELINE_POST_USERID.child(postIDx).removeValue()
+                
+                print(" Array postID Deleting these Post \(postIDx)")
+            }
+            
+            
+            
             self.followBtn.setTitle("Follow", forState: .Normal)
             self.isFollowed = false
             
@@ -206,6 +231,8 @@ class contactProfileVC: UIViewController {
         } else {
         
             followingRef?.setValue(true)
+            followingRef2.setValue(true)
+            followerRef.setValue(true)
             self.followBtn.setTitle("Following", forState: .Normal)
             self.isFollowed = true
             
@@ -258,5 +285,57 @@ class contactProfileVC: UIViewController {
     {
         self.view.endEditing(true)
     }
+    
+    override func viewWillDisappear(animated: Bool) {
+        self.navigationController?.setNavigationBarHidden(true, animated: animated);
+        super.viewWillDisappear(animated)
+    }
+    
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        self.navigationController?.setNavigationBarHidden(false, animated: animated)
+        FirebaseFanout()
+    }
+    
+    
+    
+    func FirebaseFanout(){
+        
+        
+        
+        followersRef = DataService.ds.REF_USER_POST.child(self.contactId!)
+        followersRef!.observeEventType(.Value, withBlock:  { snapshot in
+            
+            
+            print("new snapshot array: \(snapshot.key)")
+            
+            
+            self.posts_Array = []
+           // self.usersLists = []
+            
+            for child in snapshot.children {
+                let postID = child.key as String
+                print("postID  Array IIIIiiiiiDelete Postiiiiiiiii: \(postID)")
+                
+                self.posts_Array.append(postID)
+                
+                _ = Post(followersList: self.posts_Array)
+                
+                // self.usersLists.append(usersList)
+                
+                for postIDx in self.posts_Array {
+                    print(" Array postID Delete Post \(postIDx)")
+                }
+                
+            }
+            
+            
+           
+            
+            }, withCancelBlock: { (error) ->  Void in
+                
+                
+        })
+    }
 
-}
+    }

@@ -39,6 +39,13 @@ class ProfileVC: UIViewController {
         
         self.tabBarController?.navigationItem.rightBarButtonItem = editButton
         
+       
+        var signoutButton = UIBarButtonItem(title: "Sign Out", style: .Plain, target: self, action: "signOut")
+        
+        self.tabBarController?.navigationItem.leftBarButtonItem = signoutButton
+        
+   
+        
         DataService.ds.REF_USER_CURRENT.observeEventType(.Value, withBlock: { (snapshot)  in
             
             let item = snapshot as FIRDataSnapshot
@@ -53,7 +60,7 @@ class ProfileVC: UIViewController {
                 self.activeUserInfo = dict
                 
                // self.title = "Welcome \(self.activeUserInfo!["firstName]!)"
-                self.title = " \(self.activeUserInfo!["firstName"]!.uppercaseString!)'s Profile"
+                self.title = " \(self.activeUserInfo!["fullName"]!.uppercaseString!)'s Profile"
                 self.postsLabel.text = " \(self.activeUserInfo!["postNumber"]!) \n posts"
                 self.followersLabel.text = " \(self.activeUserInfo!["followers"]!) \n followers"
                 self.followingLabel.text = " \(self.activeUserInfo!["following"]!) \n following"
@@ -79,6 +86,15 @@ class ProfileVC: UIViewController {
         
     }
 
+    override func viewWillDisappear(animated: Bool) {
+        self.navigationController?.setNavigationBarHidden(true, animated: animated);
+        super.viewWillDisappear(animated)
+    }
+    
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        self.navigationController?.setNavigationBarHidden(false, animated: animated)
+    }
     
     
     func editProfile(){
@@ -88,6 +104,26 @@ class ProfileVC: UIViewController {
         self.performSegueWithIdentifier("segue_EditPost", sender: self)
         
         
+    }
+    
+    func signOut(){
+        
+        print("edit profile")
+        
+        // unauth() is the logout method for the current user.
+        
+        try! FIRAuth.auth()!.signOut()
+        
+        // Remove the user's uid from storage.
+        
+        NSUserDefaults.standardUserDefaults().setValue(nil, forKey: "uid")
+        
+        // Head back to Login!
+        
+        let ViewController = self.storyboard!.instantiateViewControllerWithIdentifier("Login")
+        UIApplication.sharedApplication().keyWindow?.rootViewController = ViewController
+        
+    
     }
 
     

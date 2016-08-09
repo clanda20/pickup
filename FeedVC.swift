@@ -18,7 +18,7 @@ import FirebaseDatabaseUI
 import FirebaseAuthUI
 
 
-class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITableViewDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate, PostCellDelegate {
+class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITableViewDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate, PostCellDelegate,ContactIDCellDelegate, ImageURLSegue_CellDelegate {
     
    @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var postField: MaterialTextField!
@@ -26,12 +26,19 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
     
     var imageData = NSData()
     var imageSaved: String?
+
+
+    var followingsRef: FIRDatabaseReference!
+   var followingsSnap: FIRDataSnapshot!
     
+    var followersRef: FIRDatabaseReference!
+ 
     
     var postKey: String!
     
     var myData:String?
     
+    var imageUrl_Segue:String?
     
     let kSectionComments = 1
     let kSectionPost = 0
@@ -44,10 +51,27 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
     
     //var dataSource: FirebaseTableViewDataSource?
     var post: Post!
+    var usersList: Post!
+    
+    
+    var listUser: Post!
+    
+    var items = [ArrayList]()
     
     var imageSelected = false
     
     var posts = [Post]()
+    var listUsers = [Post]()
+    var usersLists = [String]()
+    
+    var friendsArray: [String] = []  /// Array's list of followed
+    
+    var activeUserInfo: NSDictionary?
+    var profileName: String!
+    var profileImg: String!
+    
+   // var friendsArray: [String]
+    
     static var imageCache = NSCache()
     var image: UIImage!
     let imagePC = UIImagePickerController()
@@ -56,7 +80,14 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
     
     var storageRef:FIRStorageReference!
     
+  var friendID: String!
+    
+    var arrayList = [String]()
+    
     var delegate:PostCellDelegate!
+    
+    var newImage: UIImage!  // to pass image to ImageShowVC
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -84,106 +115,129 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
         
         
         self.postField.delegate = self
-       
-        self.tableView.reloadData()
-       QueryMyFriendsPost()
-        
-        
-       
-            
         
         
         
-        DataService.ds.REF_USER_POST.observeEventType(.ChildAdded, withBlock: { (snapshot) -> Void in
-            
-            self.tableView.reloadData()
-        })
+         //  self.tableView.reloadData()
+     //  QueryMyFriendsPost()
+        
+        QueryMyTimeline()
+        //FirebaseFanout()
+        QueryCurrentUser()
     }
+
+    override func viewWillAppear(animated: Bool) {
+    super.viewWillAppear(animated)
+      //  FirebaseFanout({ (friendID) -> () in })
+      //  self.navigationController?.setNavigationBarHidden(true, animated: animated)
+
+       FirebaseFanout()
+     //self.tableView.reloadData()
+    }
+
+    
+
+
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
+  self.navigationItem.setLeftBarButtonItem(nil, animated: true)
+        // FirebaseFanout()
+       // QueryMyTimeline()
+       
+        
+        
+    }
     
-        QueryMyFriendsPost()        
+    func FirebaseFanout(){
         
         
+       // followingsRef = DataService.ds.REF_FOLLOWING_USERID
+       // followingsRef.observeEventType(.Value, withBlock:  { snapshot in
+        followersRef = DataService.ds.REF_FOLLOWER_USERID
+        followersRef.observeEventType(.Value, withBlock:  { snapshot in
+            
+        
+            print("new snapshot array: \(snapshot.key)")
+            
+          
+            self.friendsArray = []
+            self.usersLists = []
+            
+            for child in snapshot.children {
+                let friendID = child.key as String
+                print("friendID  Array IIIIiiiiiiiiiiiiiiiii: \(friendID)")
+                
+                self.friendsArray.append(friendID)
+                
+                _ = Post(followersList: self.friendsArray)
+                
+               // self.usersLists.append(usersList)
+                
+                for friendID in self.friendsArray {
+                    print(" Array friendID tonight \(friendID)")
+                }
+
+            }
+            
+          
+            self.tableView.reloadData()
+            
+            }, withCancelBlock: { (error) ->  Void in
+        
+    
+        })
     }
     
     
     
     
-    
-    
-    
-    
-        func QueryMyFriendsPost() {
-            // self.posts = []
+    func QueryMyTimeline(){
+        
+        
+        DataService.ds.REF_TIMELINE_POST_USERID.observeEventType(.Value , withBlock: { (snapshot) in  //observeSingleEventOfType
+            //  self.posts = []
             
-            DataService.ds.REF_USER_CURRENT.child("followings").observeEventType(.ChildAdded, withBlock:{ snapshots2 in
-                //for snapshot2 in snapshots2.children {
-                
-                self.posts = []
-                print("new wayxx: \(snapshots2)")
-                
-              // if snapshot.childrenCount > 0  {
-                    
-                let friendID = snapshots2.key
-                
-                let friendReference = DataService.ds.REF_USER_POST.child(friendID)
-                
-                
-                
-                friendReference.observeEventType(.Value , withBlock: { (snapshot) in  //observeSingleEventOfType
-                 //  self.posts = []
-                    
-                    print("new way 2: \(snapshot)")
-                    
-                   
-                        
-                        
-                    if let snapshots = snapshot.children.allObjects as? [FIRDataSnapshot]  {
-                        
-                     // if let snapshots = snapshot.value as? [FIRDataSnapshot]  {
-                        
-                        for snap in snapshots {
-                            print("SNAP: \(snap)")
-                            
-                            //  if  let postDict = snapshot.value as? Dictionary <String, AnyObject> {
-                            
-                            if let postDict = snap.value as? [String : AnyObject]  {
-                                
-                                
-                                let key = snap.key
-                                let post = Post(postKey: key, dictionary: postDict)
-                                
-                                
-                                
-                                self.posts.append(post)
-                                print("SNAP post1xxxxxx: \(postDict)")
-                                
-                                                            }
-                            
-                            dispatch_async(dispatch_get_main_queue(), {
-                                self.tableView.reloadData()
-                            })
-                        }
-                        
-                        
-                        
-                    }
-                    
-                   dispatch_async(dispatch_get_main_queue(), {
-                        self.tableView.reloadData()
-                    })
-                    
-                    
-                    
-                }, withCancelBlock: nil)
-               // }// loop to childrencount > 0
-            // self.tableView.reloadData()
-                
-         //   }
+            print(snapshot.value)
             
-                }, withCancelBlock: nil)
-        }
+            
+            
+            self.posts = []
+            
+            if let snapshots = snapshot.children.allObjects as? [FIRDataSnapshot]  {
+               // print("snapshot july 25: \(snapshot)")
+                for snap in snapshots {
+                 //   print("SNAP: july 26 \(snap)")
+                    
+                    
+                    
+                    if let postDict = snap.value as? [String : AnyObject]  {
+                        
+                        
+                        let key = snap.key
+                        let post = Post(postKey: key, dictionary: postDict)
+                        
+                        
+                        
+                        
+                        //  self.contacts.insert(contact, atIndex: 0)  //self.posts.append(post)
+                        self.posts.append(post)
+                        
+                        print("SNAP ContactsXXXXX: \(self.posts)")
+                     }
+                 }
+            }
+            self.tableView.reloadData()
+            
+            
+            
+            }, withCancelBlock: nil)
+        
+        
+        
+        
+    }
+    
+   
     
  /*   override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated) // No need for semicolon
@@ -212,14 +266,18 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
     }
    
     
+    
+    
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         
         let post = posts[indexPath.row]  //keys are stored here
-
+        
         
         if let cell =  tableView.dequeueReusableCellWithIdentifier("PostCell") as? PostCell {
             
             cell.delegate = self // july 7, 2016
+            cell.delegate2 = self
+            cell.delegate3 = self
             
         //    NSUserDefaults.standardUserDefaults().setValue(post.uid, forKey: "post_userID")
          //   NSUserDefaults.standardUserDefaults().synchronize()
@@ -236,8 +294,7 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
                img = FeedVC.imageCache.objectForKey(url) as? UIImage
             }
             
-            
-         
+          
             
             print("PostKEY-Outside----------------------: \(post.postKey)")
             cell.configureCell(post, img: img)
@@ -246,6 +303,7 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
             
            print("SNaps July 6 :\(post.postKey)")
            print("SNaps July 24 :\(post.uid)")
+            print("SNap Agost 1 Full Name:\(post.fullName)")
             
             //self.tableView.reloadData()
             
@@ -299,22 +357,25 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
                 return
             }else{
                 //store downloadURL
-                let downloadURL = metaData!.downloadURL()!.absoluteString
-                //store downloadURL at database
-               // DataService.ds.REF_USER_POSTS_USERID .updateChildValues(["avatar": downloadURL])
-                self.postToFirebase( downloadURL)
-                self.tableView.reloadData()
-                print("LINK_URLString: \(downloadURL)")
+                    let downloadURL = metaData!.downloadURL()!.absoluteString
+                    //store downloadURL at database
+                    // DataService.ds.REF_USER_POSTS_USERID .updateChildValues(["avatar": downloadURL])
+                    self.postToFirebase( downloadURL)
+                    self.tableView.reloadData()
+                    print("LINK_URLString: \(downloadURL)")
+                
+                
                             }
-            
-          
-            
-            
-        }
+           
+                        }
    
+                    }
+                }
         }
-    }
-        }
+    
+    
+    
+    
     
     
     func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]){
@@ -405,17 +466,40 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
             "likes": 0,
             "dislikes": 0,
             "uid":  activeUserId,
-          //  "comment": commentBtn.!
+            "fullName": self.profileName,
+            "avatar": self.profileImg,
+            //  "comment": commentBtn.!
         ]
         
         if imgUrl != nil {
             post["imageUrl"] = imgUrl
         }
         
-   
+   //From Here  
+    
+
         
-     let firebasePost2 = DataService.ds.REF_USER_POSTS_USERID.childByAutoId()  //important ojo
-       firebasePost2.setValue(post)
+ // To Here
+        
+     let key = ref.child("user-posts").childByAutoId().key
+        
+      let childUpadates = ["/posts/\(key)": post,
+                           "/user-posts/\(activeUserId)/\(key)/":post]
+          ref.updateChildValues(childUpadates)
+        
+        for friendID in friendsArray {
+            
+          let childUpadates2 =  ["/timeline/\(friendID)/\(key)/": post]
+            ref.updateChildValues(childUpadates2)
+              print(" Array inside \(friendID)")
+            
+        }
+        
+        
+      
+        
+    // let firebasePost2 = DataService.ds.REF_USER_POSTS_USERID.childByAutoId()  //important ojo
+    //   firebasePost2.setValue(post)
         
         
         postField.text = ""
@@ -427,16 +511,50 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
     }
     
  
+    func QueryCurrentUser(){
+        
+        DataService.ds.REF_USER_CURRENT.observeEventType(.Value, withBlock: { (snapshot)  in
+            
+            let item = snapshot as FIRDataSnapshot
+            print("SNAP-Itemxxxxxxxxxxx: \(item)")
+            
+            // if let dict = item.value as? NSDictionary{
+            
+            if let dict = item.value as? [String : AnyObject]{
+                let avatar = dict["avatar"] as! String
+                // self.image = avatar
+                
+                self.activeUserInfo = dict
+                
+                // self.title = "Welcome \(self.activeUserInfo!["firstName]!)"
+                self.profileName = "\(self.activeUserInfo!["fullName"]!.uppercaseString!)"
+                self.profileImg = "\(self.activeUserInfo!["avatar"]!)"
+                // self.followersLabel.text = " \(self.activeUserInfo!["followers"]!) \n followers"
+                // self.followingLabel.text = " \(self.activeUserInfo!["following"]!) \n following"
+                
+                
+                
+            }
+            
+            
+            
+            //   completation(imageStr: image!)
+            
+            }, withCancelBlock: {(error) -> Void in
+                
+        })
+        
+    }
     
     
-    func uploadSuccess(metadata: FIRStorageMetadata, storagePath: String) {
+  /*  func uploadSuccess(metadata: FIRStorageMetadata, storagePath: String) {
         print("Upload Succeeded!")
         //  self.urlTextView.text = metadata.downloadURL()!.absoluteString
         NSUserDefaults.standardUserDefaults().setObject(storagePath, forKey: "storagePath")
         NSUserDefaults.standardUserDefaults().synchronize()
         self.tableView.reloadData()
         // self.downloadPicButton.enabled = true
-    }
+    }  */
     
   
     
@@ -450,6 +568,61 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
         self.performSegueWithIdentifier("segue_commentVC", sender:dataobject )
         
     }
+    
+    //  Go to profile from Main Post
+    
+   func ContactIDSegueFromCell(contactID dataobject: AnyObject) {
+    
+        dispatch_async(dispatch_get_main_queue()){
+        //try not to send self, just to avoid retain cycles(depends on how you handle the code on the next controller)
+       self.performSegueWithIdentifier("segue_Profile_Name", sender:dataobject )
+      
+    }
+    
+       // print( "Segue Agosto 1xxxxx: \(contactId)")
+    //
+    }
+  override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        if segue.identifier == "segue_Profile_Name"
+        {
+             let destinationVC = segue.destinationViewController as? contactProfileVC
+            if let theString = sender as? String {
+                destinationVC!.contactId =  theString
+            }
+            
+            
+        }
+    if segue.identifier == "segue_Postimage_to_showVC"
+    {
+        let destinationVC = segue.destinationViewController as? ImageShowVC
+        if let theString = sender as? String {
+            destinationVC!.postKey_Segue =  theString
+        }
+        
+        
+    }
+    }
+    
+    
+    
+    
+    //MARK: - ImageURLSegue_CellDelegate Methods
+    
+    func ImageURLSegue_Cell(postKey_Segue dataobject: AnyObject) {
+        
+        
+        
+        //try not to send self, just to avoid retain cycles(depends on how you handle the code on the next controller)
+        self.performSegueWithIdentifier("segue_Postimage_to_showVC", sender:dataobject )
+        
+    }
+    
+    
+    
+    
+        
+        
+    
     // Dismiss keyBoard
     
     func hideKeyboard()
@@ -463,8 +636,38 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
         
     }
     
+   
+  /*  // Segue to ImageShowVC  to show full size image
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        
+        if segue.identifier == "segue_MainPost_to_Picture" {
+            let dvc = segue.destinationViewController as! ImageShowVC
+            dvc.newImage = postingImage.image
+        }
+    }  */
+    
+    
+/*    @IBAction func profileNameBtn(sender: AnyObject) {  //profileNameBtn
+        
+        
+        
+    }
+ */
+   /* override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        if segue.identifier == "segue_Profile_Name"
+        {
+            let destinationVC = segue.destinationViewController as? contactProfileVC
+            // NSUserDefaults.standardUserDefaults().setValue(contactID_Post_Profile, forKey: "contactID_Post_Profile")
+            let contactID_Post_Profile = NSUserDefaults.standardUserDefaults().valueForKey("contactID_Post_Profile") as? String
+            destinationVC!.contactId =  contactID_Post_Profile
+            
+            
+        }
+    }  */
+
     
 }
+
 
 
 

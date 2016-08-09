@@ -27,6 +27,8 @@ import Firebase
   class Comment {
     private var _commentDescription: String?
     private var _imageUrl2: String?
+    private var _avatar: String?
+    private var _fullName: String!
     private var _username2: String!
     private var _commentKey: String!
     private var _commentRef: FIRDatabaseReference!
@@ -39,8 +41,17 @@ import Firebase
         return _imageUrl2
     }
     
+    var avatar: String? {
+        return _avatar
+    }
+    
     var username2: String? {
         return _username2
+    }
+    
+    
+    var fullName: String {
+        return _fullName
     }
     
     var commentKey: String {
@@ -53,11 +64,12 @@ import Firebase
         return _commentRef
     }
     
-    init(description: String, imageUrl2: String?, username2: String) {
+    init(description: String, imageUrl2: String?, fullName: String,avatar: String?) {
         
         self._commentDescription = description
         self._imageUrl2 = imageUrl2
-        self._username2 = username2
+        self._fullName = fullName
+        self._avatar = avatar
         
     }
     
@@ -71,6 +83,14 @@ import Firebase
         
         if let desc = dictionary["text"] as? String {
             self._commentDescription = desc
+        }
+        
+        if let desc = dictionary["fullName"] as? String {
+            self._fullName = desc
+        }
+        
+        if let avatar = dictionary["avatar"] as? String {
+            self._avatar = avatar
         }
         
         self._commentRef = DataService.ds.REF_POSTCOMMENTS.child(self._commentKey)

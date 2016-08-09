@@ -18,17 +18,24 @@ class ViewController: UIViewController, UITextFieldDelegate{
     @IBOutlet weak var passwordField: UITextField!
     
     
-    
+// @IBOutlet var textFieldToBottomLayoutGuideConstraint: NSLayoutConstraint!
+ //  @IBOutlet var textFieldToBottomLayoutGuideConstraint2: NSLayoutConstraint!
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        
+        
   
    //dismiss keyboard
      self.emailField.delegate = self
      self.passwordField.delegate = self
         
-     
+    
+  
     }
+    
+      
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -45,15 +52,18 @@ class ViewController: UIViewController, UITextFieldDelegate{
     
     @IBAction func fbBtnPressed(sender: UIButton!) {
         let facebookLogin = FBSDKLoginManager()
+       // let facebookLogin = FBSDKLoginButton()
+       // facebookLogin.delegate = self
         
         facebookLogin.logInWithReadPermissions(["email"]) {(facebookResult: FBSDKLoginManagerLoginResult!, facebookError: NSError!) ->
             Void in
             
             if facebookError != nil {
                 print("Facebook login failed. Error \(facebookError)")
+            } else  if facebookResult.isCancelled {
+                  print("Facebook login was cancelled.")
             } else {
-                //let accessToken = FBSDKAccessToken.currentAccessToken().tokenString
-               // print("Sucessfully logged in with facebook. \(accessToken)")
+               
                 
                //  [START headless_facebook_auth]
  
@@ -66,14 +76,31 @@ class ViewController: UIViewController, UITextFieldDelegate{
                     if error != nil {
                         print("Login Failed. \(error)")
                     } else {
-                        print("Logged In Xxxxxxxxx!\(authData?.uid)")
+                         print("Logged In Xxxxxxxxx!\(authData?.uid)")
+                        
+                         print("Logged In Name!\(authData?.displayName)")
+                        
+                        
+                        print("Logged In email!\(authData?.email)")
+                        
+                        print("Logged In email!\(authData?.photoURL)")
+                        
+                        
+                       
                         
                         let authID = authData?.uid
+                        let fullName = authData?.displayName
+                        let email = authData?.email
+                        let photoURL =  authData?.photoURL
+                        
+                        
                         NSUserDefaults.standardUserDefaults().setValue(authID, forKey: "uid")
+                         NSUserDefaults.standardUserDefaults().setValue(authData?.uid, forKey: "userID") /// temporal to prevent crash 
+                        
 
                         //Write DataBase
                         
-                        let user = ["provider": credential.provider,"id": "\(authID!)", "firstName": "FirstName", "lastName":"lastName", "username": "username", "avatar": "avatar" ,"likes":"0", "dislikes":"0", "email": "___@youremail.com","postNumber":"0", "followers": "0", "following": "0"]
+                        let user = ["provider": credential.provider,"id": "\(authID!)", "fullName": "\(fullName!)",  "avatar": "\(photoURL!)" ,"likes":"0", "dislikes":"0", "email": "\(email!)","postNumber":"0", "followers": "0", "following": "0"]
                       //  DataService.ds.createFirebaseUser(authID!, user: user )
                         self.createFirebaseUser(authID!, user: user )
                         
@@ -101,7 +128,7 @@ class ViewController: UIViewController, UITextFieldDelegate{
                     
                    // if error == STATUS_ACCOUNT_NONEXIST {
                         
-                    if error!.code == 17011 { //17011{
+                    if error!.code == 17011 { //17011
                         FIRAuth.auth()?.createUserWithEmail(email, password: pwd, completion: { authData, error in
                             
                             if error != nil {
@@ -113,12 +140,13 @@ class ViewController: UIViewController, UITextFieldDelegate{
                                 let authID = authData?.uid
                                 print("Logged In Xxxxxxxxx!\(email)")
                                 NSUserDefaults.standardUserDefaults().setValue(authID, forKey: "uid")
+                                 NSUserDefaults.standardUserDefaults().setValue(authData?.uid, forKey: "userID") /// temporal to prevent crash 
                                 
                               //  FIRAuth.auth()?.signInWithEmail(email, password: pwd, completion: nil)
                                 
                                 FIRAuth.auth()?.signInWithEmail(email, password: pwd, completion: { authData, error in
                                 
-                                    let user = ["provider": authData!.providerID,"id": "\(authID!)", "firstName": "firstName", "lastName":"lastName", "username": "username", "avatar": "avatar" ,"likes":"0", "dislikes":"0", "email": "___@youremail.com","postNumber":"0", "followers": "0", "following": "0"]
+                                    let user = ["provider": authData!.providerID,"id": "\(authID!)", "fullName": "fullName",  "avatar": "avatar" ,"likes":"0", "dislikes":"0", "email": "___@youremail.com","postNumber":"0", "followers": "0", "following": "0"]
                                    
                                     self.createFirebaseUser(authID!, user: user as! Dictionary<String, String>)
                                 
@@ -137,11 +165,15 @@ class ViewController: UIViewController, UITextFieldDelegate{
                         
                     }
                     else {
-                        self.showErrorAlert("Could not login", msg: "Please check your username and password")
+                        
+                         self.showErrorAlert("Could not login", msg: "Please check your username and password")
                         
                     }
                     
                 } else {
+                    
+                 NSUserDefaults.standardUserDefaults().setValue(authData?.uid, forKey: "uid")
+                NSUserDefaults.standardUserDefaults().setValue(authData?.uid, forKey: "userID") /// temporal to prevent crash 
                 
                 self.performSegueWithIdentifier(SEGUE_LOGGED_IN, sender: nil)
                 
@@ -164,7 +196,7 @@ class ViewController: UIViewController, UITextFieldDelegate{
     
     func createFirebaseUser(uid: String, user: Dictionary<String, String>){
        // ref.child("users").childByAutoId().setValue(user)
-        ref.child("users").child(uid).setValue(user)
+        ref.child("users").child(uid).updateChildValues(user)
 
     }
     
@@ -179,5 +211,12 @@ class ViewController: UIViewController, UITextFieldDelegate{
         return true
     
     }
+    
+    
+    
+    
 
 }
+
+
+

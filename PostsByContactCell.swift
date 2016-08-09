@@ -23,6 +23,7 @@ class PostsByContactCell: UITableViewCell {
     @IBOutlet weak var likeLbl: UILabel!
     @IBOutlet weak var likeImage: UIImageView!
     
+    @IBOutlet weak var profileName: UIButton!
     @IBOutlet weak var dislikeLbl: UILabel!
     @IBOutlet weak var dislikeImage: UIImageView!
     // @IBOutlet weak var commentBtn: UIButton!
@@ -57,12 +58,12 @@ class PostsByContactCell: UITableViewCell {
         dislikeImage.userInteractionEnabled = true
         
         
-        let tap3 = UITapGestureRecognizer(target: self, action: #selector(PostCell.CommentBtnTapped(_:)))
+   /*     let tap3 = UITapGestureRecognizer(target: self, action: #selector(PostCell.CommentBtnTapped(_:)))
         tap3.numberOfTapsRequired = 1
         commentBtn.addGestureRecognizer(tap3)
         commentBtn.userInteractionEnabled = true
         tap3.cancelsTouchesInView = false
-        
+    */
         
         
     }
@@ -104,6 +105,32 @@ class PostsByContactCell: UITableViewCell {
         
         
         self.dislikeLbl.text = "\(post.dislikes)"
+        
+        
+        
+        print(" Printing Full Name  \(post.fullName)")
+        
+        self.profileName.setTitle("\(post.fullName)", forState: .Normal)
+        self.profileName.titleLabel!.font = UIFont(name: "Marker Felt", size: 12)
+        
+      //  self.contactId =  post.uid
+        
+        
+        
+        
+     //   print( "Segue Agosto 1: \(self.contactId)")
+        
+        self.dislikeLbl.text = "\(post.dislikes)"
+        
+        
+        downloadAvatar(post.avatar!, completion:  { (data) in
+            self.profileImg.image = UIImage(data: data)
+            self.profileImg.layer.cornerRadius = 21.0
+            self.profileImg.clipsToBounds = true
+        })
+        
+        
+        
         
         if post.imageUrl != nil {
             
@@ -168,7 +195,7 @@ class PostsByContactCell: UITableViewCell {
         }
     }
     
-    func CommentBtnTapped(sender: UITapGestureRecognizer){
+   /* func CommentBtnTapped(sender: UITapGestureRecognizer){
         
         postRefKey.observeEventType(.Value, withBlock: { snapshot in
             
@@ -186,7 +213,7 @@ class PostsByContactCell: UITableViewCell {
             
             
         })
-    }
+    }  */
     
     
     func likeTapped(sender: UITapGestureRecognizer){
@@ -240,6 +267,32 @@ class PostsByContactCell: UITableViewCell {
             }
         })
         
+    }
+  
+    //download profile image from Facebook
+    
+    func downloadAvatar(image:String, completion:(data:NSData)-> ()) {
+        
+        print("Image:xxxxxxxxx--------xxxxxxxx: \(image)")
+        
+        let urlString = NSURL(string: image)
+        let request = NSURLSession.sharedSession().dataTaskWithURL(urlString!){ (data, response, error) -> Void in
+            
+            if error == nil {
+                
+                if let dataValid = data {
+                    
+                    dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                        completion(data: dataValid)
+                    })
+                    
+                }
+            }
+            
+            
+        }
+        
+        request.resume()
     }
     
     

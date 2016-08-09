@@ -16,9 +16,14 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
     
     @IBOutlet weak var tableView: UITableView!
     
-    @IBOutlet weak var commentField: MaterialTextField!
+    @IBOutlet weak var sendBtn: UIButton!
+  //  @IBOutlet weak var commentTxt: UITextView!
+//   @IBOutlet weak var commentField: MaterialTextField!
+    
+    @IBOutlet var textFieldToBottomLayoutGuideConstraint: NSLayoutConstraint!
 
-   var post: Post!
+    @IBOutlet weak var commentField: UITextField!
+   var comment: Comment!
     var comments = [Comment]()
    
     
@@ -30,29 +35,63 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
    var commentsRef: FIRDatabaseReference!
    var  firebaseCommentPost2 : FIRDatabaseReference!
 
+    var activeUserInfo: NSDictionary?
+    var profileName: String!
+    var profileImg: String!
     
+     static var imageCache = NSCache()
     
+    // 
+    var keyboardHeight: CGFloat!
+    
+    //variable to hold keyboard frame
+   // var keyboard = CGRect()
+
+
+    // values for seting UI to default
+ //    var tableViewHeight : CGFloat = 0
+ //   var commentY : CGFloat = 0
+ //   var commentHeight : CGFloat = 0
     
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        
+      //  tableView.backgroundColor = .redColor()
 
         tableView.delegate = self
         tableView.dataSource = self
+        
+     //   self.sendBtn.delegate = self
+         self.commentField.delegate = self
         
   
        //Keyboard dismiss
         let tapGesture = UITapGestureRecognizer(target: self, action: Selector("hideKeyboard"))
         tapGesture.cancelsTouchesInView = true
         self.view.addGestureRecognizer(tapGesture)
+        
+        QueryCurrentUser()
+      //  alignment()
+        
+       //title at the top
+        self.navigationItem.title = "COMMENTS"
+        
+        
+        //disable button from the beginning
+      //  sendBtn.enabled = false
+        
+            //
+        
        
         
-     postID  = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
+        postID  = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
     
         
         
    //
-   commentsRef = ref.child("post-comments").child(postID)
+        commentsRef = ref.child("post-comments").child(postID)
         
 
    //   print("Value Postkey3:------------>>>> \(postID)")
@@ -93,6 +132,91 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
         })
     }
     
+    // 
+   /* func alignment(){
+    
+    let width  = self.view.frame.size.width
+    let height = self.view.frame.size.height
+        
+    
+    tableView.frame = CGRectMake(0, 0, width, height / 1.096 - self.navigationController!.navigationBar.frame.size.height - 20)
+    tableView.estimatedRowHeight = width / 5.3333
+    tableView.rowHeight = UITableViewAutomaticDimension
+        
+    commentTxt.frame = CGRectMake(10, tableView.frame.size.height + height / 56.9, width / 1.306, 33)
+    commentTxt.layer.cornerRadius = commentTxt.frame.size.width / 50
+        
+    sendBtn.frame = CGRectMake(commentTxt.frame.origin.x + commentTxt.frame.size.width + width / 32, commentTxt.frame.origin.y,
+                               width - ( commentTxt.frame.origin.x + commentTxt.frame.size.width) - (width / 32) * 2, commentTxt.frame.size.height)
+     
+    tableViewHeight = tableView.frame.size.height
+    commentHeight = commentTxt.frame.size.height
+    commentY = commentTxt.frame.origin.y
+        
+    }  */
+    
+    // func loading when keyboard is shown
+   // func keyboarWillShow(notification: NSNotification){
+
+      //  self.view.frame.origin.y = -150
+        
+      /*  let userInfo : NSDictionary = notification.userInfo!
+        
+        //define keyboard frame size
+        
+        let keyboardSize : CGSize = userInfo[UIKeyboardFrameBeginUserInfoKey]!.CGRectValue().size
+        
+        let offset: CGSize = userInfo[UIKeyboardFrameEndUserInfoKey]!.CGRectValue().size
+       // keyboard = (notification.userInfo?[UIKeyboardFrameEndUserInfoKey]!.CGRectValue)!.size
+        
+        if keyboardSize.height == offset.height {
+            if self.view.frame.origin.y == 0 {
+                UIView.animateWithDuration(0.15, animations: { 
+                    self.view.frame.origin.y -= keyboardSize.height
+                })
+            }
+        }
+        else {
+            UIView.animateWithDuration(0.15, animations: { 
+                self.view.frame.origin.y += keyboardSize.height - offset.height
+            })
+            
+        }
+        
+        //move UI up
+        
+     /*   UIView.animateWithDuration(0.4){
+            self.tableView.frame.size.height = self.tableViewHeight - self.keyboard.height - self.commentTxt.frame.size.height + self.commentHeight
+            
+            self.commentTxt.frame.origin.y = self.commentY - self.keyboard.height - self.commentHeight
+            
+            self.sendBtn.frame.origin.y = self.commentTxt.frame.origin.y
+      */  }   */
+ //   }
+    
+    // func loading when keyboar is hidden
+  /*  func keyboarWillHide(notification: NSNotification) {
+        
+        self.view.frame.origin.y = 0
+        
+     /*   let userInfo : NSDictionary = notification.userInfo!
+         let keyboardSize : CGSize = userInfo[UIKeyboardFrameBeginUserInfoKey]!.CGRectValue().size
+        
+        self.view.frame.origin.y += keyboardSize.height  */
+
+        
+        // move UI down
+      /*  UIView.animateWithDuration(0.4) { () -> Void in
+            self.tableView.frame.size.height = self.tableViewHeight
+            self.commentTxt.frame.origin.y = self.commentY
+            self.sendBtn.frame.origin.y = self.commentY
+        
+        
+        }  */
+    }
+ */
+    
+    
     
   /* override func viewWillAppear(animated: Bool) {
         postKey = self.postkey
@@ -111,11 +235,18 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
         let comment = comments[indexPath.row]
         print(comment.commentDescription)
         
-     
-       
+        
         
         if let cell = tableView.dequeueReusableCellWithIdentifier("CommentCell")  as? CommentCell  {
-            cell.configureCommentCell(comment)
+             var img: UIImage?
+            
+            
+            
+            if let url = comment.imageUrl2 {
+                img = CommentVC.imageCache.objectForKey(url) as? UIImage
+            }
+            
+            cell.configureCommentCell(comment, img: img)
             return cell
         } else {
             return CommentCell()
@@ -140,8 +271,11 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
                 print("Snapshot CommentVC--------: \(snapshot)")
                 let comment = [
                     "uid": uid,
-                  //  "author": user["username"] as! String,
-                    "text": commentField.text!
+                    
+                //    "fullName": self.comment.fullName!,
+                    "text": commentField.text!,
+                    "fullName": self.profileName,
+                    "avatar": self.profileImg,
                 ]
               
                 
@@ -182,6 +316,11 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
     func postCommentToFirebase(commentPost: String!)
     {
         
+        
+     
+
+        
+        
     }
     
     //Keyboard dismiss
@@ -189,6 +328,116 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
     {
         self.view.endEditing(true)
     }
+    
+    override func viewWillDisappear(animated: Bool) {
+        self.navigationController?.setNavigationBarHidden(true, animated: animated);
+        super.viewWillDisappear(animated)
+        
+    
+            NSNotificationCenter.defaultCenter().removeObserver(self, name: UIKeyboardWillShowNotification, object: self.view.window)
+            NSNotificationCenter.defaultCenter().removeObserver(self, name: UIKeyboardWillHideNotification, object: self.view.window)
+
+    }
+    
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        self.navigationController?.setNavigationBarHidden(false, animated: animated)
+        
+        //Catch notification if the keyboard is hsown or hidden
+        
+        
+        NSNotificationCenter.defaultCenter().addObserver(self,
+                                                         selector: Selector("keyboardWillShow:"),
+                                                         name: UIKeyboardWillShowNotification, object: nil)
+        
+        NSNotificationCenter.defaultCenter().addObserver(self,
+                                                         selector: Selector("keyboardWillHide:"),
+                                                         name: UIKeyboardWillHideNotification, object: nil)
+        
+
+    }
+    
+    func QueryCurrentUser(){
+        
+        DataService.ds.REF_USER_CURRENT.observeEventType(.Value, withBlock: { (snapshot)  in
+            
+            let item = snapshot as FIRDataSnapshot
+            print("SNAP-Itemxxxxxxxxxxx: \(item)")
+            
+            // if let dict = item.value as? NSDictionary{
+            
+            if let dict = item.value as? [String : AnyObject]{
+                let avatar = dict["avatar"] as! String
+                // self.image = avatar
+                
+                self.activeUserInfo = dict
+                
+                // self.title = "Welcome \(self.activeUserInfo!["firstName]!)"
+                self.profileName = "\(self.activeUserInfo!["fullName"]!.uppercaseString!)"
+                self.profileImg = "\(self.activeUserInfo!["avatar"]!)"
+                // self.followersLabel.text = " \(self.activeUserInfo!["followers"]!) \n followers"
+                // self.followingLabel.text = " \(self.activeUserInfo!["following"]!) \n following"
+                
+                
+                
+            }
+            
+            
+            
+            //   completation(imageStr: image!)
+            
+            }, withCancelBlock: {(error) -> Void in
+                
+        })
+        
+    }
+    
+    func keyboardWillShow(notification: NSNotification) {
+        if let keyboardSize = (notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.CGRectValue() {
+            self.textFieldToBottomLayoutGuideConstraint?.constant += keyboardSize.height
+        }
+    }
+    
+    func keyboardWillHide(notification: NSNotification) {
+        if let keyboardSize = (notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.CGRectValue() {
+            self.textFieldToBottomLayoutGuideConstraint?.constant -= keyboardSize.height
+          //  self.keyboardHeight = keyboardSize.height
+            
+            
+            
+        }
+    }
+    
+    
+    func getKeyboardHeight( notification : NSNotification ) -> CGFloat {
+        return (notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as! NSValue).CGRectValue().height
+    }
+    
+   // deinit {
+     //   NSNotificationCenter.defaultCenter().removeObserver(self)
+   // }
+    func textFieldDidBeginEditing(textField: UITextField) {
+        
+      // getKeyboardHeight(notification)
+    
+        animateViewMoving(true, moveValue: 270)
+    }
+    
+    func textFieldDidEndEditing(textField: UITextField) {
+        animateViewMoving(false, moveValue: 270)
+    }
+    
+    // Lifting the view up
+    func animateViewMoving (up:Bool, moveValue :CGFloat){
+        let movementDuration:NSTimeInterval = 0.3
+        let movement:CGFloat = ( up ? -moveValue : moveValue)
+        UIView.beginAnimations( "animateView", context: nil)
+        UIView.setAnimationBeginsFromCurrentState(true)
+        UIView.setAnimationDuration(movementDuration )
+        self.view.frame = CGRectOffset(self.view.frame, 0,  movement)
+        UIView.commitAnimations()
+    }
+   
 }
 
 

@@ -444,8 +444,15 @@ class PostsByContactVC: UIViewController, UITableViewDelegate, UITableViewDataSo
     
     
     
+    override func viewWillDisappear(animated: Bool) {
+        self.navigationController?.setNavigationBarHidden(true, animated: animated);
+        super.viewWillDisappear(animated)
+    }
     
-    
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        self.navigationController?.setNavigationBarHidden(false, animated: animated)
+    }
     
     
     

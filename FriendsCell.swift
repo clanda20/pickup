@@ -37,12 +37,12 @@ class FriendsCell: UITableViewCell {
         
         self.contact = contact
         
-        self.firstNameLbl.text = contact.firstName
+        self.firstNameLbl.text = contact.fullName
         
         
         downloadAvatar(contact.avatar!, completion:  { (data) in
             self.profilePicture.image = UIImage(data: data)
-            self.profilePicture.layer.cornerRadius = 50.0
+            self.profilePicture.layer.cornerRadius = 30.0
             self.profilePicture.clipsToBounds = true
         })
         

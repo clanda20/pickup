@@ -10,8 +10,7 @@ import Foundation
 import Firebase
 
 class Contact{
-    private var _firstName: String!
-    private var _lastName: String!
+    private var _fullName: String!
     private var _username: String!
     private var _avatar: String?
     private var _likes: Int!
@@ -26,14 +25,11 @@ class Contact{
     private var _contactAdd: NSDictionary!
     
     
-    var firstName: String{
-        return _firstName
+    var fullName: String{
+        return _fullName
     }
     
-    var lastName: String{
-        
-        return _lastName
-    }
+    
     
     var username: String{
         return _username
@@ -90,10 +86,9 @@ class Contact{
     }
     
     
-    init(firstName: String,lastName: String, username: String, avatar: String?, likes: Int, dislikes: Int, email: String, postNumber: Int,followings: NSDictionary, following: Int, followers:Int) {
-        self._firstName = firstName
-        self._lastName = lastName
-        self._username = username
+    init(fullName: String, username: String, avatar: String?, likes: Int, dislikes: Int, email: String, postNumber: Int,followings: NSDictionary, following: Int, followers:Int) {
+        self._fullName = fullName
+         self._username = username
         self._avatar = avatar
         self._likes = likes
         self._dislikes = dislikes
@@ -110,13 +105,10 @@ class Contact{
         
         self._contactKey = contactKey
         
-        if let firstName = dictionary["firstName"] as? String {
-            self._firstName = firstName
+        if let fullName = dictionary["fullName"] as? String {
+            self._fullName = fullName
         }
         
-        if let lastName = dictionary["lastName"] as? String {
-            self._lastName = lastName
-        }
         
         if let username = dictionary["username"] as? String {
             self._username = username
@@ -166,13 +158,11 @@ class Contact{
         
         self._contactKey = contactKey_Nesting
         
-        if let firstName = dictionary_Nesting["firstName"] as? String {
-            self._firstName = firstName
+        if let fullName = dictionary_Nesting["fullName"] as? String {
+            self._fullName = fullName
         }
         
-        if let lastName = dictionary_Nesting["lastName"] as? String {
-            self._lastName = lastName
-        }
+       
         
         if let username = dictionary_Nesting["username"] as? String {
             self._username = username

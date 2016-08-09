@@ -18,6 +18,7 @@
 		AA1CE86F1D1320B000CA8F68 /* images.jpg in Resources */ = {isa = PBXBuildFile; fileRef = AA1CE86E1D1320B000CA8F68 /* images.jpg */; };
 		AA1E7FBE1D1B5D8E0035EF2C /* CommentVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1E7FBD1D1B5D8D0035EF2C /* CommentVC.swift */; };
 		AA1E7FC01D1B5EA40035EF2C /* CommentCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1E7FBF1D1B5EA40035EF2C /* CommentCell.swift */; };
+		AA1F5DEC1D499BE80004EE0B /* ArrayList.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1F5DEB1D499BE80004EE0B /* ArrayList.swift */; };
 		AA5730AF1D1C659B00B5CAD9 /* Comment.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5730AE1D1C659B00B5CAD9 /* Comment.swift */; };
 		AA57FC0F1D42E28300DB76F0 /* EditProfileVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA57FC0E1D42E28300DB76F0 /* EditProfileVC.swift */; };
 		AA5D7BB01D383D8D00B25496 /* FriendsVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5D7BAF1D383D8D00B25496 /* FriendsVC.swift */; };
@@ -36,6 +37,7 @@
 		AA8EB02E1CF5224E00B5E542 /* FeedVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8EB02D1CF5224E00B5E542 /* FeedVC.swift */; };
 		AA8EB0301CF5237E00B5E542 /* PostCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8EB02F1CF5237E00B5E542 /* PostCell.swift */; };
 		AA8EB0321CF55D3000B5E542 /* Post.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8EB0311CF55D3000B5E542 /* Post.swift */; };
+		AABC312A1D582D48002F8216 /* ImageShowVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABC31291D582D48002F8216 /* ImageShowVC.swift */; };
 		AAED90B01CF3B705006C4EFE /* MaterialView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAED90AF1CF3B705006C4EFE /* MaterialView.swift */; };
 		AAED90B41CF3B7E3006C4EFE /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAED90B31CF3B7E3006C4EFE /* Constants.swift */; };
 		AAED90B61CF3BD99006C4EFE /* MaterialButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAED90B51CF3BD99006C4EFE /* MaterialButton.swift */; };
@@ -56,6 +58,7 @@
 		AA1CE86E1D1320B000CA8F68 /* images.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = images.jpg; sourceTree = "<group>"; };
 		AA1E7FBD1D1B5D8D0035EF2C /* CommentVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommentVC.swift; sourceTree = "<group>"; };
 		AA1E7FBF1D1B5EA40035EF2C /* CommentCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommentCell.swift; sourceTree = "<group>"; };
+		AA1F5DEB1D499BE80004EE0B /* ArrayList.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArrayList.swift; sourceTree = "<group>"; };
 		AA5730AE1D1C659B00B5CAD9 /* Comment.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Comment.swift; sourceTree = "<group>"; };
 		AA57FC0E1D42E28300DB76F0 /* EditProfileVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EditProfileVC.swift; sourceTree = "<group>"; };
 		AA5D7BAF1D383D8D00B25496 /* FriendsVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FriendsVC.swift; sourceTree = "<group>"; };
@@ -77,6 +80,7 @@
 		AA8EB02D1CF5224E00B5E542 /* FeedVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FeedVC.swift; sourceTree = "<group>"; };
 		AA8EB02F1CF5237E00B5E542 /* PostCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PostCell.swift; sourceTree = "<group>"; };
 		AA8EB0311CF55D3000B5E542 /* Post.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Post.swift; sourceTree = "<group>"; };
+		AABC31291D582D48002F8216 /* ImageShowVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageShowVC.swift; sourceTree = "<group>"; };
 		AAED90AF1CF3B705006C4EFE /* MaterialView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MaterialView.swift; sourceTree = "<group>"; };
 		AAED90B31CF3B7E3006C4EFE /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		AAED90B51CF3BD99006C4EFE /* MaterialButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MaterialButton.swift; sourceTree = "<group>"; };
@@ -171,6 +175,7 @@
 				AA5D7BB31D38699700B25496 /* PostsByUserVC.swift */,
 				AA1755EB1D3C31E000FD0782 /* PostsByContactVC.swift */,
 				AA57FC0E1D42E28300DB76F0 /* EditProfileVC.swift */,
+				AABC31291D582D48002F8216 /* ImageShowVC.swift */,
 			);
 			name = Controller;
 			path = ..;
@@ -182,6 +187,7 @@
 				AA8EB0311CF55D3000B5E542 /* Post.swift */,
 				AA5730AE1D1C659B00B5CAD9 /* Comment.swift */,
 				AA82A10F1D34858700A133B1 /* Contact.swift */,
+				AA1F5DEB1D499BE80004EE0B /* ArrayList.swift */,
 			);
 			name = Model;
 			path = ..;
@@ -375,6 +381,7 @@
 				AA0F36CB1D356F7000E65D41 /* contactProfileVC.swift in Sources */,
 				AA1755EA1D3C311E00FD0782 /* PostsByContactCell.swift in Sources */,
 				AA82A10E1D347F4100A133B1 /* ContactCell.swift in Sources */,
+				AA1F5DEC1D499BE80004EE0B /* ArrayList.swift in Sources */,
 				AA82A1101D34858700A133B1 /* Contact.swift in Sources */,
 				AA8EB0301CF5237E00B5E542 /* PostCell.swift in Sources */,
 				AA5FEC591D306C9B002EA1CF /* ProfileVC.swift in Sources */,
@@ -393,6 +400,7 @@
 				AA57FC0F1D42E28300DB76F0 /* EditProfileVC.swift in Sources */,
 				AAED90B61CF3BD99006C4EFE /* MaterialButton.swift in Sources */,
 				AA8EB0321CF55D3000B5E542 /* Post.swift in Sources */,
+				AABC312A1D582D48002F8216 /* ImageShowVC.swift in Sources */,
 				AA1E7FC01D1B5EA40035EF2C /* CommentCell.swift in Sources */,
 				AA5FEC5F1D340CB2002EA1CF /* ContactsVC.swift in Sources */,
 			);

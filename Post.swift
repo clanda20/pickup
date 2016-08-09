@@ -12,7 +12,9 @@ import Firebase
 class Post {
     private var _postDescription: String!
     private var _imageUrl: String?
+    private var _avatar: String?
     private var _likes: Int!
+    private var _fullName: String!
     private var _username: String!
     private var _postKey: String!
     private var _postRef: FIRDatabaseReference!
@@ -21,6 +23,8 @@ class Post {
     private var __post_REf_By_USER: FIRDatabaseReference!
     private var _dislikes: Int!
     private var _uid: String!
+    private var _followersList: [String]?
+    private var _friendsArraylist: [String]!
     
     var postDescription: String{
         return _postDescription
@@ -30,12 +34,20 @@ class Post {
         return _imageUrl
     }
     
+    var avatar: String?{
+        return _avatar
+    }
+    
     var likes: Int{
         return _likes
     }
     
     var username: String{
         return _username
+    }
+    
+    var fullName: String{
+        return _fullName
     }
     
     var postKey: String{
@@ -54,12 +66,19 @@ class Post {
         return _uid
     }
     
+    var followersList: [String]? {
+        return _followersList
+    }
     
+   var friendsArraylist: [String]{
+        return _friendsArraylist
+    }
     
-    init(description: String, imageUrl: String?, username: String) {
+    init(description: String, imageUrl: String?, fullName: String, avatar: String?) {
         self._postDescription = description
         self._imageUrl = imageUrl
-        self._username = username
+        self._fullName = fullName
+        self._avatar = avatar
     }
     
     
@@ -87,6 +106,14 @@ class Post {
             self._uid = uid
         }
         
+        if let fullName = dictionary["fullName"] as? String {
+            self._fullName = fullName
+        }
+        
+        if let avatar = dictionary["avatar"] as? String {
+            self._avatar = avatar
+        }
+        
     //  self._postRef = DataService.ds.REF_POSTS.child(self._postKey)
        // self._postRef = DataService.ds.REF_USER_POSTS_USERID.child(self._postKey)
         
@@ -100,6 +127,16 @@ class Post {
     }    //post on user-posts/userID/postID
     
     
+    init(followersList:[String]) {  // need UID
+        
+            self._followersList = followersList
+          //  self._friendsArraylist = friendsArraylist
+          // _friendsArraylist.append(followersList)
+    
+        
+    
+    }
+    
     func comment_postRef() {
         
         _commentPostRef.childByAutoId()
@@ -107,7 +144,8 @@ class Post {
     
     
     
-    func adjustLikes(addLike: Bool) {
+    func adjustLikes(addLike: Bool, followersList: Array<String>) {
+        self._followersList = followersList
         
         if addLike {
             _likes = _likes + 1
@@ -120,11 +158,20 @@ class Post {
       // _user_posts_Ref.child("likes").setValue(_likes)  ////post on user-posts/userID/postID
         
         DataService.ds.REF_USER_POSTS_BY_USER2.child(self._postKey).child("likes").setValue(_likes)
+       // DataService.ds.REF_TIMELINE_POST_USERID.child(self._postKey).child("likes").setValue(_likes)
+        DataService.ds.REF_POSTS_USERID.child("likes").setValue(_likes)
+        for friendID in self.followersList! {
+            
+            DataService.ds.REF_TIMELINE_POST.child(friendID).child(self._postKey).child("likes").setValue(_likes)
+            print(" Array inside \(friendID)")
+            
+        }
         
     }
     
     
-    func adjustDislikes(addDislikes: Bool) {
+    func adjustDislikes(addDislikes: Bool, followersList: Array<String>) {
+        self._followersList = followersList
         
         if addDislikes {
             _dislikes = _dislikes + 1
@@ -135,6 +182,17 @@ class Post {
         //  _postRef.child("dislikes").setValue(_dislikes)
        // _user_posts_Ref.child("dislikes").setValue(_dislikes)
         DataService.ds.REF_USER_POSTS_BY_USER2.child(self._postKey).child("dislikes").setValue(_dislikes)
+         DataService.ds.REF_POSTS_USERID.child("dislikes").setValue(_dislikes)
+      //  DataService.ds.REF_TIMELINE_POST_USERID.child(self._postKey).child("dislikes").setValue(_dislikes)
+        
+        
+        for friendID in self.followersList! {
+            
+            DataService.ds.REF_TIMELINE_POST.child(friendID).child(self._postKey).child("dislikes").setValue(_dislikes)
+            print(" Array inside \(friendID)")
+            
+        }
+
     }
     
     
@@ -166,6 +224,11 @@ class Post {
       //  _postRef.child("dislikes").setValue(_dislikes)
          __post_REf_By_USER.child("dislikes").setValue(_dislikes)
     }
+    
+    
+    
+    
+    
 }
 
 

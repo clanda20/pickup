@@ -61,6 +61,8 @@ class FriendsVC: UIViewController, UITableViewDataSource {
 
         
 }
+    
+   
 
         
    
@@ -76,7 +78,7 @@ class FriendsVC: UIViewController, UITableViewDataSource {
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell{
         
         let contact = contacts[indexPath.row]
-        print("testing First Name: \(contact.firstName)")
+        print("testing Full Name: \(contact.fullName)")
         
         if let cell =  tableView.dequeueReusableCellWithIdentifier("friendsCell") as? FriendsCell {
             
@@ -112,7 +114,15 @@ class FriendsVC: UIViewController, UITableViewDataSource {
     }
     
     
+    override func viewWillDisappear(animated: Bool) {
+        self.navigationController?.setNavigationBarHidden(true, animated: animated);
+        super.viewWillDisappear(animated)
+    }
     
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        self.navigationController?.setNavigationBarHidden(false, animated: animated)
+    }
     
     
 }
