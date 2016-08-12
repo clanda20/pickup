@@ -44,6 +44,9 @@ class PostCell: UITableViewCell {
     @IBOutlet weak var dislikeImage: UIImageView!
     @IBOutlet weak var commentBtn: UIButton!
     
+    @IBOutlet weak var timeLabel: UILabel!
+   // @IBOutlet weak var date: UIButton!
+    
    var delegate : PostCellDelegate?
    var delegate2 : ContactIDCellDelegate?
    var delegate3 : ImageURLSegue_CellDelegate?
@@ -58,6 +61,8 @@ class PostCell: UITableViewCell {
     var  DeleteRef2: FIRDatabaseReference!
     var  DeleteRef3: FIRDatabaseReference!
     var  DeleteRef4: FIRDatabaseReference!
+    var  DeleteRef5: FIRDatabaseReference!
+    var  DeleteRef6: FIRDatabaseReference!
 
     
     var postKey: String!
@@ -196,6 +201,7 @@ class PostCell: UITableViewCell {
         self.profileName.setTitle("\(post.fullName)", forState: .Normal)
         self.profileName.titleLabel!.font = UIFont(name: "Marker Felt", size: 12)
         
+      //  self.date.setTitle(post.date, forState: .Normal)
         
         
         self.contactId =  post.uid
@@ -225,18 +231,29 @@ class PostCell: UITableViewCell {
         print( "Segue Agosto 1: \(self.contactId)")
         
         self.dislikeLbl.text = "\(post.dislikes)"
+       
+        //  from youtube firebase 3, how to group messagers per user EP 10 min 25aprox
         
-    
+        if let  seconds = Double(post.time) {
+            let timeStampDate = NSDate(timeIntervalSince1970: seconds)
+            
+            let dateFormatter = NSDateFormatter()
+            dateFormatter.dateFormat = "hh:mm:ss a"
+            self.timeLabel.text = dateFormatter.stringFromDate(timeStampDate)
+        }
+        
+        
+        
         downloadAvatar(post.avatar!, completion:  { (data) in
             self.profileImg.image = UIImage(data: data)
             self.profileImg.layer.cornerRadius = 20.0
             self.profileImg.clipsToBounds = true
         })
         
+       
         
         
-        
-        
+  /// the bellow code can be done with youtube video Firebase 3. How to group message EP10 min 11:00
         
         if post.imageUrl != nil {
             
@@ -284,7 +301,11 @@ class PostCell: UITableViewCell {
         
         
   }
-    
+  /*  let timeLabel: UILabel = {
+        let label = UILabel()
+        label.text = "HH:MM:SS"
+        return label
+    }()*/
     
   
    @IBAction func Comment_Post_Btn(sender: AnyObject) {
@@ -435,18 +456,18 @@ class PostCell: UITableViewCell {
         DeleteRef4 = DataService.ds.REF_POSTCOMMENTS  //(" post-comments")
         DeleteRef4.child(postID).removeValue()
         
+        DeleteRef5 = DataService.ds.REF_USER_USER_POSTS_ID.child(KEY_UID!)  // user-post_id   //maybe a loop is needed.
+        DeleteRef5.child(postID).removeValue()
+        
+        DeleteRef6 = DataService.ds.REF_COMMENTS_USERID.child(postID)  //(" post-comments-userID"//child(postID))
+        DeleteRef6.removeValue()
+        
        DeleteRef3 = DataService.ds.REF_TIMELINE_POST  //("timeline")
-        
-       // let   postID = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
-
-        
+      
         for friendID in self.friendsArray {
             
             DeleteRef3.child(friendID).child(postID).removeValue()
-            
-          // print("Delete BTn Pressed")
-         //  print("Delete Photo from Storage: \(post.imageUrl)")
-            
+           
             
          //delete photo posted. 
             
@@ -477,7 +498,7 @@ class PostCell: UITableViewCell {
         
         let   postID = post.postKey
         
-        DeleteRef3 = DataService.ds.REF_TIMELINE_POST_USERID
+        DeleteRef3 = DataService.ds.REF_TIMELINE_POST_USERID   //child("timeline").child(uid!)
         DeleteRef3.child(postID).removeValue()
         
     }

@@ -9,6 +9,11 @@
 import UIKit
 import Firebase
 
+protocol ContactIDCommentCellDelegate {
+    func ContactIDCommentSegueFromCell(contactID dataobject: AnyObject)
+    
+}
+
 class CommentCell: UITableViewCell {
     
     @IBOutlet weak var profileImg: UIImageView!
@@ -27,16 +32,31 @@ class CommentCell: UITableViewCell {
     
     var postRefKey: FIRDatabaseReference!
     
+    var userCommentsRef: FIRDatabaseReference!
+
     var postKey:String?
+    
+    var commentKeyID:String?
     
     var  DeleteRef: FIRDatabaseReference!
     var  DeleteRef2: FIRDatabaseReference!
     var  DeleteRef3: FIRDatabaseReference!
     
+     var myCommentsArray: [String] = []
+     var myPostArray: [String] = []
+  
+    
+    @IBOutlet weak var deleteBtn: UIButton!
+    @IBOutlet weak var deleteBtn_friends_comment: UIButton!
+    
+     var delegate2 : ContactIDCommentCellDelegate?
+    
+     var contactId: String!
+    
     override func awakeFromNib() {
         super.awakeFromNib()
-        
-        
+        FirebaseFanout()
+      //  FirebaseFanout2()
     }
     
     override func drawRect(rect: CGRect) {
@@ -53,9 +73,18 @@ class CommentCell: UITableViewCell {
     }
 
     func configureCommentCell(comment: Comment,img: UIImage?){
+        
+       // self.contactId =  post.uid
+        
+        let   commentID = comment.commentKey
+          self.commentKeyID = comment.uid
+        
+       
         self.comment = comment
         
+        
         self.commentText.text = comment.commentDescription
+       // self.commentKeyID = comment.commentKey
         
        // print(" Printing Full Name  \(comment.fullName)")
         
@@ -74,6 +103,27 @@ class CommentCell: UITableViewCell {
             self.profileImg.layer.cornerRadius = 20.0
             self.profileImg.clipsToBounds = true
         })
+        
+        
+        
+      //  self.contactId =  post.uid
+        
+        // Delete your own post only so hidden Delete button if the post is not yours
+        
+       // let uid = NSUserDefaults.standardUserDefaults().valueForKey("uid") as? String
+        if KEY_UID != comment.uid {
+            
+            self.deleteBtn.hidden = true
+            self.deleteBtn_friends_comment.hidden = false
+            
+        } else {
+            
+            self.deleteBtn.hidden = false
+            self.deleteBtn_friends_comment.hidden = true
+            
+        }
+        
+      
         
     }
     
@@ -104,62 +154,116 @@ class CommentCell: UITableViewCell {
     //Delete complete post in all its locations.   Only the User Post.
     @IBAction func deleteCommentByUID(sender: AnyObject) {
         
-        print("Delete BTn Pressed")
-        print("Delete Photo from Storage: \(comment.imageUrl2!)")
+        print("Delete BTn Pressed----------------------------------------")
+       
         
         let   commentID = comment.commentKey
         
-        DeleteRef = DataService.ds.REF_POSTS  //("posts")
-        DeleteRef.child(commentID).removeValue()
         
-        DeleteRef2 = DataService.ds.REF_USER_POSTS_BY_USER  //("user-posts")
-        DeleteRef2.child(commentID).removeValue()
+        DeleteRef = DataService.ds.Ref_USER_COMMENTS  //("user-comments")
+        DeleteRef.child(KEY_UID!).child(commentID).removeValue()
         
-        DeleteRef3 = DataService.ds.REF_TIMELINE_POST  //("timeline")
+      //  DeleteRef2 = DataService.ds.REF_USER_USER_POSTS_ID  //("user-posts-id")
+      // DeleteRef2.child(KEY_UID!).child(commentID).removeValue()
+        
+           DeleteRef3 = DataService.ds.REF_POSTCOMMENTS_ID   //("post-comments" / postID")
         
         // let   postID = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
         
         
-     /*   for friendID in self.friendsArray {
-            
-            DeleteRef3.child(friendID).child(postID).removeValue()
-            
-            // print("Delete BTn Pressed")
-            //  print("Delete Photo from Storage: \(post.imageUrl)")
-            
-            
-            //delete photo posted.
-            
-            // Create a reference to the file to delete
-            let photoPostRef = storage.referenceForURL(post.imageUrl!)  // url
-            
-            //  let desertRef = storageRef.child(post.imageUrl!)
-            // Delete the file
-            photoPostRef.deleteWithCompletion { (error) -> Void in
-                if (error != nil) {
-                    // Uh-oh, an error occurred!
-                    print("error deleting photo")
-                } else {
-                    // File deleted successfully
-                    print("File deleted successfully")
-                }
-            }
-            
-            
-        }  */
         
+       // for commentID in self.myCommentsArray {
+            
+            DeleteRef3.child(commentID).removeValue()
+            
+       // }
         
+       let DeleteRef4 = DataService.ds.REF_POSTCOMMENTS_USER_ID  //URL_BASE.child("post-comments-userID").child(postID)
+        DeleteRef4.child(commentID).removeValue()
         
     }
     // Delete only those post on my timeline or Wall
     
+    // should delete post-comments //post-comments-userID// user-comments
+
+    
     @IBAction func delete_Btn_Not_in_my_timeline(sender: AnyObject) {
         
+       
+        
+        print("delete_Btn_Not_in_my_timeline Pressed---------------------------")
+       // should delete post-comments //post-comments-userID//
+      //  ok, when pressed button1 , but button 2 only erase post-comments
+        
         let   commentID = comment.commentKey
+    
+
+        DeleteRef = DataService.ds.REF_POSTCOMMENTS  //("post-comments") ok/// -------------1
         
-        DeleteRef3 = DataService.ds.REF_TIMELINE_POST_USERID
-        DeleteRef3.child(commentID).removeValue()
+          for postID in self.myPostArray {   // if post belong to current user  delete the comment on Post-comment
         
+        DeleteRef.child(postID).child(commentID).removeValue()
+        
+          }
+        
+        
+        let DeleteRef4 = DataService.ds.REF_COMMENTS_USERID  //URL_BASE.child("post-comments-userID").child(postID) ook-----------2
+        
+          for postID in self.myPostArray {   // if post belong to current user  delete the comment on Post-comment
+        
+       DeleteRef4.child(postID).child(commentID).removeValue()
+            
+        }
+        
+      
+        
+    }
+    
+ 
+    func FirebaseFanout(){   // grabing the postID form the user-posts-id and userID
+        
+       
+        userCommentsRef = DataService.ds.REF_USER_USER_POSTS_ID.child(KEY_UID!)   //("user-posts-id")
+        userCommentsRef.observeEventType(.Value, withBlock:  { snapshot in
+            
+            
+            print("new snapshot array: \(snapshot.key)")
+            
+            
+           self.myPostArray = []
+            //  self.usersLists = []
+            
+            for child in snapshot.children {
+                let postID = child.key as String
+                print("postID  Array IIIIiiiiiipostIDDiii: \(postID)")
+                
+                self.myPostArray.append(postID)
+                
+                //   _ = Post(followersList: self.friendsArray)
+                
+                // self.usersLists.append(usersList)
+                
+                for postID in self.myPostArray {
+                    print(" Array postID tonight  postID \(postID)")
+                }
+                
+            }
+        })
+    }
+    @IBAction func profileNameBtn(sender: AnyObject) {
+        
+        
+        print("SNaps Agosto 2 POstKeyxxxxxxxxxxxxxxxx  :\(self.commentKeyID)")
+        
+        let contactID_Post_Profile = self.commentKeyID
+        
+        print("Segue Agosto 1xxxxx: contactID_Post_Profile \(contactID_Post_Profile)")
+        
+        if(self.delegate2 != nil){ //Just to be safe.
+            self.delegate2!.ContactIDCommentSegueFromCell(contactID: contactID_Post_Profile!)
+            print("Segue Agosto 1xxxxx: \(contactID_Post_Profile)")
+            
+        }
     }
     
 }

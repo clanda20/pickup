@@ -29,6 +29,9 @@ class DataService {
     private var _REF_TIMELINE_POST = URL_BASE.child("timeline")
     private var _REF_FOLLOWING = URL_BASE.child("following")
     private var _REF_FOLLOWER = URL_BASE.child("followers")
+    private var _Ref_USER_COMMENTS = URL_BASE.child("user-comments")
+    private var _REF_USER_USER_POSTS_ID = URL_BASE.child("user-posts-id")
+    private var _REF_COMMENTS_USERID = URL_BASE.child("post-comments-userID")
     
   //  let postID  = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
     
@@ -71,13 +74,38 @@ class DataService {
         return _REF_FOLLOWER
     }
     
+    var Ref_USER_COMMENTS: FIRDatabaseReference{
+        return _Ref_USER_COMMENTS
+    }
+    
+    var REF_USER_USER_POSTS_ID: FIRDatabaseReference{
+        return _REF_USER_USER_POSTS_ID
+    }
+    
+    
+    var REF_COMMENTS_USERID: FIRDatabaseReference{
+        return _REF_COMMENTS_USERID
+    }
+    
+    
+    
+    
     var REF_POSTCOMMENTS_ID: FIRDatabaseReference{
         
         let postID = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
         
-        let POSTCOMMENTS_ID = URL_BASE.child("post-comments").child(postID)
+        let REF_POSTCOMMENTS_ID = URL_BASE.child("post-comments").child(postID)
         
         return REF_POSTCOMMENTS_ID
+    }
+    
+    var REF_POSTCOMMENTS_USER_ID: FIRDatabaseReference{
+        
+        let postID = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
+        
+        let REF_POSTCOMMENTS_USER_ID = URL_BASE.child("post-comments-userID").child(postID)
+        
+        return REF_POSTCOMMENTS_USER_ID
     }
     
     var REF_FOLLOWING_USERID: FIRDatabaseReference{

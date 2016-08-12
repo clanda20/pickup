@@ -145,8 +145,12 @@ class ViewController: UIViewController, UITextFieldDelegate{
                               //  FIRAuth.auth()?.signInWithEmail(email, password: pwd, completion: nil)
                                 
                                 FIRAuth.auth()?.signInWithEmail(email, password: pwd, completion: { authData, error in
+                                    
+                                    var interval = NSDate().timeIntervalSince1970
+                                    
+                                    var date = NSDate(timeIntervalSince1970: interval)
                                 
-                                    let user = ["provider": authData!.providerID,"id": "\(authID!)", "fullName": "fullName",  "avatar": "avatar" ,"likes":"0", "dislikes":"0", "email": "___@youremail.com","postNumber":"0", "followers": "0", "following": "0"]
+                                    let user = ["provider": authData!.providerID,"id": "\(authID!)", "fullName": "fullName",  "avatar": "avatar" ,"likes":"0", "dislikes":"0", "email": "___@youremail.com","postNumber":"0", "followers": "0", "following": "0", "time": "\(date)"]
                                    
                                     self.createFirebaseUser(authID!, user: user as! Dictionary<String, String>)
                                 

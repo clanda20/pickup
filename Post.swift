@@ -25,6 +25,7 @@ class Post {
     private var _uid: String!
     private var _followersList: [String]?
     private var _friendsArraylist: [String]!
+    private var _time: String!
     
     var postDescription: String{
         return _postDescription
@@ -74,11 +75,16 @@ class Post {
         return _friendsArraylist
     }
     
-    init(description: String, imageUrl: String?, fullName: String, avatar: String?) {
+    var time: String{
+        return _time
+    }
+    
+    init(description: String, imageUrl: String?, fullName: String, avatar: String?, time: String) {
         self._postDescription = description
         self._imageUrl = imageUrl
         self._fullName = fullName
         self._avatar = avatar
+        self._time = time
     }
     
     
@@ -112,6 +118,10 @@ class Post {
         
         if let avatar = dictionary["avatar"] as? String {
             self._avatar = avatar
+        }
+        
+        if let time = dictionary["time"] as? String {
+            self._time = time
         }
         
     //  self._postRef = DataService.ds.REF_POSTS.child(self._postKey)

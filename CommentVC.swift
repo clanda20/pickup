@@ -11,7 +11,7 @@ import Firebase
 
 
 
-class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UITableViewDataSource {
+class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UITableViewDataSource,ContactIDCommentCellDelegate {
     
     
     @IBOutlet weak var tableView: UITableView!
@@ -32,8 +32,9 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
    lazy var ref: FIRDatabaseReference = FIRDatabase.database().reference()
    
  
-   var commentsRef: FIRDatabaseReference!
-   var  firebaseCommentPost2 : FIRDatabaseReference!
+    var commentsRef: FIRDatabaseReference!
+    var firebaseCommentPost2 : FIRDatabaseReference!
+    var user_commentRef: FIRDatabaseReference!
 
     var activeUserInfo: NSDictionary?
     var profileName: String!
@@ -240,8 +241,7 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
         if let cell = tableView.dequeueReusableCellWithIdentifier("CommentCell")  as? CommentCell  {
              var img: UIImage?
             
-            
-            
+             cell.delegate2 = self            
             if let url = comment.imageUrl2 {
                 img = CommentVC.imageCache.objectForKey(url) as? UIImage
             }
@@ -285,24 +285,35 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
                     
                    let  postID  = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
                     
-                 var  Comment_PostRef = self.ref.child("post-comments").child(postID)
-                    
+                 let  Comment_PostRef = self.ref.child("post-comments").child(postID)
+
                  Comment_PostRef.setValue(comment)
                     
-                  
+                 
+                    
+                 //   self.user_commentRef = DataService.ds.REF_BASE.child("user-comments").child(KEY_UID!).child(postID)
+                    
+                  //  self.user_commentRef?.setValue(true)
                     
                     
                 } else {
                     
               
+                    let key = DataService.ds.REF_BASE.child("post-comments").childByAutoId().key
                     
+                    let firebaseCommentPost = DataService.ds.REF_POST_KEY.child(key)
                     
-                    let firebaseCommentPost = DataService.ds.REF_POST_KEY.childByAutoId()
                     firebaseCommentPost.setValue(comment)
                     
                     print("Firebase: no NUll ------->>>>\(firebaseCommentPost)")
+                    let  postID  = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
                     
-                  
+                   // self.user_commentRef = DataService.ds.REF_BASE.child("user-comments").child(KEY_UID!).child(key)
+                    
+                    //self.user_commentRef?.setValue(true)
+                    
+                    let post_comment_userID_Ref =  DataService.ds.REF_BASE.child("post-comments-userID").child(postID).child(key).child(KEY_UID!)
+                     post_comment_userID_Ref.setValue(true)   // delete it once it delete btn is pressed - needed
                 }
                 commentField.text = ""
                 self.tableView.reloadData()
@@ -313,15 +324,7 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
     
     
     
-    func postCommentToFirebase(commentPost: String!)
-    {
-        
-        
-     
-
-        
-        
-    }
+   
     
     //Keyboard dismiss
     func hideKeyboard()
@@ -436,6 +439,30 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
         UIView.setAnimationDuration(movementDuration )
         self.view.frame = CGRectOffset(self.view.frame, 0,  movement)
         UIView.commitAnimations()
+    }
+    
+    
+    func ContactIDCommentSegueFromCell(contactID dataobject: AnyObject) {
+        
+        dispatch_async(dispatch_get_main_queue()){
+            //try not to send self, just to avoid retain cycles(depends on how you handle the code on the next controller)
+            self.performSegueWithIdentifier("segue_commentVC_to_ContactProfileVC", sender:dataobject )
+            
+        }
+        
+        // print( "Segue Agosto 1xxxxx: \(contactId)")
+        //
+    }
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        if segue.identifier == "segue_commentVC_to_ContactProfileVC"
+        {
+            let destinationVC = segue.destinationViewController as? contactProfileVC
+            if let theString = sender as? String {
+                destinationVC!.contactId =  theString
+            }
+            
+            
+        }
     }
    
 }

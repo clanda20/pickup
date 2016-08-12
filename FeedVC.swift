@@ -161,7 +161,7 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
             
           
             self.friendsArray = []
-            self.usersLists = []
+            //self.usersLists = []
             
             for child in snapshot.children {
                 let friendID = child.key as String
@@ -358,6 +358,8 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
             }else{
                 //store downloadURL
                     let downloadURL = metaData!.downloadURL()!.absoluteString
+                    
+                
                     //store downloadURL at database
                     // DataService.ds.REF_USER_POSTS_USERID .updateChildValues(["avatar": downloadURL])
                     self.postToFirebase( downloadURL)
@@ -460,6 +462,10 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
     
     func postToFirebase(imgUrl: String?){
         
+       let interval = NSDate().timeIntervalSince1970
+
+        let time  = String(Int(NSDate().timeIntervalSince1970))
+        
          let  activeUserId  = NSUserDefaults.standardUserDefaults().valueForKey("uid") as! String
         var post: Dictionary<String, AnyObject> = [
             "description": postField.text!,
@@ -468,6 +474,7 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
             "uid":  activeUserId,
             "fullName": self.profileName,
             "avatar": self.profileImg,
+            "time" : time,
             //  "comment": commentBtn.!
         ]
         
@@ -493,9 +500,15 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
             ref.updateChildValues(childUpadates2)
               print(" Array inside \(friendID)")
             
+        ref.child("user-posts-id").child(KEY_UID!).child(key).setValue(true)
+            
         }
         
         
+        
+        //self.user_commentRef = DataService.ds.REF_BASE.child("user-comments").child(KEY_UID!).child(key)
+        
+        //self.user_commentRef?.setValue(true)
       
         
     // let firebasePost2 = DataService.ds.REF_USER_POSTS_USERID.childByAutoId()  //important ojo

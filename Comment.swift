@@ -32,6 +32,7 @@ import Firebase
     private var _username2: String!
     private var _commentKey: String!
     private var _commentRef: FIRDatabaseReference!
+    private var _uid: String!
     
     var commentDescription: String? {
         return _commentDescription
@@ -58,7 +59,9 @@ import Firebase
         return _commentKey
     }
     
-
+    var uid: String {
+        return _uid
+    }
     
     var commentRef: FIRDatabaseReference{
         return _commentRef
@@ -91,6 +94,9 @@ import Firebase
         
         if let avatar = dictionary["avatar"] as? String {
             self._avatar = avatar
+        }
+        if let uid = dictionary["uid"] as? String {
+            self._uid = uid
         }
         
         self._commentRef = DataService.ds.REF_POSTCOMMENTS.child(self._commentKey)
