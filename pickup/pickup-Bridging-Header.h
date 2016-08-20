@@ -1,6 +1,9 @@
 //
-//  Use this file to import your target's public headers that you would like to expose to Swift.
+//  pickup-Bridging-Header.h
+//  pickup
+//
+//  Created by christian landa on 8/12/16.
+//  Copyright © 2016 christian landa. All rights reserved.
 //
 
-
-#import "UIViewController+Alerts.h"
+#import "GeoFire.h"

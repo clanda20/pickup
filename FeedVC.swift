@@ -129,7 +129,7 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
     override func viewWillAppear(animated: Bool) {
     super.viewWillAppear(animated)
       //  FirebaseFanout({ (friendID) -> () in })
-      //  self.navigationController?.setNavigationBarHidden(true, animated: animated)
+       self.navigationController?.setNavigationBarHidden(true, animated: animated)
 
        FirebaseFanout()
      //self.tableView.reloadData()

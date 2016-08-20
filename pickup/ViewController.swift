@@ -10,6 +10,7 @@ import UIKit
 import FBSDKCoreKit
 import FBSDKLoginKit
 import Firebase
+import MapKit
 
 
 class ViewController: UIViewController, UITextFieldDelegate{
@@ -96,11 +97,11 @@ class ViewController: UIViewController, UITextFieldDelegate{
                         
                         NSUserDefaults.standardUserDefaults().setValue(authID, forKey: "uid")
                          NSUserDefaults.standardUserDefaults().setValue(authData?.uid, forKey: "userID") /// temporal to prevent crash 
-                        
+                      //  let location = mapView.userLocation.location
 
                         //Write DataBase
                         
-                        let user = ["provider": credential.provider,"id": "\(authID!)", "fullName": "\(fullName!)",  "avatar": "\(photoURL!)" ,"likes":"0", "dislikes":"0", "email": "\(email!)","postNumber":"0", "followers": "0", "following": "0"]
+                        let user = ["provider": credential.provider,"id": "\(authID!)", "fullName": "\(fullName!)",  "avatar": "\(photoURL!)" ,"likes":"0", "dislikes":"0", "email": "\(email!)","postNumber":"0", "followers": "0", "following": "0", "geo":"geo"]
                       //  DataService.ds.createFirebaseUser(authID!, user: user )
                         self.createFirebaseUser(authID!, user: user )
                         
