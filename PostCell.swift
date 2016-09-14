@@ -79,6 +79,7 @@ class PostCell: UITableViewCell {
     
     var followersRef: FIRDatabaseReference!
     var friendsArray: [String] = []
+    var postFollowersArray: [String] = []
     
      var followersList = []
     
@@ -86,40 +87,74 @@ class PostCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
 
-        let tap = UITapGestureRecognizer(target: self, action: "likeTapped:")
+        let tap = UITapGestureRecognizer(target: self, action: #selector(PostCell.likeTapped(_:)))
         tap.numberOfTapsRequired = 1
         likeImage.addGestureRecognizer(tap)
         likeImage.userInteractionEnabled = true
         
         
         
-        let tap2 = UITapGestureRecognizer(target: self, action: "dislikeTapped:")
+        let tap2 = UITapGestureRecognizer(target: self, action: #selector(PostCell.dislikeTapped(_:)))
         tap2.numberOfTapsRequired = 1
         dislikeImage.addGestureRecognizer(tap2)
         dislikeImage.userInteractionEnabled = true
-       FirebaseFanout()
         
         
-  /*      let tap3 = UITapGestureRecognizer(target: self, action: #selector(deletePostByUID(_:)))
-        tap3.numberOfTapsRequired = 1
-        deleteBtn.addGestureRecognizer(tap3)
-        deleteBtn.userInteractionEnabled = true
-       // tap3.cancelsTouchesInView = false
         
-    */
-        //self.profileName.text = "\(post.fullName)"
+        let tapImage = UITapGestureRecognizer(target: self, action: #selector(PostCell.tappedImage(_:)))
+        tapImage.numberOfTapsRequired = 1
+        showcaseImg.addGestureRecognizer(tapImage)
+        showcaseImg.userInteractionEnabled = true
         
-       // self.profileName.text = "\(post.fullName)"
-     //  QueryCurrentUser()
+        
+        
+     //  FirebaseFanout()
+       
+ 
     }
     
+    
+    func FirebaseFanoutPostFollowers(postKey: String!){
+        
+        
+        // followingsRef = DataService.ds.REF_FOLLOWING_USERID
+        // followingsRef.observeEventType(.Value, withBlock:  { snapshot in
+       // followersRef = DataService.ds.REF_FOLLOWER_USERID
+        followersRef = DataService.ds.REF_BASE.child("posts-followers").child(postKey)
+        followersRef.observeEventType(.Value, withBlock:  { snapshot in
+            
+            
+            print("new snapshot array: \(snapshot.key)")
+            
+            
+            self.postFollowersArray = []    // self.friendsArray = [] for  self.postFollowersArray = []
+          //  self.usersLists = []
+            
+            for child in snapshot.children {
+                let postFollowersID = child.key as String
+                print("friendID  Array IIIIiiiiiiPostCelliiiiiii: \(postFollowersID)")
+                
+                self.postFollowersArray.append(postFollowersID)
+                
+             //   _ = Post(followersList: self.friendsArray)
+                
+                // self.usersLists.append(usersList)
+                
+                for postFollowersID in self.postFollowersArray {
+                    print(" Array friendID tonight  PostCell \(postFollowersID)")
+                }
+                
+            }
+        })
+    }
     
     func FirebaseFanout(){
         
         
         // followingsRef = DataService.ds.REF_FOLLOWING_USERID
         // followingsRef.observeEventType(.Value, withBlock:  { snapshot in
-        followersRef = DataService.ds.REF_FOLLOWER_USERID
+         followersRef = DataService.ds.REF_FOLLOWER_USERID
+       // followersRef = DataService.ds.REF_BASE.child("posts-followers").child(postKey)
         followersRef.observeEventType(.Value, withBlock:  { snapshot in
             
             
@@ -127,7 +162,7 @@ class PostCell: UITableViewCell {
             
             
             self.friendsArray = []
-          //  self.usersLists = []
+            //  self.usersLists = []
             
             for child in snapshot.children {
                 let friendID = child.key as String
@@ -135,7 +170,7 @@ class PostCell: UITableViewCell {
                 
                 self.friendsArray.append(friendID)
                 
-             //   _ = Post(followersList: self.friendsArray)
+                //   _ = Post(followersList: self.friendsArray)
                 
                 // self.usersLists.append(usersList)
                 
@@ -146,6 +181,7 @@ class PostCell: UITableViewCell {
             }
         })
     }
+
 
     override func drawRect(rect: CGRect) {
         profileImg.layer.cornerRadius = profileImg.frame.size.width / 2
@@ -161,7 +197,15 @@ class PostCell: UITableViewCell {
     
     func  configureCell(post: Post, img: UIImage? ) {   // before it was configureCell(post: Post) { }
         
+        
+        
+        FirebaseFanoutPostFollowers(post.postKey)
+        
+        self.showcaseImg.image = nil
         self.post = post
+        
+       
+        self.postKey = post.postKey
         
          // self.followersList = post.followersList
         
@@ -169,44 +213,38 @@ class PostCell: UITableViewCell {
             print("Array on PostCell: \(test)")
         }
         
-        
-       // let postUserID = post.uid
-       // print("SNaps July 24  postUserIDxxxxxxxxxxxxxxxx  :\(postUserID)")
-        
-        //let postKey =  post.postKey
-     //  NSUserDefaults.standardUserDefaults().setValue(postUserID, forKey: "postUserID")
-      //  NSUserDefaults.standardUserDefaults().synchronize()
-        
-      // likeRef = DataService.ds.REF_USER_CURRENT.child("likes").child(post.postKey)   // check ojo for True or False 7-24 REF_USER_POSTS_BY_USER2
+      
         likeRef = DataService.ds.REF_USER_CURRENT.child("likes").child(post.postKey)
-        
-        
-       // likeRef = DataService.ds.REF_USER_POSTS_USERID.child("likes").child(post.postKey)
+     
         
         dislikeRef = DataService.ds.REF_USER_CURRENT.child("dislikes").child(post.postKey)  // check ojo for True or False
-       // dislikeRef = DataService.ds.REF_USER_POSTS_USERID.child("dislikes").child(post.postKey)
+      
         
         postRefKey = DataService.ds.REF_POSTCOMMENTS.child(post.postKey)  //added 6-29-16
         
          print("PostKey PostCell July 6: \(post.postKey)")
+      //start Sep 14
+        if let desc = post.postDescription where post.postDescription != "" {
+            self.descriptionText.text = desc
+        } else {
+            self.descriptionText.hidden = true
+        }
+        
+     //end Sep14
+        //self.descriptionText.text = post.postDescription // commented out sep 14
         
         
-        
-     
-        self.descriptionText.text = post.postDescription
         self.likeLbl.text = "\(post.likes)"
 
        print(" Printing Full Name  \(post.fullName)")
         
         self.profileName.setTitle("\(post.fullName)", forState: .Normal)
         self.profileName.titleLabel!.font = UIFont(name: "Marker Felt", size: 12)
-        
-      //  self.date.setTitle(post.date, forState: .Normal)
-        
+       
         
         self.contactId =  post.uid
     
-        // Delete your own post only so hidden Delete button if the post is not yours 
+        // Delete your own post only to hidden Delete button if the post is not yours
         
         let uid = NSUserDefaults.standardUserDefaults().valueForKey("uid") as? String
         if uid != post.uid {
@@ -223,9 +261,6 @@ class PostCell: UITableViewCell {
         
         
       
-       
-        
-      
 
         
         print( "Segue Agosto 1: \(self.contactId)")
@@ -234,11 +269,11 @@ class PostCell: UITableViewCell {
        
         //  from youtube firebase 3, how to group messagers per user EP 10 min 25aprox
         
-        if let  seconds = Double(post.time) {
+        if let  seconds = Double(((post.time))) {
             let timeStampDate = NSDate(timeIntervalSince1970: seconds)
             
             let dateFormatter = NSDateFormatter()
-            dateFormatter.dateFormat = "hh:mm:ss a"
+            dateFormatter.dateFormat = "E, d MMM yyyy hh:mm a"
             self.timeLabel.text = dateFormatter.stringFromDate(timeStampDate)
         }
         
@@ -258,14 +293,14 @@ class PostCell: UITableViewCell {
         if post.imageUrl != nil {
             
             if img != nil {
-                self.showcaseImg.image = img
+                self.showcaseImg.image = img!
             } else {
                 request = Alamofire.request(.GET, post.imageUrl!).validate(contentType: ["image/*"]).response(completionHandler: { request, response, data, err in
                     
                     if err == nil {
                         let img = UIImage(data: data!)!
                         self.showcaseImg.image = img
-                        FeedVC.imageCache.setObject(img, forKey: self.post.imageUrl!)
+                        FeedVC.imageCache.setObject(img, forKey: self.post!.imageUrl!)
                     }
                 })
             }
@@ -276,7 +311,7 @@ class PostCell: UITableViewCell {
         }
         
         
-        likeRef.observeSingleEventOfType(.ChildAdded, withBlock: { snapshot in
+        likeRef.observeSingleEventOfType(.Value, withBlock: { snapshot in
             
             if (snapshot.value as? NSNull) != nil {   //WE don't like the current post
                 self.likeImage.image = UIImage(named: "heart-empty")
@@ -314,7 +349,7 @@ class PostCell: UITableViewCell {
     print("SNaps July 7 POstKeyxxxxxxxxxxxxxxxx  :\(postKey)")
     
     //let postKey =  post.postKey
-    NSUserDefaults.standardUserDefaults().setValue(postKey, forKey: "postKey")
+    NSUserDefaults.standardUserDefaults().setValue(postKey, forKey: "postKey")   ///   postKey
     NSUserDefaults.standardUserDefaults().synchronize()
     if(self.delegate != nil){ //Just to be safe.
         self.delegate!.callSegueFromCell(myData: postKey)
@@ -332,21 +367,21 @@ class PostCell: UITableViewCell {
         print("SNaps July 24  postUserIDxxxxxxxxxxxxxxxx  :\(postUserID)")
         
         //let postKey =  post.postKey
-         NSUserDefaults.standardUserDefaults().setValue(postUserID, forKey: "postUserID")
+         NSUserDefaults.standardUserDefaults().setValue(postUserID, forKey: "postUserID")   // is it needed?
         
         
         likeRef.observeSingleEventOfType(.Value, withBlock: { snapshot in
             
             if (snapshot.value as? NSNull) != nil {   //WE don't like the current post
                 self.likeImage.image = UIImage(named: "heart-full")
-                self.post.adjustLikes(true, followersList: self.friendsArray)
+                self.post.adjustLikes(true, followersList: self.postFollowersArray)
                 self.likeRef.setValue(true)
                 
                self.dislikeImage.userInteractionEnabled = false
   
             } else {
                 self.likeImage.image = UIImage(named: "heart-empty")
-                self.post.adjustLikes(false, followersList: self.friendsArray)
+                self.post.adjustLikes(false, followersList: self.postFollowersArray)
                 self.likeRef.removeValue()
                 
                self.dislikeImage.userInteractionEnabled = true
@@ -373,7 +408,7 @@ class PostCell: UITableViewCell {
             if (snapshot.value as? NSNull) != nil {
                 self.dislikeImage.image = UIImage(named: "heart2-full")
              //   self.post.adjustDislikes(true, followersList: self.post.followersList)
-                self.post.adjustDislikes(true, followersList: self.friendsArray)
+                self.post.adjustDislikes(true, followersList: self.postFollowersArray)
                 self.dislikeRef.setValue(true)
                 
                 
@@ -383,7 +418,7 @@ class PostCell: UITableViewCell {
                 
             }else {
                 self.dislikeImage.image = UIImage(named: "heart2-empty")
-               self.post.adjustDislikes(false, followersList: self.friendsArray)
+               self.post.adjustDislikes(false, followersList: self.postFollowersArray)
                 self.dislikeRef.removeValue()
                 
                 self.likeImage.userInteractionEnabled = true
@@ -464,10 +499,10 @@ class PostCell: UITableViewCell {
         
        DeleteRef3 = DataService.ds.REF_TIMELINE_POST  //("timeline")
       
-        for friendID in self.friendsArray {
+        for postFollowersID in self.postFollowersArray {
             
-            DeleteRef3.child(friendID).child(postID).removeValue()
-           
+            DeleteRef3.child(postFollowersID).child(postID).removeValue()
+            DataService.ds.REF_BASE.child("posts-followers").child(postID).child(postFollowersID).removeValue()
             
          //delete photo posted. 
             
@@ -506,7 +541,7 @@ class PostCell: UITableViewCell {
     
     //  Segue Image to a imageVC
     
-    @IBAction func imageBtn_To_Segue(sender: AnyObject) {
+ /*   @IBAction func imageBtn_To_Segue(sender: AnyObject) {
         
         let postKey_Segue = post.postKey
         
@@ -517,11 +552,24 @@ class PostCell: UITableViewCell {
        self.delegate3!.ImageURLSegue_Cell(postKey_Segue: postKey_Segue)
            
             
-            
+ 
         }
         
         
+    }  */
+    
+    func tappedImage(sender: UITapGestureRecognizer)
+    {
+        print("Tapped on Image")
+        
+        let postKey_Segue = post.postKey
+        
+        print("Segue Agosto 7 postKey_Segue \(postKey_Segue)")
+        
+        if(self.delegate3 != nil){ //Just to be safe.
+            
+            self.delegate3!.ImageURLSegue_Cell(postKey_Segue: postKey_Segue)
     }
 }
-
-
+    
+}

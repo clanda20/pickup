@@ -32,6 +32,7 @@ class DataService {
     private var _Ref_USER_COMMENTS = URL_BASE.child("user-comments")
     private var _REF_USER_USER_POSTS_ID = URL_BASE.child("user-posts-id")
     private var _REF_COMMENTS_USERID = URL_BASE.child("post-comments-userID")
+    private var _REF_EVENTS = URL_BASE.child("events")
     
   //  let postID  = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
     
@@ -87,7 +88,10 @@ class DataService {
         return _REF_COMMENTS_USERID
     }
     
-    
+    var REF_EVENTS:FIRDatabaseReference{
+        return _REF_EVENTS
+    }
+
     
     
     var REF_POSTCOMMENTS_ID: FIRDatabaseReference{
@@ -162,7 +166,7 @@ class DataService {
         return USER_POSTS_USERID
     }
     
-    var REF_POSTS_USERID: FIRDatabaseReference{
+ /*   var REF_POSTS_USERID: FIRDatabaseReference{
         let postID = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
         // let postID = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
         
@@ -170,7 +174,7 @@ class DataService {
         
         
         return REF_POSTS_USERID
-    }
+    }  */
     
     
     var REF_USER_POSTS: FIRDatabaseReference{

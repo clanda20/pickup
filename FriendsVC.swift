@@ -26,22 +26,26 @@ class FriendsVC: UIViewController, UITableViewDataSource {
         
         
         friendsTableView.dataSource = self
+        QuerryUserFollowing()
+}
+    
+    func QuerryUserFollowing(){
         
-    DataService.ds.REF_USER_CURRENT.child("followings").observeEventType(.ChildAdded, withBlock:{ snapshot in
-        
-       // print("new way: \(snapshot)")
-        self.contacts = []
-        let friendID = snapshot.key
-        let friendReference = DataService.ds.REF_USERS.child(friendID)
-        
-        friendReference.observeSingleEventOfType(.Value, withBlock: { (snapshot) in
+        DataService.ds.REF_USER_CURRENT.child("followings").observeEventType(.ChildAdded, withBlock:{ snapshot in
             
-            print("new way: \(snapshot)")
+            // print("new way: \(snapshot)")
+            self.contacts = []
+            let friendID = snapshot.key
+            let friendReference = DataService.ds.REF_USERS.child(friendID)
             
-            if let contactDict = snapshot.value as? [String: AnyObject]
+            friendReference.observeSingleEventOfType(.Value, withBlock: { (snapshot) in
                 
-            {
-                 print("dictionary \(contactDict)")
+                print("new way: \(snapshot)")
+                
+                if let contactDict = snapshot.value as? [String: AnyObject]
+                    
+                {
+                    print("dictionary \(contactDict)")
                     
                     
                     let key = snapshot.key
@@ -50,19 +54,16 @@ class FriendsVC: UIViewController, UITableViewDataSource {
                     self.contacts.append(contact)
                     
                 }
-
-            self.friendsTableView.reloadData()
-
+                
+                self.friendsTableView.reloadData()
+                
+                
+            })
             
-        })
+            }, withCancelBlock: nil)
         
-    }, withCancelBlock: nil)
-        
+    }
 
-        
-}
-    
-   
 
         
    
@@ -117,11 +118,13 @@ class FriendsVC: UIViewController, UITableViewDataSource {
     override func viewWillDisappear(animated: Bool) {
         self.navigationController?.setNavigationBarHidden(true, animated: animated);
         super.viewWillDisappear(animated)
+        //self.friendsTableView.reloadData()
     }
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
         self.navigationController?.setNavigationBarHidden(false, animated: animated)
+        friendsTableView.reloadData()
     }
     
     

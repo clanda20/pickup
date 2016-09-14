@@ -111,19 +111,15 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
         let tapGesture = UITapGestureRecognizer(target: self, action: Selector("hideKeyboard"))
         tapGesture.cancelsTouchesInView = true
         self.view.addGestureRecognizer(tapGesture)
-        
-        
-        
+      
         self.postField.delegate = self
         
-        
-        
-         //  self.tableView.reloadData()
-     //  QueryMyFriendsPost()
-        
         QueryMyTimeline()
-        //FirebaseFanout()
         QueryCurrentUser()
+        
+        
+    
+        
     }
 
     override func viewWillAppear(animated: Bool) {
@@ -371,8 +367,11 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
            
                         }
    
-                    }
-                }
+            } else {
+                    self.postToFirebase(nil)
+            
+            }
+         }
         }
     
     
@@ -479,7 +478,7 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
         ]
         
         if imgUrl != nil {
-            post["imageUrl"] = imgUrl
+            post["imageUrl"] = imgUrl!
         }
         
    //From Here  
@@ -500,11 +499,11 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
             ref.updateChildValues(childUpadates2)
               print(" Array inside \(friendID)")
             
-        ref.child("user-posts-id").child(KEY_UID!).child(key).setValue(true)
+        
+         ref.child("posts-followers").child(key).child(friendID).setValue(true)  // new sep 13
             
         }
-        
-        
+        ref.child("user-posts-id").child(KEY_UID!).child(key).setValue(true)
         
         //self.user_commentRef = DataService.ds.REF_BASE.child("user-comments").child(KEY_UID!).child(key)
         

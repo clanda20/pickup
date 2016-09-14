@@ -10,19 +10,36 @@ import UIKit
 import Firebase
 
 
-class ImageShowVC: UIViewController {
+class ImageShowVC: UIViewController, UIScrollViewDelegate {
     @IBOutlet weak var imageShowView: UIImageView!
+    @IBOutlet weak var scrollImg: UIScrollView!
     
    var postKey_Segue: String?
  
      var activeUserInfo: NSDictionary?
+ 
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+    
+        setZoomScale()
+
         
-        print("postKey_Segue:\(postKey_Segue)")
+        var scrollImg: UIScrollView = UIScrollView()
+        self.scrollImg.delegate = self
+      
+        scrollImg.backgroundColor = UIColor(red: 90, green: 90, blue: 90, alpha: 0.90)
+         scrollImg.alwaysBounceVertical = false
+        scrollImg.alwaysBounceHorizontal = false
+        scrollImg.showsVerticalScrollIndicator = true
+         scrollImg.flashScrollIndicators()
+        scrollImg.contentSize = imageShowView.bounds.size
         
+        
+        scrollImg = UIScrollView(frame: view.bounds)
+        scrollImg.autoresizingMask = [.FlexibleWidth, .FlexibleHeight]
+        scrollImg.contentOffset = CGPoint(x: 0, y: 0)
         
         
         DataService.ds.REF_POSTS.child(postKey_Segue!).observeEventType(.Value, withBlock: { (snapshot)  in
@@ -30,7 +47,7 @@ class ImageShowVC: UIViewController {
             let item = snapshot as FIRDataSnapshot
             print("SNAP-Itemxxxxxxxxxxx: \(item)")
             
-            // if let dict = item.value as? NSDictionary{
+        
             
             if let dict = item.value as? [String : AnyObject]{
                 let imageUrl = dict["imageUrl"] as! String
@@ -38,33 +55,18 @@ class ImageShowVC: UIViewController {
                 
                 self.activeUserInfo = dict
                 
-                // self.title = "Welcome \(self.activeUserInfo!["firstName]!)"
                 self.title = " \(self.activeUserInfo!["fullName"]!.uppercaseString!)'s Post"
-               // self.postsLabel.text = " \(self.activeUserInfo!["postNumber"]!) \n posts"
-              //  self.followersLabel.text = " \(self.activeUserInfo!["followers"]!) \n followers"
-              //  self.followingLabel.text = " \(self.activeUserInfo!["following"]!) \n following"
-                
+             
                 self.downloadAvatar(imageUrl, completion: { (data) in
                     
                     self.imageShowView.image = UIImage(data: data)
-                    
-                  //  self.imageShowView.layer.cornerRadius = 50.0
-                  //  self.imageShowView.clipsToBounds = true
+                  
                 })
-                
             }
-            
-            
-            
-            //   completation(imageStr: image!)
             
             }, withCancelBlock: {(error) -> Void in
                 
         })
-
-        
-         
-        
     }
     
     
@@ -109,5 +111,24 @@ class ImageShowVC: UIViewController {
         super.didReceiveMemoryWarning()
     }
     
-
+    func viewForZoomingInScrollView(scrollView: UIScrollView) -> UIView? {
+        return self.imageShowView
+    }
+    
+    override func viewWillLayoutSubviews() {   // activated when phone change side
+        setZoomScale()
+    }
+   
+    func setZoomScale() {
+        
+        var minZoom = min(self.view.bounds.size.width / self.imageShowView.image!.size.width, self.view.bounds.size.height / self.imageShowView.image!.size.height);
+        
+        if (minZoom > 1) {
+            minZoom = 1;
+        }
+        
+        scrollImg.minimumZoomScale = minZoom//min(widthScale, heightScale)
+        scrollImg.zoomScale = minZoom
+        scrollImg.maximumZoomScale = 2.0
+    }
 }

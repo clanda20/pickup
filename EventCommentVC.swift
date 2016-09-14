@@ -1,120 +1,123 @@
 //
-//  CommentVC.swift
+//  EventCommentVC.swift
 //  pickup
 //
-//  Created by christian landa on 6/22/16.
+//  Created by christian landa on 9/5/16.
 //  Copyright © 2016 christian landa. All rights reserved.
-//
+//  //segue_EventCommentVC
 
 import UIKit
 import Firebase
 
 
 
-class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UITableViewDataSource,ContactIDCommentCellDelegate {
+class EventCommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UITableViewDataSource, ContactIDEventCommentCellDelegate  {
     
     
     @IBOutlet weak var tableView: UITableView!
     
     @IBOutlet weak var sendBtn: UIButton!
-  //  @IBOutlet weak var commentTxt: UITextView!
-//   @IBOutlet weak var commentField: MaterialTextField!
+    //  @IBOutlet weak var commentTxt: UITextView!
+    //   @IBOutlet weak var commentField: MaterialTextField!
     
     @IBOutlet var textFieldToBottomLayoutGuideConstraint: NSLayoutConstraint!
-
+    
     @IBOutlet weak var commentField: UITextField!
-   var comment: Comment!
-    var comments = [Comment]()
-   
+    var eventcomment: EventComment!
+    var eventcomments = [EventComment]()
+    
+    var eventKey: String! // from segue EventDetailVC
+    
     
     var postID: String! = ""
     var value:  FIRDatabaseReference!
-   lazy var ref: FIRDatabaseReference = FIRDatabase.database().reference()
-   
- 
-    var commentsRef: FIRDatabaseReference!
+    lazy var ref: FIRDatabaseReference = FIRDatabase.database().reference()
+    
+    
+    var eventcommentsRef: FIRDatabaseReference!
     var firebaseCommentPost2 : FIRDatabaseReference!
     var user_commentRef: FIRDatabaseReference!
-
+    
     var activeUserInfo: NSDictionary?
     var profileName: String!
     var profileImg: String!
     
-     static var imageCache = NSCache()
+    static var imageCache = NSCache()
     
-    // 
+    //
     var keyboardHeight: CGFloat!
     
     //variable to hold keyboard frame
-   // var keyboard = CGRect()
-
-
-    // values for seting UI to default
- //    var tableViewHeight : CGFloat = 0
- //   var commentY : CGFloat = 0
- //   var commentHeight : CGFloat = 0
+    // var keyboard = CGRect()
     
-
+    
+    // values for seting UI to default
+    //    var tableViewHeight : CGFloat = 0
+    //   var commentY : CGFloat = 0
+    //   var commentHeight : CGFloat = 0
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         
-      //  tableView.backgroundColor = .redColor()
-
+        //  tableView.backgroundColor = .redColor()
+        
         tableView.delegate = self
         tableView.dataSource = self
         
-     //   self.sendBtn.delegate = self
-         self.commentField.delegate = self
+        //   self.sendBtn.delegate = self
+        self.commentField.delegate = self
         
-  
-       //Keyboard dismiss
+        
+        //Keyboard dismiss
         let tapGesture = UITapGestureRecognizer(target: self, action: Selector("hideKeyboard"))
         tapGesture.cancelsTouchesInView = true
         self.view.addGestureRecognizer(tapGesture)
         
         QueryCurrentUser()
-      //  alignment()
+        //  alignment()
         
-       //title at the top
-        self.navigationItem.title = "COMMENTS"
+        //title at the top
+        self.navigationItem.title = "EVENT COMMENTS"
         
         
         //disable button from the beginning
-      //  sendBtn.enabled = false
+        //  sendBtn.enabled = false
         
-            //
-        
-       
-        
-        postID  = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
-    
+        //
         
         
-   //
-        commentsRef = ref.child("post-comments").child(postID)
         
-
-   //   print("Value Postkey3:------------>>>> \(postID)")
+      //  postID  = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String   // postkey  change for eventKEy
         
-   
-     DataService.ds.REF_POST_KEY.observeEventType(.Value, withBlock:  { snapshot in
         
-    
-             print(snapshot.value)
         
-             self.comments = []
+        //
+        eventcommentsRef = ref.child("event-comments").child(eventKey)
+        
+        
+        //   print("Value Postkey3:------------>>>> \(postID)")
+        
+        
+     //9-5   DataService.ds.REF_POST_KEY.observeEventType(.Value, withBlock:  { snapshot in  //let postKey = URL_BASE.child("post-comments").child(postID)
+         DataService.ds.REF_BASE.child("event-comments").child(eventKey).observeEventType(.Value, withBlock:  { snapshot in
             
-
+            
+            print(snapshot.value)
+            
+            self.eventcomments = []
+            
+            
             if let snapshots = snapshot.children.allObjects as? [FIRDataSnapshot] {
                 
                 for snap in snapshots {
                     
-                    if let commentDict = snap.value as? Dictionary<String, AnyObject> {
+                    if let eventcommentDict = snap.value as? Dictionary<String, AnyObject> {
                         let key = snap.key
-                      
-                         let comment = Comment(commentKey: key, dictionary: commentDict)
-                        self.comments.append(comment)
+                        
+                        let eventcomment = EventComment(commentKey: key, dictionary: eventcommentDict)
+                        self.eventcomments.append(eventcomment)
                         
                     }
                     
@@ -126,187 +129,98 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
         })
     }
     
-    // 
-   /* func alignment(){
+  
     
-    let width  = self.view.frame.size.width
-    let height = self.view.frame.size.height
-        
-    
-    tableView.frame = CGRectMake(0, 0, width, height / 1.096 - self.navigationController!.navigationBar.frame.size.height - 20)
-    tableView.estimatedRowHeight = width / 5.3333
-    tableView.rowHeight = UITableViewAutomaticDimension
-        
-    commentTxt.frame = CGRectMake(10, tableView.frame.size.height + height / 56.9, width / 1.306, 33)
-    commentTxt.layer.cornerRadius = commentTxt.frame.size.width / 50
-        
-    sendBtn.frame = CGRectMake(commentTxt.frame.origin.x + commentTxt.frame.size.width + width / 32, commentTxt.frame.origin.y,
-                               width - ( commentTxt.frame.origin.x + commentTxt.frame.size.width) - (width / 32) * 2, commentTxt.frame.size.height)
-     
-    tableViewHeight = tableView.frame.size.height
-    commentHeight = commentTxt.frame.size.height
-    commentY = commentTxt.frame.origin.y
-        
-    }  */
-    
-    // func loading when keyboard is shown
-   // func keyboarWillShow(notification: NSNotification){
-
-      //  self.view.frame.origin.y = -150
-        
-      /*  let userInfo : NSDictionary = notification.userInfo!
-        
-        //define keyboard frame size
-        
-        let keyboardSize : CGSize = userInfo[UIKeyboardFrameBeginUserInfoKey]!.CGRectValue().size
-        
-        let offset: CGSize = userInfo[UIKeyboardFrameEndUserInfoKey]!.CGRectValue().size
-       // keyboard = (notification.userInfo?[UIKeyboardFrameEndUserInfoKey]!.CGRectValue)!.size
-        
-        if keyboardSize.height == offset.height {
-            if self.view.frame.origin.y == 0 {
-                UIView.animateWithDuration(0.15, animations: { 
-                    self.view.frame.origin.y -= keyboardSize.height
-                })
-            }
-        }
-        else {
-            UIView.animateWithDuration(0.15, animations: { 
-                self.view.frame.origin.y += keyboardSize.height - offset.height
-            })
-            
-        }
-        
-        //move UI up
-        
-     /*   UIView.animateWithDuration(0.4){
-            self.tableView.frame.size.height = self.tableViewHeight - self.keyboard.height - self.commentTxt.frame.size.height + self.commentHeight
-            
-            self.commentTxt.frame.origin.y = self.commentY - self.keyboard.height - self.commentHeight
-            
-            self.sendBtn.frame.origin.y = self.commentTxt.frame.origin.y
-      */  }   */
- //   }
-    
-    // func loading when keyboar is hidden
-  /*  func keyboarWillHide(notification: NSNotification) {
-        
-        self.view.frame.origin.y = 0
-        
-     /*   let userInfo : NSDictionary = notification.userInfo!
-         let keyboardSize : CGSize = userInfo[UIKeyboardFrameBeginUserInfoKey]!.CGRectValue().size
-        
-        self.view.frame.origin.y += keyboardSize.height  */
-
-        
-        // move UI down
-      /*  UIView.animateWithDuration(0.4) { () -> Void in
-            self.tableView.frame.size.height = self.tableViewHeight
-            self.commentTxt.frame.origin.y = self.commentY
-            self.sendBtn.frame.origin.y = self.commentY
-        
-        
-        }  */
-    }
- */
-    
-    
-    
-  /* override func viewWillAppear(animated: Bool) {
-        postKey = self.postkey
-    } */
-
     func numberOfSectionsInTableView(tableView: UITableView) -> Int {
         return 1
     }
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return comments.count
+        return eventcomments.count
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         
-        let comment = comments[indexPath.row]
-        print(comment.commentDescription)
+        let eventcomment = eventcomments[indexPath.row]
+        print(eventcomment.commentDescription)
         
         
         
-        if let cell = tableView.dequeueReusableCellWithIdentifier("CommentCell")  as? CommentCell  {
-             var img: UIImage?
+        if let cell = tableView.dequeueReusableCellWithIdentifier("EventCommentCell")  as? EventCommentCell  {
+            var img: UIImage?
             
-             cell.delegate2 = self            
-            if let url = comment.imageUrl2 {
-                img = CommentVC.imageCache.objectForKey(url) as? UIImage
+            cell.delegate2 = self
+            if let url = eventcomment.imageUrl2 {
+                img = EventCommentVC.imageCache.objectForKey(url) as? UIImage
             }
             
-            cell.configureCommentCell(comment, img: img)
+            cell.configureEventCommentCell(eventcomment, img: img, eventKey: self.eventKey)
             return cell
         } else {
-            return CommentCell()
+            return EventCommentCell()
         }
         
         
-        return tableView.dequeueReusableCellWithIdentifier("CommentCell") as! CommentCell
+        return tableView.dequeueReusableCellWithIdentifier("EventCommentCell") as! EventCommentCell
     }
     
     
-
+    
     @IBAction func commentPost(sender: AnyObject) {
         
         let uid = FIRAuth.auth()?.currentUser?.uid
-  //  commentsRef.observeSingleEventOfType(.Value, withBlock: { (snapshot) in
-            
-       DataService.ds.REF_BASE.observeSingleEventOfType(.Value, withBlock: { (snapshot) in
+       
         
-    
+        DataService.ds.REF_BASE.observeSingleEventOfType(.Value, withBlock: { (snapshot) in
+            
+            
             if let uid = uid, commentField = self.commentField, user = snapshot.value as? [String : AnyObject] {
                 
                 print("Snapshot CommentVC--------: \(snapshot)")
-                let comment = [
+                let eventcomment = [
                     "uid": uid,
                     
-                //    "fullName": self.comment.fullName!,
+                    //    "fullName": self.comment.fullName!,
                     "text": commentField.text!,
                     "fullName": self.profileName,
                     "avatar": self.profileImg,
                 ]
-              
                 
-               
+                
+                
                 
                 if let doesNotExist = snapshot.value as? NSNull {
                     
-                   let  postID  = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
+                  //  let  postID  = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
                     
-                 let  Comment_PostRef = self.ref.child("post-comments").child(postID)
-
-                 Comment_PostRef.setValue(comment)
+                    let  EventComment_PostRef = self.ref.child("event-comments").child(self.eventKey)
                     
-                 
+                    EventComment_PostRef.setValue(eventcomment)
                     
-                 //   self.user_commentRef = DataService.ds.REF_BASE.child("user-comments").child(KEY_UID!).child(postID)
                     
-                  //  self.user_commentRef?.setValue(true)
+                    
+                    //   self.user_commentRef = DataService.ds.REF_BASE.child("user-comments").child(KEY_UID!).child(postID)
+                    
+                    //  self.user_commentRef?.setValue(true)
                     
                     
                 } else {
                     
-              
-                    let key = DataService.ds.REF_BASE.child("post-comments").childByAutoId().key
                     
-                    let firebaseCommentPost = DataService.ds.REF_POST_KEY.child(key)
+                    let key = DataService.ds.REF_BASE.child("event-comments").childByAutoId().key
                     
-                    firebaseCommentPost.setValue(comment)
+                   // let firebaseCommentPost = DataService.ds.REF_POST_KEY.child(key)
+                    let firebaseEventCommentPost = DataService.ds.REF_BASE.child("event-comments").child(self.eventKey).child(key)
                     
-                    print("Firebase: no NUll ------->>>>\(firebaseCommentPost)")
-                    let  postID  = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
+                    firebaseEventCommentPost.setValue(eventcomment)
                     
-                   // self.user_commentRef = DataService.ds.REF_BASE.child("user-comments").child(KEY_UID!).child(key)
+                    print("Firebase: no NUll ------->>>>\(firebaseEventCommentPost)")
+                   // let  postID  = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
                     
-                    //self.user_commentRef?.setValue(true)
                     
-                    let post_comment_userID_Ref =  DataService.ds.REF_BASE.child("post-comments-userID").child(postID).child(key).child(KEY_UID!)
-                     post_comment_userID_Ref.setValue(true)   // delete it once it delete btn is pressed - needed
+                    
+                    let post_comment_userID_Ref =  DataService.ds.REF_BASE.child("event-comments-userID").child(self.eventKey).child(key).child(KEY_UID!)
+                    post_comment_userID_Ref.setValue(true)   // delete it once it delete btn is pressed - needed
                 }
                 commentField.text = ""
                 self.tableView.reloadData()
@@ -317,7 +231,7 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
     
     
     
-   
+    
     
     //Keyboard dismiss
     func hideKeyboard()
@@ -329,10 +243,10 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
         self.navigationController?.setNavigationBarHidden(true, animated: animated);
         super.viewWillDisappear(animated)
         
-    
-            NSNotificationCenter.defaultCenter().removeObserver(self, name: UIKeyboardWillShowNotification, object: self.view.window)
-            NSNotificationCenter.defaultCenter().removeObserver(self, name: UIKeyboardWillHideNotification, object: self.view.window)
-
+        
+        NSNotificationCenter.defaultCenter().removeObserver(self, name: UIKeyboardWillShowNotification, object: self.view.window)
+        NSNotificationCenter.defaultCenter().removeObserver(self, name: UIKeyboardWillHideNotification, object: self.view.window)
+        
     }
     
     override func viewWillAppear(animated: Bool) {
@@ -350,7 +264,7 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
                                                          selector: Selector("keyboardWillHide:"),
                                                          name: UIKeyboardWillHideNotification, object: nil)
         
-
+        
     }
     
     func QueryCurrentUser(){
@@ -397,7 +311,7 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
     func keyboardWillHide(notification: NSNotification) {
         if let keyboardSize = (notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.CGRectValue() {
             self.textFieldToBottomLayoutGuideConstraint?.constant -= keyboardSize.height
-          //  self.keyboardHeight = keyboardSize.height
+            //  self.keyboardHeight = keyboardSize.height
             
             
             
@@ -409,13 +323,13 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
         return (notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as! NSValue).CGRectValue().height
     }
     
-   // deinit {
-     //   NSNotificationCenter.defaultCenter().removeObserver(self)
-   // }
+    // deinit {
+    //   NSNotificationCenter.defaultCenter().removeObserver(self)
+    // }
     func textFieldDidBeginEditing(textField: UITextField) {
         
-      // getKeyboardHeight(notification)
-    
+        // getKeyboardHeight(notification)
+        
         animateViewMoving(true, moveValue: 270)
     }
     
@@ -434,8 +348,8 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
         UIView.commitAnimations()
     }
     
-    
-    func ContactIDCommentSegueFromCell(contactID dataobject: AnyObject) {
+ 
+    func ContactIDEventCommentSegueFromCell(contactID dataobject: AnyObject) {
         
         dispatch_async(dispatch_get_main_queue()){
             //try not to send self, just to avoid retain cycles(depends on how you handle the code on the next controller)
@@ -446,7 +360,7 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
         // print( "Segue Agosto 1xxxxx: \(contactId)")
         //
     }
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+   override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if segue.identifier == "segue_commentVC_to_ContactProfileVC"
         {
             let destinationVC = segue.destinationViewController as? contactProfileVC
@@ -456,8 +370,8 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
             
             
         }
-    }
-   
+    } 
+    
 }
 
 

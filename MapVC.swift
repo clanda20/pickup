@@ -595,6 +595,8 @@ class MapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UIA
         
         var annotationView: MKAnnotationView?
         
+
+        
       if annotation.isKindOfClass(MKUserLocation.self) {
             annotationView = MKAnnotationView(annotation: annotation, reuseIdentifier: "\(self.fullName)")
             annotationView?.image = UIImage(named: "car")

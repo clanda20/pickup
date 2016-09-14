@@ -92,7 +92,7 @@ class CommentCell: UITableViewCell {
          self.Username2.titleLabel!.font = UIFont(name: "Marker Felt", size: 12)
          
         
-        postRefKey = DataService.ds.REF_POSTCOMMENTS.child("postKey")  //added 6-29-16
+        postRefKey = DataService.ds.REF_POSTCOMMENTS.child("postKey")  //added 6-29-16 //maybe mistake not affect anything
         
       //  print("PostKey PostCell XX: \(post.postKey)")
         

@@ -60,7 +60,7 @@ class ProfileVC: UIViewController {
                 self.activeUserInfo = dict
                 
                // self.title = "Welcome \(self.activeUserInfo!["firstName]!)"
-                self.title = " \(self.activeUserInfo!["fullName"]!.uppercaseString!)'s Profile"
+                self.title = " \(self.activeUserInfo!["firstName"]!.uppercaseString!)"
                 self.postsLabel.text = " \(self.activeUserInfo!["postNumber"]!) \n posts"
                 self.followersLabel.text = " \(self.activeUserInfo!["followers"]!) \n followers"
                 self.followingLabel.text = " \(self.activeUserInfo!["following"]!) \n following"

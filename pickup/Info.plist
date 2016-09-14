@@ -52,7 +52,7 @@
 		<true/>
 	</dict>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>I want to know always where are you</string>
+	<string>we want to how far are you from the Event.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Because I want to know your location</string>
 	<key>UIBackgroundModes</key>
