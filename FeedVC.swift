@@ -73,7 +73,7 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
    // var friendsArray: [String]
     
     static var imageCache = NSCache()
-    var image: UIImage!
+   // var image: UIImage!  // commented out sep 14
     let imagePC = UIImagePickerController()
     var popover:UIPopoverController? = nil
     var referenceUrl: AnyObject!
@@ -190,7 +190,7 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
     func QueryMyTimeline(){
         
         
-        DataService.ds.REF_TIMELINE_POST_USERID.observeEventType(.Value , withBlock: { (snapshot) in  //observeSingleEventOfType
+        DataService.ds.REF_TIMELINE_POST_USERID.queryOrderedByChild("time").queryLimitedToLast(50).observeEventType(.Value , withBlock: { (snapshot) in  //observeSingleEventOfType
             //  self.posts = []
             
             print(snapshot.value)
@@ -222,6 +222,7 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
                      }
                  }
             }
+            self.posts = self.posts.reverse()
             self.tableView.reloadData()
             
             
@@ -290,9 +291,7 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
                img = FeedVC.imageCache.objectForKey(url) as? UIImage
             }
             
-          
-            
-            print("PostKEY-Outside----------------------: \(post.postKey)")
+        
             cell.configureCell(post, img: img)
             
             //let postKey =  post.postKey
@@ -327,12 +326,12 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
     
     @IBAction func makePost(sender: AnyObject) {
         
-        imageSelected = true
+       // sep 14 imageSelected = true
         
         
         if let txt = postField.text where txt != "" {
         
-        if let img = imageSelectorImage.image where imageSelected == true {
+            if let img = imageSelectorImage.image   where imageSelected == true {
             
         
         
@@ -383,14 +382,40 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
         
         
         referenceUrl = info[UIImagePickerControllerReferenceURL]
+        
+        if let image = info[UIImagePickerControllerOriginalImage] as? UIImage {
+                imageSelectorImage.image = image
+                imageSelected = true
+            imageData = UIImageJPEGRepresentation(image, 0.2)!
+            imageSaved = imageData.base64EncodedStringWithOptions([])
+            
+                    }else{
+                            print(" A valid image wasn't selected")
+                        }
+        
+       
+        
+        self.dismissViewControllerAnimated(true, completion: nil)
+        
+      /* sep 14  referenceUrl = info[UIImagePickerControllerReferenceURL]
+        
          image = info[UIImagePickerControllerOriginalImage] as! UIImage
         imageSelectorImage.image = image
-        //  var imageData = NSData()
+       
         
         imageData = UIImageJPEGRepresentation(image, 0.2)!
         imageSaved = imageData.base64EncodedStringWithOptions([])
         
-        self.dismissViewControllerAnimated(true, completion: nil)
+        self.dismissViewControllerAnimated(true, completion: nil)  */ //sep 14 end
+        
+     /*   if let image = info[UIImagePickerControllerEditedImage] as? UIImage  {
+            imageSelectorImage.image = image
+            imageSelected = true
+        } else {
+                print(" A valid image wasn't selected")
+        }
+        
+        imagePicker.dismissViewControllerAnimated(true, completion: nil) */
         
     }
     

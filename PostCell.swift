@@ -283,10 +283,11 @@ class PostCell: UITableViewCell {
             self.profileImg.image = UIImage(data: data)
             self.profileImg.layer.cornerRadius = 20.0
             self.profileImg.clipsToBounds = true
+            self.showcaseImg.hidden = false
         })
         
        
-        
+   //caching   firebase 3=  youtube Episode 6, time 16:00 aprox
         
   /// the bellow code can be done with youtube video Firebase 3. How to group message EP10 min 11:00
         
@@ -298,17 +299,19 @@ class PostCell: UITableViewCell {
                 request = Alamofire.request(.GET, post.imageUrl!).validate(contentType: ["image/*"]).response(completionHandler: { request, response, data, err in
                     
                     if err == nil {
-                        let img = UIImage(data: data!)!
-                        self.showcaseImg.image = img
-                        FeedVC.imageCache.setObject(img, forKey: self.post!.imageUrl!)
+                        if let img = UIImage(data: data!) {
+                            
+                            self.showcaseImg.image = img
+                            
+                            FeedVC.imageCache.setObject(img, forKey: self.post.imageUrl!)
+                            
+                        }
                     }
                 })
+                }
+            
+            
             }
-            
-            
-            } else {
-                self.showcaseImg.hidden = true
-        }
         
         
         likeRef.observeSingleEventOfType(.Value, withBlock: { snapshot in

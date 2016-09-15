@@ -60,6 +60,7 @@
 		AAA5B88D1D5E965C00EFEB7E /* GFQuery.m in Sources */ = {isa = PBXBuildFile; fileRef = AAA5B8881D5E965B00EFEB7E /* GFQuery.m */; };
 		AAA5B8951D5EAE3400EFEB7E /* MapVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA5B8941D5EAE3400EFEB7E /* MapVC.swift */; };
 		AAA5B8971D5EE95F00EFEB7E /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AAA5B8961D5EE95F00EFEB7E /* CoreLocation.framework */; };
+		AAB2EABF1D8A257C0075607D /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB2EABE1D8A257C0075607D /* Extensions.swift */; };
 		AABC312A1D582D48002F8216 /* ImageShowVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABC31291D582D48002F8216 /* ImageShowVC.swift */; };
 		AAED90B01CF3B705006C4EFE /* MaterialView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAED90AF1CF3B705006C4EFE /* MaterialView.swift */; };
 		AAED90B41CF3B7E3006C4EFE /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAED90B31CF3B7E3006C4EFE /* Constants.swift */; };
@@ -146,6 +147,7 @@
 		AAA5B8931D5E99EB00EFEB7E /* pickup-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "pickup-Bridging-Header.h"; sourceTree = "<group>"; };
 		AAA5B8941D5EAE3400EFEB7E /* MapVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapVC.swift; sourceTree = "<group>"; };
 		AAA5B8961D5EE95F00EFEB7E /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
+		AAB2EABE1D8A257C0075607D /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		AABC31291D582D48002F8216 /* ImageShowVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageShowVC.swift; sourceTree = "<group>"; };
 		AAED90AF1CF3B705006C4EFE /* MaterialView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MaterialView.swift; sourceTree = "<group>"; };
 		AAED90B31CF3B7E3006C4EFE /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
@@ -221,6 +223,7 @@
 		AA60F5591CEFFEC8007B215D /* pickup */ = {
 			isa = PBXGroup;
 			children = (
+				AAB2EABD1D8A25580075607D /* Helpers */,
 				AAA5B8771D5E965B00EFEB7E /* GeoFire */,
 				AA4B52301CF416B100506763 /* Support-files */,
 				AAED90B91CF3CEB4006C4EFE /* Services */,
@@ -277,6 +280,14 @@
 				AAA5B8881D5E965B00EFEB7E /* GFQuery.m */,
 			);
 			path = Implementation;
+			sourceTree = "<group>";
+		};
+		AAB2EABD1D8A25580075607D /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				AAB2EABE1D8A257C0075607D /* Extensions.swift */,
+			);
+			name = Helpers;
 			sourceTree = "<group>";
 		};
 		AAED90AB1CF3A878006C4EFE /* Controller */ = {
@@ -565,6 +576,7 @@
 				AA8EB02E1CF5224E00B5E542 /* FeedVC.swift in Sources */,
 				AA8845991D6E48B800785AC9 /* EventDetailVC.swift in Sources */,
 				AAED90BB1CF3CED2006C4EFE /* DataService.swift in Sources */,
+				AAB2EABF1D8A257C0075607D /* Extensions.swift in Sources */,
 				AA1F12761D7518C300C2BC35 /* EventAnnot.swift in Sources */,
 				AA5D7BB21D383DC300B25496 /* FriendsCell.swift in Sources */,
 				AAED90B01CF3B705006C4EFE /* MaterialView.swift in Sources */,
