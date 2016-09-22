@@ -317,7 +317,7 @@ class PostsByUserVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
                 }
                 else {
                     let image = info[UIImagePickerControllerOriginalImage] as! UIImage
-                    let imageData = UIImageJPEGRepresentation(image, 0.1)
+                    let imageData = UIImageJPEGRepresentation(image, 0.02)
                     let imagePath = FIRAuth.auth()!.currentUser!.uid + "/\(Int(NSDate.timeIntervalSinceReferenceDate() * 1000)).jpg"
                     let metadata = FIRStorageMetadata()
                     metadata.contentType = "image/jpeg"

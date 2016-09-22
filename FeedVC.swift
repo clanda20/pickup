@@ -16,13 +16,20 @@ import Alamofire
 
 import FirebaseDatabaseUI
 import FirebaseAuthUI
+import MediaPlayer
+import MobileCoreServices
+import AVKit
+import AVFoundation
 
 
-class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITableViewDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate, PostCellDelegate,ContactIDCellDelegate, ImageURLSegue_CellDelegate {
+class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITableViewDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate, PostCellDelegate,ContactIDCellDelegate, ImageURLSegue_CellDelegate,VideoURLSegue_CellDelegate,EventSegue_CellDelegate  {
     
    @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var postField: MaterialTextField!
    @IBOutlet weak var imageSelectorImage: UIImageView!
+    
+    @IBOutlet weak var progressView: UIProgressView!
+    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     
     var imageData = NSData()
     var imageSaved: String?
@@ -87,15 +94,19 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
     var delegate:PostCellDelegate!
     
     var newImage: UIImage!  // to pass image to ImageShowVC
+    var videoPicker: NSURL!
+    var imageDownload: UIImage!
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+       
 
         tableView.delegate = self
         tableView.dataSource = self
         
-        tableView.estimatedRowHeight = 358
+        tableView.estimatedRowHeight = 700//358
         imagePicker = UIImagePickerController()
         imagePicker.delegate = self
         
@@ -126,7 +137,6 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
     super.viewWillAppear(animated)
       //  FirebaseFanout({ (friendID) -> () in })
        self.navigationController?.setNavigationBarHidden(true, animated: animated)
-
        FirebaseFanout()
      //self.tableView.reloadData()
     }
@@ -139,10 +149,11 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
   self.navigationItem.setLeftBarButtonItem(nil, animated: true)
         // FirebaseFanout()
        // QueryMyTimeline()
-       
         
         
     }
+    
+    
     
     func FirebaseFanout(){
         
@@ -185,63 +196,62 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
     }
     
     
-    
+    func QueryCurrentUser(){
+        
+        DataService.ds.REF_USER_CURRENT.observeEventType(.Value, withBlock: { (snapshot)  in
+            
+            let item = snapshot as FIRDataSnapshot
+            print("SNAP-Itemxxxxxxxxxxx: \(item)")
+            
+            // if let dict = item.value as? NSDictionary{
+            
+            if let dict = item.value as? [String : AnyObject]{
+                let avatar = dict["avatar"] as! String
+                // self.image = avatar
+                
+                self.activeUserInfo = dict
+                
+                // self.title = "Welcome \(self.activeUserInfo!["firstName]!)"
+                self.profileName = "\(self.activeUserInfo!["fullName"]!.uppercaseString!)"
+                self.profileImg = "\(self.activeUserInfo!["avatar"]!)"
+                // self.followersLabel.text = " \(self.activeUserInfo!["followers"]!) \n followers"
+                // self.followingLabel.text = " \(self.activeUserInfo!["following"]!) \n following"
+            }
+            
+            }, withCancelBlock: {(error) -> Void in
+        })
+    }
     
     func QueryMyTimeline(){
         
-        
         DataService.ds.REF_TIMELINE_POST_USERID.queryOrderedByChild("time").queryLimitedToLast(50).observeEventType(.Value , withBlock: { (snapshot) in  //observeSingleEventOfType
-            //  self.posts = []
             
             print(snapshot.value)
-            
-            
             
             self.posts = []
             
             if let snapshots = snapshot.children.allObjects as? [FIRDataSnapshot]  {
-               // print("snapshot july 25: \(snapshot)")
+ 
                 for snap in snapshots {
-                 //   print("SNAP: july 26 \(snap)")
-                    
-                    
-                    
+                   
                     if let postDict = snap.value as? [String : AnyObject]  {
-                        
                         
                         let key = snap.key
                         let post = Post(postKey: key, dictionary: postDict)
                         
-                        
-                        
-                        
-                        //  self.contacts.insert(contact, atIndex: 0)  //self.posts.append(post)
                         self.posts.append(post)
                         
-                        print("SNAP ContactsXXXXX: \(self.posts)")
+                       
                      }
                  }
             }
             self.posts = self.posts.reverse()
             self.tableView.reloadData()
             
-            
-            
             }, withCancelBlock: nil)
-        
-        
-        
         
     }
     
-   
-    
- /*   override func viewWillAppear(animated: Bool) {
-        super.viewWillAppear(animated) // No need for semicolon
-        self.runAfterDelay(2) {
-            self.performSegueWithIdentifier("segue_commentVC", sender: self)
-        }
-    } */
  
  
     override func didReceiveMemoryWarning() {
@@ -275,32 +285,19 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
             cell.delegate = self // july 7, 2016
             cell.delegate2 = self
             cell.delegate3 = self
-            
-        //    NSUserDefaults.standardUserDefaults().setValue(post.uid, forKey: "post_userID")
-         //   NSUserDefaults.standardUserDefaults().synchronize()
-
-            
-           // cell.commentBtn.tag = indexPath.row
-           // cell.commentBtn.addTarget(self, action: "runAfterDelay(delay):", forControlEvents: .TouchUpInside)
+            cell.videoDelegate4 = self
+            cell.EventDelegate5 = self
+        
           
             cell.request?.cancel()
             
-            var img: UIImage?
+            var img:  UIImage?
             
             if let url = post.imageUrl {
-               img = FeedVC.imageCache.objectForKey(url) as? UIImage
+              img = FeedVC.imageCache.objectForKey(url) as? UIImage
             }
             
-        
-            cell.configureCell(post, img: img)
-            
-            //let postKey =  post.postKey
-            
-           print("SNaps July 6 :\(post.postKey)")
-           print("SNaps July 24 :\(post.uid)")
-            print("SNap Agost 1 Full Name:\(post.fullName)")
-            
-            //self.tableView.reloadData()
+            cell.configureCell(post, img: img, urlVideo: nil)
             
             return cell
             
@@ -315,67 +312,14 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
         
         let post = posts[indexPath.row]
         
-        if post.imageUrl == nil {
-            return 150
-        }else{
+        if post.mediaType == "VIDEO" || post.mediaType == "PHOTO"{
             return tableView.estimatedRowHeight
+        } else {
+            
+                return 150
+            
         }
     }
-    
-    
-    
-    @IBAction func makePost(sender: AnyObject) {
-        
-       // sep 14 imageSelected = true
-        
-        
-        if let txt = postField.text where txt != "" {
-        
-            if let img = imageSelectorImage.image   where imageSelected == true {
-            
-        
-        
-        self.dismissViewControllerAnimated(true, completion: nil)
-            self.tableView.reloadData()
-        
-        // let avatarRef = DataService.ds.REF_USER_CURRENT
-        
-       // let filePath = "\(FIRAuth.auth()!.currentUser!.uid)/\("userPhoto")"
-      //  let imageFile = contentEditingInput?.fullSizeImageURL
-        let filePath = FIRAuth.auth()!.currentUser!.uid + "/\(Int(NSDate.timeIntervalSinceReferenceDate() * 1000))"
-        let metaData = FIRStorageMetadata()
-        metaData.contentType = "image/jpg"
-        storageRef.child(filePath).putData(imageData, metadata: metaData){(metaData,error) in
-            if let error = error {
-                print(error.localizedDescription)
-                
-                return
-            }else{
-                //store downloadURL
-                    let downloadURL = metaData!.downloadURL()!.absoluteString
-                    
-                
-                    //store downloadURL at database
-                    // DataService.ds.REF_USER_POSTS_USERID .updateChildValues(["avatar": downloadURL])
-                    self.postToFirebase( downloadURL)
-                    self.tableView.reloadData()
-                    print("LINK_URLString: \(downloadURL)")
-                
-                
-                            }
-           
-                        }
-   
-            } else {
-                    self.postToFirebase(nil)
-            
-            }
-         }
-        }
-    
-    
-    
-    
     
     
     func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]){
@@ -383,46 +327,173 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
         
         referenceUrl = info[UIImagePickerControllerReferenceURL]
         
-        if let image = info[UIImagePickerControllerOriginalImage] as? UIImage {
-                imageSelectorImage.image = image
-                imageSelected = true
-            imageData = UIImageJPEGRepresentation(image, 0.2)!
-            imageSaved = imageData.base64EncodedStringWithOptions([])
-            
-                    }else{
-                            print(" A valid image wasn't selected")
-                        }
-        
-       
-        
-        self.dismissViewControllerAnimated(true, completion: nil)
-        
-      /* sep 14  referenceUrl = info[UIImagePickerControllerReferenceURL]
-        
-         image = info[UIImagePickerControllerOriginalImage] as! UIImage
-        imageSelectorImage.image = image
-       
-        
-        imageData = UIImageJPEGRepresentation(image, 0.2)!
-        imageSaved = imageData.base64EncodedStringWithOptions([])
-        
-        self.dismissViewControllerAnimated(true, completion: nil)  */ //sep 14 end
-        
-     /*   if let image = info[UIImagePickerControllerEditedImage] as? UIImage  {
+        if let  image = info[UIImagePickerControllerOriginalImage] as? UIImage {
+            self.imageDownload = image
             imageSelectorImage.image = image
             imageSelected = true
-        } else {
-                print(" A valid image wasn't selected")
+           //makePost( image, video: nil)
         }
         
-        imagePicker.dismissViewControllerAnimated(true, completion: nil) */
-        
+        else if let video = info[UIImagePickerControllerMediaURL] as? NSURL {
+         // let moviePlayer = MPMoviePlayerViewController(contentURL: info[UIImagePickerControllerMediaURL] as! NSURL)
+            
+            self.videoPicker = video as NSURL
+            
+           
+          let  imageVideo = thumbnailForVideoAtURL(video)
+           
+          let  fixOrientationImage = UIImage(CGImage: imageVideo!.CGImage!, scale: imageVideo!.scale, orientation:.Up)
+
+           
+           // let fixOrientationImage = imageVideo
+         imageSelectorImage.image = fixOrientationImage
+            
+           
+            imageSelected = true
+            
+             self.imageDownload = fixOrientationImage
+            
+           // self.presentMoviePlayerViewControllerAnimated(moviePlayer)
+            //makePost(nil, video: video)
+            
+        }
+        self.dismissViewControllerAnimated(true, completion: nil)
+        tableView.reloadData()
+       
     }
+    
+    @IBAction func makePost(sender:  AnyObject) {//(picture: UIImage?, video: NSURL?)   /* (sender:  AnyObject) */{
+    
+       // sep 14 imageSelected = true
+        
+        
+        if let txt = postField.text where txt != "" {
+        
+            if let img = imageSelectorImage.image   where imageSelected == true {
+                
+                
+                
+                if ( self.imageDownload != nil &&  self.videoPicker == nil){   /////***********************  photo ONly
+                    
+                    self.dismissViewControllerAnimated(true, completion: nil)
+                    self.tableView.reloadData()
+                    
+                    let imageData = UIImageJPEGRepresentation(img, 0.00)
+                    let filePath = FIRAuth.auth()!.currentUser!.uid + "/\(Int(NSDate.timeIntervalSinceReferenceDate() * 1000))"
+                    let metaData = FIRStorageMetadata()
+                    metaData.contentType = "image/jpg"
+                    storageRef.child(filePath).putData(imageData!, metadata: metaData){(metaData,error) in
+                        if let error = error {
+                            print(error.localizedDescription)
+                            
+                            return
+                        }else{
+                            //store downloadURL
+                            let downloadURL = metaData!.downloadURL()!.absoluteString
+                            
+                            
+                            //store downloadURL at database
+                            // DataService.ds.REF_USER_POSTS_USERID .updateChildValues(["avatar": downloadURL])
+                            self.postToFirebase( downloadURL,vidUrl: nil, mediaType: "PHOTO")
+                            self.tableView.reloadData()
+                            print("LINK_URLString: \(downloadURL)")
+                            
+                        }
+                        
+                    }
+                    // } //  en picture = picture
+                   
+                }
+            
+            else  if ( self.imageDownload != nil &&  self.videoPicker != nil){   /////*********************** picture and video
+                
+              
+                var downloadURL: String!
+        
+        self.dismissViewControllerAnimated(true, completion: nil)
+            self.tableView.reloadData()
+        
+        let imageData = UIImageJPEGRepresentation(img, 0.00)
+        let filePath = FIRAuth.auth()!.currentUser!.uid + "/\(Int(NSDate.timeIntervalSinceReferenceDate() * 1000))"
+        let metaData = FIRStorageMetadata()
+        metaData.contentType = "image/jpg"
+        storageRef.child(filePath).putData(imageData!, metadata: metaData){(metaData,error) in
+            if let error = error {
+                print(error.localizedDescription)
+                
+                return
+            }else{
+                //store downloadURL
+                    downloadURL = metaData!.downloadURL()!.absoluteString
+                    
+                
+                    //store downloadURL at database
+                    // DataService.ds.REF_USER_POSTS_USERID .updateChildValues(["avatar": downloadURL])
+                   /// self.postToFirebase( downloadURL,vidUrl: nil, mediaType: "PHOTO")
+                    self.tableView.reloadData()
+                    print("LINK_URLString: \(downloadURL)")
+                
+                    }
+           
+                }
+                    
+                    
+                let video  = self.videoPicker
+                    
+                let videoData2 = NSData(contentsOfURL: video)
+                let filePath2 = FIRAuth.auth()!.currentUser!.uid + "/\(Int(NSDate.timeIntervalSinceReferenceDate() * 1000))"
+                let metaData2 = FIRStorageMetadata()
+                metaData2.contentType = "video/mp4"
+                let uploadTask = storageRef.child(filePath2).putData(videoData2!, metadata: metaData2){(metaData2,error) in
+                    if let error = error {
+                        print(error.localizedDescription)
+                        
+                        return
+                    }else{
+                        //store downloadURL
+                        let downloadVideoURL = metaData2!.downloadURL()!.absoluteString
+                        
+                        
+                        //store downloadURL at database
+                        // DataService.ds.REF_USER_POSTS_USERID .updateChildValues(["avatar": downloadURL])
+                        self.postToFirebase( downloadURL, vidUrl: downloadVideoURL, mediaType: "VIDEO")
+                        self.tableView.reloadData()
+                        print("LINK_URLString: \(downloadVideoURL)")
+                        
+                    }
+                    
+                }
+                
+        }
+            } else {
+                    self.postToFirebase(nil,vidUrl: nil, mediaType: "TEXT")
+            
+            }
+        }
+        let optionMenu = UIAlertController(title: nil, message: "Type in something!", preferredStyle: .ActionSheet)
+        
+       
+        
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .Cancel, handler: {
+            (alert: UIAlertAction!) -> Void in
+            print("Cancelled")
+        })
+      
+        optionMenu.addAction(UIAlertAction(title: "Dismiss", style: UIAlertActionStyle.Default,handler: nil))
+        
+        self.presentViewController(optionMenu, animated: true, completion: nil)
+
+        }
+    
+   
+    
+   
     
     @IBAction func  selectImage(sender: UITapGestureRecognizer) {
        // presentViewController(imagePicker, animated: true, completion: nil)
         
-        let alert:UIAlertController=UIAlertController(title: "Choose Image", message: nil, preferredStyle: UIAlertControllerStyle.ActionSheet)
+        let alert:UIAlertController=UIAlertController(title: "Choose Media", message: nil, preferredStyle: UIAlertControllerStyle.ActionSheet)
         let cameraAction = UIAlertAction(title: "Camera", style: UIAlertActionStyle.Default)
         {
             UIAlertAction in
@@ -431,8 +502,16 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
         let gallaryAction = UIAlertAction(title: "Gallery", style: UIAlertActionStyle.Default)
         {
             UIAlertAction in
-            self.openGallary()
+            self.openGallery()
         }
+        
+        let galleryVideoAction = UIAlertAction(title: "Video", style: UIAlertActionStyle.Default)
+        {
+            UIAlertAction in
+            self.openVideo()
+        }
+        
+        
         let cancelAction = UIAlertAction(title: "Cancel", style: UIAlertActionStyle.Cancel)
         {
             UIAlertAction in
@@ -441,6 +520,7 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
         self.imagePC.delegate = self
         alert.addAction(cameraAction)
         alert.addAction(gallaryAction)
+        alert.addAction(galleryVideoAction)
         alert.addAction(cancelAction)
         // Present the controller
         if UIDevice.currentDevice().userInterfaceIdiom == .Phone
@@ -464,27 +544,46 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
         }
         else
         {
-            openGallary()
+            openGallery()
+            openVideo()
         }
     }
     
     
-    func openGallary()
+    func openGallery()
     {
         self.imagePC.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
         if UIDevice.currentDevice().userInterfaceIdiom == .Phone
         {
             self.presentViewController(self.imagePC, animated: true, completion: nil)
         }
+        
         else
         {
-            popover=UIPopoverController(contentViewController: self.imagePC)
+            popover = UIPopoverController(contentViewController: self.imagePC)
+            popover!.presentPopoverFromRect(imageSelectorImage.frame, inView: self.view, permittedArrowDirections: UIPopoverArrowDirection.Any, animated: true)
+        }
+    }
+    
+    func openVideo()
+    {
+        self.imagePC.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
+        if UIDevice.currentDevice().userInterfaceIdiom == .Phone
+            
+        {
+            imagePC.mediaTypes = ["public.movie"]
+            self.presentViewController(self.imagePC, animated: true, completion: nil)
+        }
+            
+        else
+        {
+            popover = UIPopoverController(contentViewController: self.imagePC)
             popover!.presentPopoverFromRect(imageSelectorImage.frame, inView: self.view, permittedArrowDirections: UIPopoverArrowDirection.Any, animated: true)
         }
     }
     
     
-    func postToFirebase(imgUrl: String?){
+    func postToFirebase(imgUrl: String?, vidUrl: String?, mediaType: String?){
         
        let interval = NSDate().timeIntervalSince1970
 
@@ -499,6 +598,7 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
             "fullName": self.profileName,
             "avatar": self.profileImg,
             "time" : time,
+            "mediaType": mediaType!
             //  "comment": commentBtn.!
         ]
         
@@ -506,11 +606,11 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
             post["imageUrl"] = imgUrl!
         }
         
-   //From Here  
-    
-
+        if vidUrl != nil {
+            post["videoUrl"] = vidUrl!
+        }
         
- // To Here
+   
         
      let key = ref.child("user-posts").childByAutoId().key
         
@@ -522,25 +622,25 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
             
           let childUpadates2 =  ["/timeline/\(friendID)/\(key)/": post]
             ref.updateChildValues(childUpadates2)
-              print(" Array inside \(friendID)")
+            
+           
             
         
          ref.child("posts-followers").child(key).child(friendID).setValue(true)  // new sep 13
+        ref.child("posts-followers").child(key).child(KEY_UID!).setValue(true)  // post creator will be always be a friend
             
         }
+        // POST'S Creator post is always on his/ her timeline
+        let childUpadatesUID =  ["/timeline/\(KEY_UID!)/\(key)/": post]
+        ref.updateChildValues(childUpadatesUID)
+        
+        
         ref.child("user-posts-id").child(KEY_UID!).child(key).setValue(true)
         
-        //self.user_commentRef = DataService.ds.REF_BASE.child("user-comments").child(KEY_UID!).child(key)
-        
-        //self.user_commentRef?.setValue(true)
-      
-        
-    // let firebasePost2 = DataService.ds.REF_USER_POSTS_USERID.childByAutoId()  //important ojo
-    //   firebasePost2.setValue(post)
+       
         
         
         postField.text = ""
-      //  commentBtn.text = ""
         imageSelectorImage.image = UIImage(named: "camera")
         imageSelected = false
         
@@ -548,50 +648,6 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
     }
     
  
-    func QueryCurrentUser(){
-        
-        DataService.ds.REF_USER_CURRENT.observeEventType(.Value, withBlock: { (snapshot)  in
-            
-            let item = snapshot as FIRDataSnapshot
-            print("SNAP-Itemxxxxxxxxxxx: \(item)")
-            
-            // if let dict = item.value as? NSDictionary{
-            
-            if let dict = item.value as? [String : AnyObject]{
-                let avatar = dict["avatar"] as! String
-                // self.image = avatar
-                
-                self.activeUserInfo = dict
-                
-                // self.title = "Welcome \(self.activeUserInfo!["firstName]!)"
-                self.profileName = "\(self.activeUserInfo!["fullName"]!.uppercaseString!)"
-                self.profileImg = "\(self.activeUserInfo!["avatar"]!)"
-                // self.followersLabel.text = " \(self.activeUserInfo!["followers"]!) \n followers"
-                // self.followingLabel.text = " \(self.activeUserInfo!["following"]!) \n following"
-                
-                
-                
-            }
-            
-            
-            
-            //   completation(imageStr: image!)
-            
-            }, withCancelBlock: {(error) -> Void in
-                
-        })
-        
-    }
-    
-    
-  /*  func uploadSuccess(metadata: FIRStorageMetadata, storagePath: String) {
-        print("Upload Succeeded!")
-        //  self.urlTextView.text = metadata.downloadURL()!.absoluteString
-        NSUserDefaults.standardUserDefaults().setObject(storagePath, forKey: "storagePath")
-        NSUserDefaults.standardUserDefaults().synchronize()
-        self.tableView.reloadData()
-        // self.downloadPicButton.enabled = true
-    }  */
     
   
     
@@ -615,10 +671,29 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
        self.performSegueWithIdentifier("segue_Profile_Name", sender:dataobject )
       
     }
+    }
     
+    func VideoURLSegue_Cell(videoUrl_segue dataobject: AnyObject) {
+        
+      
+            //try not to send self, just to avoid retain cycles(depends on how you handle the code on the next controller)
+            self.performSegueWithIdentifier("segue_showVideo", sender:dataobject )
+       
        // print( "Segue Agosto 1xxxxx: \(contactId)")
     //
     }
+    
+   func EventSegue_Cell(eventKey_segue dataobject: AnyObject) {
+        
+        
+        //try not to send self, just to avoid retain cycles(depends on how you handle the code on the next controller)
+        self.performSegueWithIdentifier("segueTimeLineToEvent", sender:dataobject )
+        
+        // print( "Segue Agosto 1xxxxx: \(contactId)")
+        //
+    }
+   
+    
   override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if segue.identifier == "segue_Profile_Name"
         {
@@ -636,8 +711,29 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
             destinationVC!.postKey_Segue =  theString
         }
         
+    }
+    
+    if segue.identifier == "segue_showVideo"  //segue_showVideo
+    {
+        let destinationVC = segue.destinationViewController as? PlayVideoVC
+        if let theString = sender as? String {
+            destinationVC!.videoUrl_segue =  theString
+        }
+        
         
     }
+    
+    //segueTimeLineToEvent
+    if segue.identifier == "segueTimeLineToEvent"  //segue_showVideo
+    {
+        let destinationVC = segue.destinationViewController as? EventDetailVC
+        if let theString = sender as? String {
+            destinationVC!.eventKey =  theString
+        }
+        
+        
+    }
+    
     }
     
     
@@ -702,9 +798,29 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
         }
     }  */
 
+    private func thumbnailForVideoAtURL(url: NSURL) -> UIImage? {
+        
+        let asset = AVAsset(URL: url)
+        let assetImageGenerator = AVAssetImageGenerator(asset: asset)
+        
+        var time = asset.duration
+        time.value = min(time.value, 2)
+        
+        do {
+            let imageRef = try assetImageGenerator.copyCGImageAtTime(time, actualTime: nil)
+            return UIImage(CGImage: imageRef)
+
+        } catch {
+            print("error")
+            return nil
+        }
+    }
+    
+   
     
 }
 
+//MARK:- Image Orientation fix
 
 
 

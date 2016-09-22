@@ -18,7 +18,7 @@ protocol HandleMapSearch {
 }
 
 
-class AddVC: UIViewController, UISearchBarDelegate {
+class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextViewDelegate{
     
     @IBOutlet  var saveBtnItem: UIBarButtonItem!
     @IBOutlet  var doneBtnItem: UIBarButtonItem!
@@ -61,9 +61,22 @@ class AddVC: UIViewController, UISearchBarDelegate {
     
     var strDate: String!
     
+    var activeUserInfo: NSDictionary?
+    var profileName: String!
+    var profileImg: String!
+    var eventKey: String!
     
+    var dateRaw: String!
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // for keyboard dismiss
+        self.titleTextField.delegate = self
+        self.descriptionTextView.delegate = self
+        
+        let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: "dismissKeyboard")
+        view.addGestureRecognizer(tap)
+
         
         // Init the zoom level
        /* let coordinate:CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: 37.378437, longitude: -122.116825)
@@ -96,6 +109,7 @@ class AddVC: UIViewController, UISearchBarDelegate {
         self.navigationItem.rightBarButtonItems = nil
         self.navigationItem.leftBarButtonItem = nil
         FirebaseFanout()
+        QueryCurrentUser()
 
     }
     @IBAction func chooseDateBtn(sender: AnyObject) {
@@ -140,9 +154,12 @@ class AddVC: UIViewController, UISearchBarDelegate {
     @IBAction func datePickerBtn(sender: AnyObject) {
         
         var dateFormatter = NSDateFormatter()
+       
         dateFormatter.dateFormat = "E, d MMM yyyy hh:mm a"
         self.strDate = dateFormatter.stringFromDate(datePicker.date)
         self.dateBtn.setTitle(strDate, forState: .Normal)
+        
+        self.dateRaw = String(datePicker.date)
     }
     
     
@@ -238,6 +255,12 @@ class AddVC: UIViewController, UISearchBarDelegate {
     
     @IBAction func saveBtn(sender: AnyObject) {
         
+        let key = ref.child("user-events").childByAutoId().key
+        
+        self.eventKey = key
+        
+        let time  = String(Int(NSDate().timeIntervalSince1970))
+        
         let event: Dictionary<String, AnyObject> = [
             "title": self.titleTextField.text!,
             "description": self.descriptionTextView.text!,
@@ -245,33 +268,78 @@ class AddVC: UIViewController, UISearchBarDelegate {
             "fullAddressWithBreaks": self.fullAddressString,
             "members": 0,
             "date": self.strDate,
+            "dateRaw": self.dateRaw,
             "host-uid":  KEY_UID!,
             "geo": 0,
             "eventComments": 0,
             "no-eventComments": 0,
             "no-of-members" : 2,
             "placemark"  : self.placemark,
+            "time": time,
+            
            
         ]
+        let descriptionTimeLine: String!
+           descriptionTimeLine = "\(self.fullAddressString_no_breakLine) \n\(self.strDate)\n\(self.descriptionTextView.text!)"
+         //let time  = String(Int(NSDate().timeIntervalSince1970))
+        
+        let eventToTimeline: Dictionary<String, AnyObject> = [
+            
+           
+            "description": descriptionTimeLine,
+            "time": time,
+            "uid":  KEY_UID!,
+            "likes": 0,
+            "dislikes": 0,
+            "fullName": self.profileName,
+            "avatar": self.profileImg,
+           "mediaType":"EVENT",
+           "eventKey":self.eventKey,
+           "eventTitle": self.titleTextField.text!
+            
+            ]
         
         
         
-        
-        
-        let key = ref.child("user-events").childByAutoId().key
+       
         
         let childUpadates = ["/events/\(key)": event,
                              "/user-events/\(KEY_UID!)/\(key)/":event]
         ref.updateChildValues(childUpadates)
         
+        ref.child("timeline")
+        
+      //  ref.child("user-events-id").child(KEY_UID!).child(key).setValue(true)
+        
+        
         for friendID in friendsArray {
             
             let childUpadates2 =  ["/events-timeline/\(friendID)/\(key)/": event]
             ref.updateChildValues(childUpadates2)
+            
+            let updateTimeline = ["/timeline/\(friendID)/\(key)": eventToTimeline]
+            
+            ref.updateChildValues(updateTimeline)
+            
+            ref.child("event-followers").child(key).child(friendID).setValue(true) 
+            
             print(" Array inside \(friendID)")
             
             
         }
+         // Event's creator always on the Timeline, events-timeline, event-followers
+        
+        let childUpadates2 =  ["/events-timeline/\(KEY_UID!)/\(key)/": event]
+        ref.updateChildValues(childUpadates2)
+        
+        
+        let updateTimelineEvent = ["/timeline/\(KEY_UID!)/\(key)": eventToTimeline]
+        ref.updateChildValues(updateTimelineEvent)
+        
+        
+        ref.child("event-followers").child(key).child(KEY_UID!).setValue(true)
+        
+        
         
             ref.child("host-events-id").child(KEY_UID!).child(key).setValue(true)
         
@@ -342,6 +410,70 @@ class AddVC: UIViewController, UISearchBarDelegate {
         // Dispose of any resources that can be recreated.
     }
     
+    
+    // Dismiss keyBoard
+    
+    func dismissKeyboard() {
+        //Causes the view (or one of its embedded text fields) to resign the first responder status.
+        view.endEditing(true)
+    }
+    
+    func textFieldShouldReturn(textField: UITextField) -> Bool {
+        view.endEditing(true)
+        titleTextField.resignFirstResponder()
+       
+        
+        return true
+    }
+    
+    
+    func textView(textView: UITextView, shouldChangeTextInRange range: NSRange, replacementText text: String) -> Bool {
+        if(text == "\n") {
+            descriptionTextView.resignFirstResponder()
+        return false
+        }
+        return true
+        
+    }
+   
+    
+    func hideKeyboard()
+    {
+        self.view.endEditing(true)
+    }
+    
+    
+    
+    func QueryCurrentUser(){
+        
+        DataService.ds.REF_USER_CURRENT.observeEventType(.Value, withBlock: { (snapshot)  in
+            
+            let item = snapshot as FIRDataSnapshot
+            print("SNAP-Itemxxxxxxxxxxx: \(item)")
+            
+            // if let dict = item.value as? NSDictionary{
+            
+            if let dict = item.value as? [String : AnyObject]{
+                let avatar = dict["avatar"] as! String
+                // self.image = avatar
+                
+                self.activeUserInfo = dict
+                
+                // self.title = "Welcome \(self.activeUserInfo!["firstName]!)"
+                self.profileName = "\(self.activeUserInfo!["fullName"]!.uppercaseString!)"
+                self.profileImg = "\(self.activeUserInfo!["avatar"]!)"
+                // self.followersLabel.text = " \(self.activeUserInfo!["followers"]!) \n followers"
+                // self.followingLabel.text = " \(self.activeUserInfo!["following"]!) \n following"
+            }
+            
+            }, withCancelBlock: {(error) -> Void in
+        })
+    }
+    
+    
+    
+
+    
 }
 
 
@@ -393,22 +525,6 @@ extension AddVC: HandleMapSearch {
         mapViewLarge.setRegion(region, animated: true)
         mapView.setRegion(region, animated: true)
     }
-    
-    // Dismiss keyBoard
-    
-    func hideKeyboard()
-    {
-        self.view.endEditing(true)
-    }
-    
-    func textFieldShouldReturn(textField: UITextField!) -> Bool {
-        textField.resignFirstResponder()
-        return true
-        
-    }
-    
-    
-   
     
 }
 

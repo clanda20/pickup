@@ -224,7 +224,7 @@ class DataService {
     }
  
     func createFirebaseUser(uid: String, user: Dictionary<String, String>) {
-        REF_USERS.child(uid).setValue(user)  //  user is user: Dictionary<String, String>
+        REF_USERS.child(uid).updateChildValues(user)  //  user is user: Dictionary<String, String>
     }
     
   //  func createfirebasePostID( PostID: String) {

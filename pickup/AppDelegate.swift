@@ -18,14 +18,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
     
-   /* override init() {
-        FIRApp.configure()
+    override init() {
+        super.init()
+       FIRApp.configure()
         FIRDatabase.database().persistenceEnabled = true
-    } */
+    } 
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
        
-       FIRApp.configure()
+      // FIRApp.configure()
         
      // return true
         

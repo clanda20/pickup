@@ -24,6 +24,16 @@ protocol ImageURLSegue_CellDelegate {
     
 }
 
+protocol VideoURLSegue_CellDelegate {
+    func VideoURLSegue_Cell( videoUrl_segue dataobject: AnyObject)
+    
+}
+
+
+protocol EventSegue_CellDelegate {
+    func EventSegue_Cell( eventKey_segue dataobject: AnyObject)
+    
+}
 
 
 
@@ -34,6 +44,8 @@ class PostCell: UITableViewCell {
     @IBOutlet weak var descriptionText: UITextView!
     @IBOutlet weak var likeLbl: UILabel!
     @IBOutlet weak var likeImage: UIImageView!
+   
+    @IBOutlet weak var newEventBtn: UIButton!
     
     @IBOutlet weak var profileName: UIButton!
    
@@ -43,13 +55,21 @@ class PostCell: UITableViewCell {
     @IBOutlet weak var dislikeLbl: UILabel!
     @IBOutlet weak var dislikeImage: UIImageView!
     @IBOutlet weak var commentBtn: UIButton!
+    @IBOutlet weak var playBtn: UIButton!
     
     @IBOutlet weak var timeLabel: UILabel!
-   // @IBOutlet weak var date: UIButton!
+    @IBOutlet weak var titleLbl: UILabel!
+  
+    
+  
+  
+    
     
    var delegate : PostCellDelegate?
    var delegate2 : ContactIDCellDelegate?
    var delegate3 : ImageURLSegue_CellDelegate?
+    var videoDelegate4 : VideoURLSegue_CellDelegate?
+    var EventDelegate5: EventSegue_CellDelegate?
     
     var post: Post!
     var request: Request?
@@ -72,16 +92,14 @@ class PostCell: UITableViewCell {
     var imageUrl_Segue: String!
     
     var activeUserInfo: NSDictionary?
-   // var image: String?
-    
-    
-  
-    
+   
     var followersRef: FIRDatabaseReference!
     var friendsArray: [String] = []
     var postFollowersArray: [String] = []
     
      var followersList = []
+    
+    
     
 
     override func awakeFromNib() {
@@ -99,27 +117,14 @@ class PostCell: UITableViewCell {
         dislikeImage.addGestureRecognizer(tap2)
         dislikeImage.userInteractionEnabled = true
         
-        
-        
-        let tapImage = UITapGestureRecognizer(target: self, action: #selector(PostCell.tappedImage(_:)))
-        tapImage.numberOfTapsRequired = 1
-        showcaseImg.addGestureRecognizer(tapImage)
-        showcaseImg.userInteractionEnabled = true
-        
-        
-        
-     //  FirebaseFanout()
+      
        
  
     }
     
     
     func FirebaseFanoutPostFollowers(postKey: String!){
-        
-        
-        // followingsRef = DataService.ds.REF_FOLLOWING_USERID
-        // followingsRef.observeEventType(.Value, withBlock:  { snapshot in
-       // followersRef = DataService.ds.REF_FOLLOWER_USERID
+      
         followersRef = DataService.ds.REF_BASE.child("posts-followers").child(postKey)
         followersRef.observeEventType(.Value, withBlock:  { snapshot in
             
@@ -135,10 +140,7 @@ class PostCell: UITableViewCell {
                 print("friendID  Array IIIIiiiiiiPostCelliiiiiii: \(postFollowersID)")
                 
                 self.postFollowersArray.append(postFollowersID)
-                
-             //   _ = Post(followersList: self.friendsArray)
-                
-                // self.usersLists.append(usersList)
+            
                 
                 for postFollowersID in self.postFollowersArray {
                     print(" Array friendID tonight  PostCell \(postFollowersID)")
@@ -150,11 +152,6 @@ class PostCell: UITableViewCell {
     
     func FirebaseFanout(){
         
-        
-        // followingsRef = DataService.ds.REF_FOLLOWING_USERID
-        // followingsRef.observeEventType(.Value, withBlock:  { snapshot in
-         followersRef = DataService.ds.REF_FOLLOWER_USERID
-       // followersRef = DataService.ds.REF_BASE.child("posts-followers").child(postKey)
         followersRef.observeEventType(.Value, withBlock:  { snapshot in
             
             
@@ -162,17 +159,13 @@ class PostCell: UITableViewCell {
             
             
             self.friendsArray = []
-            //  self.usersLists = []
             
             for child in snapshot.children {
                 let friendID = child.key as String
                 print("friendID  Array IIIIiiiiiiPostCelliiiiiii: \(friendID)")
                 
                 self.friendsArray.append(friendID)
-                
-                //   _ = Post(followersList: self.friendsArray)
-                
-                // self.usersLists.append(usersList)
+               
                 
                 for friendID in self.friendsArray {
                     print(" Array friendID tonight  PostCell \(friendID)")
@@ -187,7 +180,7 @@ class PostCell: UITableViewCell {
         profileImg.layer.cornerRadius = profileImg.frame.size.width / 2
         profileImg.clipsToBounds = true
         
-        showcaseImg.clipsToBounds = true
+      
     }
     
     override func setSelected(selected: Bool, animated: Bool) {
@@ -195,7 +188,7 @@ class PostCell: UITableViewCell {
     }
     
     
-    func  configureCell(post: Post, img: UIImage? ) {   // before it was configureCell(post: Post) { }
+    func  configureCell(post: Post, img: UIImage? , urlVideo: NSURL? ) {   // before it was configureCell(post: Post) { }
         
         
         
@@ -206,6 +199,29 @@ class PostCell: UITableViewCell {
         
        
         self.postKey = post.postKey
+        
+        let buttonVideo2 =  post.mediaType
+        
+        if buttonVideo2  != "VIDEO" {
+            
+           
+        
+        let tapImage = UITapGestureRecognizer(target: self, action: #selector(PostCell.tappedImage(_:)))
+        tapImage.numberOfTapsRequired = 1
+        showcaseImg.addGestureRecognizer(tapImage)
+        showcaseImg.userInteractionEnabled = true
+        
+        }
+        
+        if buttonVideo2  == "VIDEO" {
+            
+            let tapImage = UITapGestureRecognizer(target: self, action: #selector(PostCell.tappedVideoImage(_:)))
+            tapImage.numberOfTapsRequired = 1
+            showcaseImg.addGestureRecognizer(tapImage)
+           showcaseImg.userInteractionEnabled = true
+            //self.showcaseImg.hidden = true
+            
+        }
         
          // self.followersList = post.followersList
         
@@ -229,6 +245,49 @@ class PostCell: UITableViewCell {
         } else {
             self.descriptionText.hidden = true
         }
+        
+        var buttonVideo =  post.mediaType
+        
+        if buttonVideo  == "VIDEO" {
+            self.playBtn.hidden = false
+ 
+        } else {
+            self.playBtn.hidden = true
+ 
+         
+        }
+        
+        if buttonVideo == "EVENT" {
+            self.newEventBtn.hidden = false
+            self.titleLbl.hidden = false
+            self.likeLbl.hidden = true
+            self.dislikeLbl.hidden = true
+            self.likeImage.hidden = true
+            self.dislikeImage.hidden = true
+            self.commentBtn.hidden = true
+            self.timeLabel.hidden = true
+            
+            //var capitaliteTitleLbl = post.eventTitle
+            
+            self.titleLbl.text = (post.eventTitle).uppercaseString
+            
+
+        } else{
+           
+            self.newEventBtn.hidden = true
+            self.titleLbl.hidden = true
+            self.likeLbl.hidden = false
+            self.dislikeLbl.hidden = false
+            self.likeImage.hidden = false
+            self.dislikeImage.hidden = false
+            self.commentBtn.hidden = false
+            self.timeLabel.hidden = false
+            
+
+
+        }
+        
+        
         
      //end Sep14
         //self.descriptionText.text = post.postDescription // commented out sep 14
@@ -292,25 +351,30 @@ class PostCell: UITableViewCell {
   /// the bellow code can be done with youtube video Firebase 3. How to group message EP10 min 11:00
         
         if post.imageUrl != nil {
-            
+
+
             if img != nil {
-                self.showcaseImg.image = img!
+                self.showcaseImg.image = img
             } else {
-                request = Alamofire.request(.GET, post.imageUrl!).validate(contentType: ["image/*"]).response(completionHandler: { request, response, data, err in
-                    
-                    if err == nil {
-                        if let img = UIImage(data: data!) {
-                            
-                            self.showcaseImg.image = img
-                            
-                            FeedVC.imageCache.setObject(img, forKey: self.post.imageUrl!)
-                            
+                let ref = FIRStorage.storage().referenceForURL(post.imageUrl!)
+                ref.dataWithMaxSize( 2 * 1024 * 1024, completion: { (data, error) in
+                    if error != nil {
+                        print("JESS: Unable to download image from Firebase storage")
+                    } else {
+                        print("JESS: Image downloaded from Firebase storage")
+                        if let imgData = data {
+                            if let img = UIImage(data: imgData) {
+                                self.showcaseImg.image = img
+                                FeedVC.imageCache.setObject(img, forKey: post.imageUrl!)
+                            }
                         }
                     }
                 })
-                }
+}
             
             
+      
+
             }
         
         
@@ -472,16 +536,15 @@ class PostCell: UITableViewCell {
             self.delegate2!.ContactIDSegueFromCell(contactID: self.contactId)
             print("Segue Agosto 1xxxxx: \(self.contactId)")
        // FeedVC.performSegueWithIdentifier("segue_Profile_Name", sender: sender){
-        
-    }
+     }
     }
     
     
-    //Delete complete post in all its locations.   Only the User Post. 
+    //Delete complete post in all its locations.   Only the User's Post. 
     @IBAction func deletePostByUID(sender: AnyObject) {
         
         print("Delete BTn Pressed")
-        print("Delete Photo from Storage: \(post.imageUrl!)")
+        print("Delete Photo from Storage: \(post.imageUrl)")
         
         let   postID = post.postKey
         
@@ -501,33 +564,86 @@ class PostCell: UITableViewCell {
         DeleteRef6.removeValue()
         
        DeleteRef3 = DataService.ds.REF_TIMELINE_POST  //("timeline")
+    
+        
+        
+       DataService.ds.REF_TIMELINE_POST_USERID.child(postID).removeValue()   //child("timeline").child(uid!)
+        
+        // delete your own post
+        DeleteRef3.child(KEY_UID!).child(postID).removeValue()   //("timeline")
+        DataService.ds.REF_BASE.child("posts-followers").child(postID).child(KEY_UID!).removeValue()
+       
       
         for postFollowersID in self.postFollowersArray {
             
             DeleteRef3.child(postFollowersID).child(postID).removeValue()
             DataService.ds.REF_BASE.child("posts-followers").child(postID).child(postFollowersID).removeValue()
-            
-         //delete photo posted. 
-            
-            // Create a reference to the file to delete
-            let photoPostRef = storage.referenceForURL(post.imageUrl!)  // url
-            
-          //  let desertRef = storageRef.child(post.imageUrl!)
-            // Delete the file
-            photoPostRef.deleteWithCompletion { (error) -> Void in
-                if (error != nil) {
-                    // Uh-oh, an error occurred!
-                    print("error deleting photo")
-                } else {
-                    // File deleted successfully
-                    print("File deleted successfully")
-                }
-            }
-      
-            
+           
         }
+            // Create a reference to the file to delete
+             var  imageToDelete = post.mediaType
+           // if imageToDelete = "VIDEO" || "PHOTO" {  //"VIDEO" || "PHOTO"
+            switch imageToDelete {
+                case "VIDEO":
+                        DeleteVideo_Photo()
+                
+                case "PHOTO":
+                    
+                    DeletePhoto()
+                
+                case "TEXT":
+                    print("Do Nothing")
+                
+                case "EVENT":
+                    print("Do Nothing")
+                
+                default:
+                    print("Do Nothing")
+            }
         
+    }
+    
+    func DeletePhoto(){
+        let photoPostRef = storage.referenceForURL((post.imageUrl)!)  // url
         
+        //  let desertRef = storageRef.child(post.imageUrl!)
+        // Delete the file
+        photoPostRef.deleteWithCompletion { (error) -> Void in
+            if (error != nil) {
+                // Uh-oh, an error occurred!
+                print("error deleting photo")
+            } else {
+                // File deleted successfully
+                print("Photo File deleted successfully")
+            }
+        }
+       
+        
+    }
+    
+    func DeleteVideo_Photo(){
+        let photoPostRef = storage.referenceForURL((post.imageUrl)!)  // url
+         let videoPostRef = storage.referenceForURL((post.videoUrl)!)
+        
+        photoPostRef.deleteWithCompletion { (error) -> Void in
+            if (error != nil) {
+                // Uh-oh, an error occurred!
+                print("error deleting photo")
+            } else {
+                // File deleted successfully
+                print("Photo File deleted successfully")
+            }
+        }
+        videoPostRef.deleteWithCompletion { (error) -> Void in
+            if (error != nil) {
+                // Uh-oh, an error Deleting Video occurred!
+                print("error deleting photo")
+            } else {
+                // Video File deleted successfully
+                print(" Video  File deleted successfully")
+            }
+        }
+
         
     }
     // Delete only those post on my timeline or Wall
@@ -542,24 +658,7 @@ class PostCell: UITableViewCell {
     }
     
     
-    //  Segue Image to a imageVC
-    
- /*   @IBAction func imageBtn_To_Segue(sender: AnyObject) {
-        
-        let postKey_Segue = post.postKey
-        
-        print("Segue Agosto 7 postKey_Segue \(postKey_Segue)")
-        
-        if(self.delegate3 != nil){ //Just to be safe.
-            
-       self.delegate3!.ImageURLSegue_Cell(postKey_Segue: postKey_Segue)
-           
-            
  
-        }
-        
-        
-    }  */
     
     func tappedImage(sender: UITapGestureRecognizer)
     {
@@ -575,4 +674,46 @@ class PostCell: UITableViewCell {
     }
 }
     
+    
+    func tappedVideoImage(sender: UITapGestureRecognizer)
+    {
+        
+        
+        //videoDelegate4
+        let videoUrl_segue = post.videoUrl
+        
+        print("videoURL: \(videoUrl_segue)")
+        
+        if(self.videoDelegate4 != nil){ //Just to be safe.
+            self.videoDelegate4!.VideoURLSegue_Cell(videoUrl_segue: videoUrl_segue!)
+            
+        }
+      
+    }
+    
+  
+    @IBAction func playBtnAction(sender: AnyObject) {
+        
+        let videoUrl_segue = post.videoUrl
+        
+        print("videoURL: \(videoUrl_segue)")
+        
+        if(self.videoDelegate4 != nil){ //Just to be safe.
+            self.videoDelegate4!.VideoURLSegue_Cell(videoUrl_segue: videoUrl_segue!)
+            
+        }
+
+    }
+   
+    @IBAction func linkToEventBTn(sender: UIButton) {
+       
+        let eventKey_segue = post.eventKey
+        
+       print("linkToEventBTn pressed:  \(eventKey_segue)")
+        
+        if(self.EventDelegate5 != nil){ //Just to be safe.
+            self.EventDelegate5!.EventSegue_Cell(eventKey_segue: eventKey_segue!)
+            
+        }
+    }
 }

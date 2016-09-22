@@ -4,7 +4,7 @@
 //
 //  Created by christian landa on 9/14/16.
 //  Copyright © 2016 christian landa. All rights reserved.
-//
+// youtube  firebae 3 Episode 6  min 16
 
 import UIKit
 
@@ -12,7 +12,7 @@ let imageCache = NSCache()
 
 extension UIImageView {
     
- /*   func loadImageUsingCacheWithUrlString(urlString: String){
+    func loadImageUsingCacheWithUrlString(urlString: String){
         
         self.image = nil 
         
@@ -25,7 +25,7 @@ extension UIImageView {
         
         // otherwise fire off a new download 
         
-        let url = NSURL(string: imageUrl)
+        let url = NSURL(string: urlString)
         NSURLSession.sharedSession().dataTaskWithURL(url!,
             completionHandler:  { (data, response, error) in
             
@@ -45,5 +45,5 @@ extension UIImageView {
                
             })
         }).resume()
-    }  */
+    }
 }

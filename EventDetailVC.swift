@@ -42,6 +42,7 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
     var coming_Array: [String] = []
     var comingsRef: FIRDatabaseReference?
     var friendReference: FIRDatabaseReference?
+    var followersRef: FIRDatabaseReference?
 
     var contacts = [Contact]()
     
@@ -52,7 +53,7 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
     var geoFireRef: FIRDatabaseReference!
     var geoFireEventRef: FIRDatabaseReference!
     
-    
+    var postFollowersArray: [String] = []
   //  let refreshControl: UIRefreshControl = UIRefreshControl()
     
     override func viewDidLoad() {
@@ -116,7 +117,8 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
         QueryMyEvent_Timeline()
-        FirebaseFanoutFollowers()
+        //FirebaseFanoutFollowers()
+        FirebaseFanoutPostFollowers(eventKey)
         // self.navigationController?.toolbarHidden = false
         self.navigationController?.setNavigationBarHidden(false, animated: animated)
         self.tabBarController?.tabBar.hidden = false
@@ -349,6 +351,34 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
                 
         })
     }
+    
+    func FirebaseFanoutPostFollowers(eventKey: String!){
+      
+        followersRef = DataService.ds.REF_BASE.child("event-followers").child(eventKey)
+        followersRef!.observeEventType(.Value, withBlock:  { snapshot in
+            
+            
+            print("new snapshot array: \(snapshot.key)")
+            
+            
+            self.postFollowersArray = []    // self.friendsArray = [] for  self.postFollowersArray = []
+            //  self.usersLists = []
+            
+            for child in snapshot.children {
+                let postFollowersID = child.key as String
+                print("friendID  Array IIIIiiiiiiPostCelliiiiiii: \(postFollowersID)")
+                
+                self.postFollowersArray.append(postFollowersID)
+                
+                
+                for postFollowersID in self.postFollowersArray {
+                    print(" Array friendID tonight  PostCell \(postFollowersID)")
+                }
+                
+            }
+        })
+    }
+
 
     // 
     func QueryUsers(){
@@ -402,40 +432,7 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
     })
     }
     
-    func FirebaseFanoutFollowers(){
-        
-        
-        DataService.ds.REF_FOLLOWER_USERID.observeEventType(.Value, withBlock:  { snapshot in
-            
-            
-            print("new snapshot array: \(snapshot.key)")
-            
-            
-            self.friendsArray = []
-            
-            for child in snapshot.children {
-                let friendID = child.key as String
-                print("friendID  Array IIIIiiiiiiiiiiiiiiiii: \(friendID)")
-                
-                self.friendsArray.append(friendID)
-                
-                _ = Post(followersList: self.friendsArray)
-                
-                
-                for friendID in self.friendsArray {
-                    print(" Array friendID tonight \(friendID)")
-                }
-                
-            }
-            
-            
-            
-            }, withCancelBlock: { (error) ->  Void in
-                
-                
-        })
-    }
-
+    
     
     
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
@@ -464,31 +461,54 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
     
     @IBAction func DeleteEventBtn(sender: AnyObject) {
         
-    
+        let optionMenu = UIAlertController(title: nil, message: "Are You Sure!", preferredStyle: .ActionSheet)
         
-        let alertController = UIAlertController(title: "DELETE", message:
-            "ARE YOU SURE!", preferredStyle: UIAlertControllerStyle.Alert)
+        let deleteAction = UIAlertAction(title: "Delete", style: .Default, handler: {
+            (alert: UIAlertAction!) -> Void in
+            print("File Deleted")
+            self.deleteEvent()
+        })
+        
      
-        alertController.addAction(UIAlertAction(title: "Dismiss", style: UIAlertActionStyle.Default,handler: nil))
-        alertController.addAction(UIAlertAction(title: "DELETE", style: .Default, handler: { action in
-            
-           self.performSegueWithIdentifier("segue_Back_to_Events", sender: self)
-  
-         
-            
-        }) )
+        let cancelAction = UIAlertAction(title: "Cancel", style: .Cancel, handler: {
+            (alert: UIAlertAction!) -> Void in
+            print("Cancelled")
+        })
         
-        
-        
-       func deleteBtn() {
+        optionMenu.addAction(deleteAction)
+        optionMenu.addAction(UIAlertAction(title: "Dismiss", style: UIAlertActionStyle.Default,handler: nil))
+       
+        self.presentViewController(optionMenu, animated: true, completion: nil)
+    }
+    
+    
+       func deleteEvent() {
         
        // performSegueWithIdentifier("segue_Back_to_Events", sender: nil)
         
         ref.child("events").child(eventKey).removeValue()
+        ref.child("user-events-id").child(KEY_UID!).child(eventKey).removeValue()
         
-         for friendID in friendsArray {
-        ref.child("events-timeline").child(friendID).child(eventKey).removeValue()
+       
+        
+        for postFollowersID in self.postFollowersArray {
+            
+            ref.child("events-timeline").child(postFollowersID).child(eventKey).removeValue()
+            
+            ref.child("timeline").child(postFollowersID).child(eventKey).removeValue()
+
+            DataService.ds.REF_BASE.child("event-followers").child(eventKey).child(postFollowersID).removeValue()
         }
+        
+        //Delete your own EVent
+        
+        ref.child("events-timeline").child(KEY_UID!).child(eventKey).removeValue()
+        
+        ref.child("timeline").child(KEY_UID!).child(eventKey).removeValue()
+        
+        DataService.ds.REF_BASE.child("event-followers").child(eventKey).child(KEY_UID!).removeValue()
+        
+        // end Delte your own event
         
         ref.child("host-events-id").child(KEY_UID!).child(eventKey).removeValue()
         ref.child("user-events").child(KEY_UID!).child(eventKey).removeValue()  // check maybe not needed user-vents
@@ -507,14 +527,7 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
       
         
         self.performSegueWithIdentifier("segue_Back_to_Events", sender: nil)
-        
-        
-        }
-       
-       self.presentViewController(alertController, animated: true) { 
-         deleteBtn()
-        
-        }
+    
         
 
         

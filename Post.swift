@@ -12,6 +12,7 @@ import Firebase
 class Post {
     private var _postDescription: String?
     private var _imageUrl: String?
+    private var _videoUrl: String?
     private var _avatar: String?
     private var _likes: Int!
     private var _fullName: String!
@@ -26,6 +27,10 @@ class Post {
     private var _followersList: [String]?
     private var _friendsArraylist: [String]!
     private var _time: String!
+    private var _mediaType: String!
+    private var _eventKey: String?
+    private var _eventTitle: String!
+    
     
     var postDescription: String?{
         return _postDescription
@@ -33,6 +38,10 @@ class Post {
     
     var imageUrl: String?{
         return _imageUrl
+    }
+    
+    var videoUrl: String?{
+        return _videoUrl
     }
     
     var avatar: String?{
@@ -75,16 +84,32 @@ class Post {
         return _friendsArraylist
     }
     
+    var mediaType: String{
+        return _mediaType
+    }
+    
     var time: String{
         return _time
     }
     
-    init(description: String?, imageUrl: String?, fullName: String, avatar: String?, time: String) {
+    var eventKey: String?{
+        return _eventKey
+    }
+    
+    var eventTitle: String {
+        return _eventTitle
+    }
+    
+    init(description: String?, imageUrl: String?, videoUrl: String?, fullName: String, avatar: String?, time: String, mediaType: String, eventKey: String?, eventTitle: String) {
         self._postDescription = description
         self._imageUrl = imageUrl
+        self._videoUrl = videoUrl
         self._fullName = fullName
         self._avatar = avatar
         self._time = time
+        self._mediaType = mediaType
+        self._eventKey = eventKey
+        self._eventTitle = eventTitle
     }
     
     
@@ -102,6 +127,10 @@ class Post {
         
         if let imgUrl = dictionary["imageUrl"] as? String {
             self._imageUrl = imgUrl
+        }
+        
+        if let vidUrl = dictionary["videoUrl"] as? String {
+            self._videoUrl = vidUrl
         }
         
         if let desc = dictionary["description"] as? String {
@@ -122,6 +151,15 @@ class Post {
         
         if let time = dictionary["time"] as? String {
             self._time = time
+        }
+        if let mediaType = dictionary["mediaType"] as? String {
+            self._mediaType = mediaType
+        }
+        if let eventKey = dictionary["eventKey"] as? String {
+            self._eventKey = eventKey
+        }
+        if let eventTitle = dictionary["eventTitle"] as? String {
+            self._eventTitle = eventTitle
         }
         
     //  self._postRef = DataService.ds.REF_POSTS.child(self._postKey)

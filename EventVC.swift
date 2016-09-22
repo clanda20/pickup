@@ -86,8 +86,8 @@ class EventVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     func QueryMyEvent_Timeline(){
         
-        
-        ref.child("events-timeline").child(KEY_UID!).observeEventType(.Value , withBlock: { (snapshot) in  //observeSingleEventOfType
+        //DataService.ds.REF_TIMELINE_POST_USERID.queryOrderedByChild("time").queryLimitedToLast(50).observeEventType(.Value
+        ref.child("events-timeline").child(KEY_UID!).queryOrderedByChild("dateRaw").queryLimitedToLast(100).observeEventType(.Value , withBlock: { (snapshot) in  //observeSingleEventOfType
             //  self.posts = []
             
             print(snapshot.value)
@@ -120,6 +120,7 @@ class EventVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
                     }
                 }
             }
+            //self.events = self.events.reverse()
             self.tableView.reloadData()
             
             

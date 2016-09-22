@@ -118,7 +118,7 @@ class EditProfileVC: UIViewController, UINavigationControllerDelegate,UIImagePic
         importedImageView.image = image
       //  var imageData = NSData()
         
-         imageData = UIImageJPEGRepresentation(image, 0.2)!
+         imageData = UIImageJPEGRepresentation(image, 0.05)!
         imageSaved = imageData.base64EncodedStringWithOptions([])
         
         self.dismissViewControllerAnimated(true, completion: nil)

@@ -24,6 +24,8 @@ class contactProfileVC: UIViewController {
     
     var posts_Array: [String] = []
     var eventsArray: [String] = []
+    var event_Array: [String] = []
+    var posts_contactID_Array: [String] = []
     
     var activeUserInfo: NSDictionary?
     
@@ -53,6 +55,11 @@ class contactProfileVC: UIViewController {
        
         InsideQueryUserEvent()
         //Dismiss Keyboard
+        FirebaseFanout()
+        //  NSFetchRequest()
+        FirebaseFanoutEvent()
+        FirebaseFanout_ContactID()
+        
         
         let tapGesture = UITapGestureRecognizer(target: self, action: Selector("hideKeyboard"))
         tapGesture.cancelsTouchesInView = true
@@ -143,8 +150,9 @@ class contactProfileVC: UIViewController {
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
         self.navigationController?.setNavigationBarHidden(false, animated: animated)
-        FirebaseFanout()
-        NSFetchRequest()
+       // FirebaseFanout()
+      //  NSFetchRequest()
+        //FirebaseFanoutEvent()
         
     }
     
@@ -177,6 +185,8 @@ class contactProfileVC: UIViewController {
         let uid = NSUserDefaults.standardUserDefaults().valueForKey("uid") as? String
         let followerRefContactID = DataService.ds.REF_FOLLOWER.child(contactId!).child(uid!)
         let followerRefUserID = DataService.ds.REF_FOLLOWER.child(KEY_UID!).child(contactId!)
+        
+        
        
 
         if isFollowing {
@@ -189,17 +199,27 @@ class contactProfileVC: UIViewController {
             
             // Removing all  posts of the unfollowed user.
             
-            for postIDx in self.posts_Array {
+         /*   for postIDx in self.posts_Array {
                 
                 DataService.ds.REF_TIMELINE_POST_USERID.child(postIDx).removeValue()
                 
                 
-                print(" Array postID Deleting these Post \(postIDx)")
+            } */
+            
+            
+            //Events Delte
+            
+            
+            
+            for event2IDx in self.event_Array {   //   delete  event from timeline of the deleted user
+                
+                DataService.ds.REF_BASE.child("timeline").child(KEY_UID!).child(event2IDx).removeValue()
+                DataService.ds.REF_BASE.child("events-timeline").child(KEY_UID!).child(event2IDx).removeValue()
+                DataService.ds.REF_BASE.child("event-followers").child(event2IDx).child(contactId!).removeValue()
             }
             
+        
             
-            
-         
                 
              eventTimelineRef = DataService.ds.REF_BASE.child("events-timeline").child(contactId!)
                 
@@ -207,17 +227,42 @@ class contactProfileVC: UIViewController {
                 
                     eventTimelineRef!.child(eventID).removeValue()
                     
+                    DataService.ds.REF_BASE.child("event-followers").child(eventID).child(contactId!).removeValue()  // probably delete
+                   
+                    
+                    
+                    DataService.ds.REF_BASE.child("timeline").child(contactId!).child(eventID).removeValue()
+                    
+
+                    
                 }
                 
             
             
                 for eventID in self.eventsArray {
                     
-                    eventComingRef = DataService.ds.REF_BASE.child("usersshar-event-coming").child(eventID).child("coming")
+                    eventComingRef = DataService.ds.REF_BASE.child("users-event-coming").child(eventID).child("coming")
                 
                     eventComingRef!.child(contactId!).removeValue()
             
                 }
+            
+           //posts delete
+            
+            for postIDx_ContactID in self.posts_contactID_Array {    // own my timeline
+                
+                DataService.ds.REF_BASE.child("timeline").child(KEY_UID!).child(postIDx_ContactID).removeValue()  // ok
+                
+            }
+          
+           
+            for postIDx in self.posts_Array {  // on follower time line
+                
+               // DataService.ds.REF_BASE.child("timeline").child(KEY_UID!).child(postIDx).removeValue()
+            
+                DataService.ds.REF_BASE.child("timeline").child(contactId!).child(postIDx).removeValue()
+            
+           }
             
             self.followBtn.setTitle("Follow", forState: .Normal)
             self.isFollowed = false
@@ -291,7 +336,7 @@ class contactProfileVC: UIViewController {
         
         
         
-        followersRef = DataService.ds.REF_USER_POST.child(self.contactId!)
+        followersRef = DataService.ds.REF_BASE.child("user-posts-id").child(KEY_UID!) // followersRef = DataService.ds.REF_USER_POST.child(self.contactId!)
         followersRef!.observeEventType(.Value, withBlock:  { snapshot in
             
             
@@ -326,6 +371,86 @@ class contactProfileVC: UIViewController {
         })
     }
     
+    func FirebaseFanout_ContactID(){
+        
+        
+        
+        followersRef = DataService.ds.REF_BASE.child("user-posts-id").child(self.contactId!) // followersRef = DataService.ds.REF_USER_POST.child(self.contactId!)
+        followersRef!.observeEventType(.Value, withBlock:  { snapshot in
+            
+            
+            print("new snapshot array: \(snapshot.key)")
+            
+            
+            self.posts_contactID_Array = []
+            
+            
+            for child in snapshot.children {
+                let postID = child.key as String
+                print("postID  Array IIIIiiiiiDelete Postiiiiiiiii: \(postID)")
+                
+                self.posts_contactID_Array.append(postID)
+                
+                _ = Post(followersList: self.posts_contactID_Array)
+                
+                
+                
+                for postIDx_ContactID in self.posts_contactID_Array {
+                    print(" Array postID Delete Post \(postIDx_ContactID)")
+                }
+                
+            }
+            
+            
+            
+            
+            }, withCancelBlock: { (error) ->  Void in
+                
+                
+        })
+    }
+
+    
+    func FirebaseFanoutEvent(){
+        
+        
+        
+        followersRef = DataService.ds.REF_BASE.child("host-events-id").child(self.contactId!)
+        followersRef!.observeEventType(.Value, withBlock:  { snapshot in
+            
+            
+            print("new snapshot array: \(snapshot.key)")
+            
+            
+            self.event_Array = []
+            
+            
+            for child in snapshot.children {
+                let eventID = child.key as String
+              
+                
+                self.event_Array.append(eventID)
+                
+                _ = Post(followersList: self.event_Array)
+                
+                
+                
+                for event2IDx in self.event_Array {
+                    print(" Array event host id \(event2IDx)")
+                }
+                
+            }
+            
+            
+            
+            
+            }, withCancelBlock: { (error) ->  Void in
+                
+                
+        })
+    }
+    
+
     
    
 

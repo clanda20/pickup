@@ -116,7 +116,7 @@ class ViewController: UIViewController, UITextFieldDelegate{
 
                         //Write DataBase
                         
-                        let user = ["provider": credential.provider,"id": "\(authID!)", "fullName": "\(fullName!.uppercaseString)", "firstName": firstName, "lastName": lastName,  "avatar": "\(photoURL!)" ,"likes":"0", "dislikes":"0", "email": "\(email!)","postNumber":"0", "followers": "0", "following": "0", "geo":"geo"]
+                        let user = ["provider": credential.provider,"id": "\(authID!)", "fullName": "\(fullName!.uppercaseString)", "firstName": firstName, "lastName": lastName,  "avatar": "\(photoURL!)" , "email": "\(email!)"]
                       //  DataService.ds.createFirebaseUser(authID!, user: user )
                         self.createFirebaseUser(authID!, user: user )
                         
