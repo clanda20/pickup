@@ -59,6 +59,7 @@ class PostCell: UITableViewCell {
     
     @IBOutlet weak var timeLabel: UILabel!
     @IBOutlet weak var titleLbl: UILabel!
+    @IBOutlet weak var changesLbl: UILabel!
   
     
   
@@ -260,12 +261,14 @@ class PostCell: UITableViewCell {
         if buttonVideo == "EVENT" {
             self.newEventBtn.hidden = false
             self.titleLbl.hidden = false
+            self.changesLbl.hidden = false
             self.likeLbl.hidden = true
             self.dislikeLbl.hidden = true
             self.likeImage.hidden = true
             self.dislikeImage.hidden = true
             self.commentBtn.hidden = true
             self.timeLabel.hidden = true
+            
             
             //var capitaliteTitleLbl = post.eventTitle
             
@@ -286,6 +289,17 @@ class PostCell: UITableViewCell {
 
 
         }
+        
+        let tittleLabelChanges =  post.eventTitleChanges
+        
+        if tittleLabelChanges == "CHANGES" {
+            
+            self.changesLbl.hidden = false
+            
+        } else {
+            self.changesLbl.hidden = true
+        }
+        
         
         
         

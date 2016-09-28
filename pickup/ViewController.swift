@@ -59,6 +59,8 @@ class ViewController: UIViewController, UITextFieldDelegate{
         }
     }
     
+    
+    
     @IBAction func fbBtnPressed(sender: UIButton!) {
         let facebookLogin = FBSDKLoginManager()
        // let facebookLogin = FBSDKLoginButton()

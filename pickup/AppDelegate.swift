@@ -10,6 +10,11 @@ import UIKit
 import FBSDKCoreKit
 import FBSDKLoginKit
 import Firebase
+//import UserNotifications
+
+
+import FirebaseInstanceID
+import FirebaseMessaging
 
 //import Firebase
 
@@ -18,30 +23,92 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
     
-    override init() {
+ /*   override init() {
         super.init()
-       FIRApp.configure()
+    
         FIRDatabase.database().persistenceEnabled = true
-    } 
+        
+        
+       
+    }  */
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
-       
-      // FIRApp.configure()
         
-     // return true
         
-        return FBSDKApplicationDelegate.sharedInstance().application(application, didFinishLaunchingWithOptions: launchOptions)
+    FIRApp.configure()
         
-        // Use Firebase library to configure APIs
-        
-        // [START firebase_configure]
-        // Use Firebase library to configure APIs
-       // FIRApp.configure()
-        // [END firebase_configure]
-      // return  FBSDKApplicationDelegate.sharedInstance().application(application, didFinishLaunchingWithOptions:launchOptions)
-        
+    FIRDatabase.database().persistenceEnabled = true
         
        
+        let notificationTypes : UIUserNotificationType = [UIUserNotificationType.Alert, .Badge, .Sound]
+        let notificationSettings = UIUserNotificationSettings(forTypes: notificationTypes, categories: nil)
+        application.registerForRemoteNotifications()
+        application.registerUserNotificationSettings(notificationSettings)
+       
+        return true
+       
+     
+       
+    }
+    
+    
+    // [START receive_message]
+    func application(application: UIApplication, didReceiveRemoteNotification userInfo: [NSObject : AnyObject],
+                     fetchCompletionHandler completionHandler: (UIBackgroundFetchResult) -> Void) {
+        
+    
+            print(" ##### ", userInfo)
+            // create a corresponding local notification
+            
+            if (userInfo["subject"] != nil && userInfo["to_user_ids"] != nil){
+                
+                let notification = UILocalNotification()
+                notification.alertBody = userInfo["subject"] as? String // text that will be displayed in the notification
+                notification.alertAction = "open" // text that is displayed after "slide to..." on the lock screen - defaults to "slide to view"
+                notification.fireDate = NSDate.init() // todo item due date (when notification will be fired). immediately here
+                notification.soundName = UILocalNotificationDefaultSoundName // play default sound
+                UIApplication.sharedApplication().scheduleLocalNotification(notification)
+            }
+        }
+        // If you are receiving a notification message while your app is in the background,
+        // this callback will not be fired till the user taps on the notification launching the application.
+        // TODO: Handle data of notification
+        
+        // Print message ID.
+     //   print("Message ID: \(userInfo["gcm.message_id"])")
+        
+        // Print full message.
+       // print("%@", userInfo)
+   // }
+    // [END receive_message]
+    
+    
+    
+    // [START refresh_token]
+    func tokenRefreshNotification(notification: NSNotification) {
+        if let refreshedToken = FIRInstanceID.instanceID().token() {
+            print("InstanceID token: \(refreshedToken)")
+        }
+        
+        // Connect to FCM since connection may have failed when attempted before having a token.
+        connectToFcm()
+    }
+    
+    // [START connect_to_fcm]
+    func connectToFcm() {
+        FIRMessaging.messaging().connectWithCompletion { (error) in
+            if (error != nil) {
+                print("Unable to connect with FCM. \(error)")
+            } else {
+                print("Connected to FCM.")
+            }
+        }
+    }
+    // [END connect_to_fcm]
+    
+    func applicationDidEnterBackground(application: UIApplication) {
+        FIRMessaging.messaging().disconnect()
+        print("Disconnected from FCM.")
     }
 
     func applicationWillResignActive(application: UIApplication) {
@@ -49,10 +116,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.
     }
 
-    func applicationDidEnterBackground(application: UIApplication) {
-        // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
-        // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-    }
+   
 
     func applicationWillEnterForeground(application: UIApplication) {
         // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
@@ -60,6 +124,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationDidBecomeActive(application: UIApplication) {
         FBSDKAppEvents.activateApp()
+         connectToFcm() //added sep 
     
     }
 
@@ -71,6 +136,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }  
 
 }
+
+
 
 
 

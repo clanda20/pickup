@@ -209,8 +209,7 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
                     self.FirebaseFanout()
                     self.QueryUsers()
             })
-           // FirebaseFanout()
-           //  QueryUsers()
+          
             
         } else {
             
@@ -235,20 +234,9 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
                     self.QueryUsers()
             })
             
-            //FirebaseFanout()
-          //  QueryUsers()
         }
         
-        /*dispatch_after(
-            dispatch_time(
-                DISPATCH_TIME_NOW,
-                Int64(3.0 * Double(NSEC_PER_SEC))
-            ),
-            dispatch_get_main_queue(),
-            {
-                self.tableView.reloadData()
-            })
-          */
+        
         
         completion(comingRef: comingRef!)
         //self.tableView.reloadData()
@@ -442,20 +430,25 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
           
             let destinationVC = segue.destinationViewController as! GeoMapVC
             
-            destinationVC.eventKey   = self.eventKey
+                destinationVC.eventKey   = self.eventKey
             
         }
         
              if segue.identifier == "segue_EventCommentVC" {
-             let destinationVC = segue.destinationViewController as! EventCommentVC
-            destinationVC.eventKey =  self.eventKey
-             
+                 let destinationVC = segue.destinationViewController as! EventCommentVC
+                destinationVC.eventKey =  self.eventKey
              
              }
         
-            
-            
-       
+        
+        
+        if segue.identifier == "segue_Edit_Event"
+        {
+            let destinationVC = segue.destinationViewController as! EditEventVC
+           
+                destinationVC.eventKey   = self.eventKey
+           
+        }
         
     }
     
@@ -535,9 +528,11 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
     
     @IBAction func editEvenBtn(sender: AnyObject) {
         
+        performSegueWithIdentifier("segue_Edit_Event", sender: nil)
+        
+        
     }
     
-  
-
+    
    
 }

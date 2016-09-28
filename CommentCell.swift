@@ -24,16 +24,23 @@ class CommentCell: UITableViewCell {
     
     @IBOutlet weak var commentText: UILabel!
     
+ 
+    @IBOutlet weak var dateLbl: UILabel!
+    
+    @IBOutlet weak var deleteBtn: UIButton!
+    @IBOutlet weak var deleteBtn_friends_comment: UIButton!
+    
+    
     
     var comment: Comment!
-  //  var post: Post!
+    //  var post: Post!
     
     var value: Int!
     
     var postRefKey: FIRDatabaseReference!
     
     var userCommentsRef: FIRDatabaseReference!
-
+    
     var postKey:String?
     
     var commentKeyID:String?
@@ -42,12 +49,10 @@ class CommentCell: UITableViewCell {
     var  DeleteRef2: FIRDatabaseReference!
     var  DeleteRef3: FIRDatabaseReference!
     
-     var myCommentsArray: [String] = []
-     var myPostArray: [String] = []
-  
+    var myCommentsArray: [String] = []
+    var myPostArray: [String] = []
     
-    @IBOutlet weak var deleteBtn: UIButton!
-    @IBOutlet weak var deleteBtn_friends_comment: UIButton!
+    
     
      var delegate2 : ContactIDCommentCellDelegate?
     
@@ -95,6 +100,15 @@ class CommentCell: UITableViewCell {
         postRefKey = DataService.ds.REF_POSTCOMMENTS.child("postKey")  //added 6-29-16 //maybe mistake not affect anything
         
       //  print("PostKey PostCell XX: \(post.postKey)")
+        
+        
+        if let  seconds = Double(((comment.date))) {
+            let timeStampDate = NSDate(timeIntervalSince1970: seconds)
+            
+            let dateFormatter = NSDateFormatter()
+            dateFormatter.dateFormat = "E, MMM d, H:mm a"
+            self.dateLbl.text = dateFormatter.stringFromDate(timeStampDate)
+        }
         
         
         

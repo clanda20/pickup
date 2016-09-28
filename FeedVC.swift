@@ -106,7 +106,7 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
         tableView.delegate = self
         tableView.dataSource = self
         
-        tableView.estimatedRowHeight = 700//358
+        tableView.estimatedRowHeight = 680//358
         imagePicker = UIImagePickerController()
         imagePicker.delegate = self
         
@@ -316,7 +316,7 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
             return tableView.estimatedRowHeight
         } else {
             
-                return 150
+                return 170
             
         }
     }
@@ -470,24 +470,24 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
             
             }
         }
+       typeInSomethingAlert()
+    }
+   
+    func typeInSomethingAlert(){
         let optionMenu = UIAlertController(title: nil, message: "Type in something!", preferredStyle: .ActionSheet)
         
-       
+        
         
         
         let cancelAction = UIAlertAction(title: "Cancel", style: .Cancel, handler: {
             (alert: UIAlertAction!) -> Void in
             print("Cancelled")
         })
-      
+        
         optionMenu.addAction(UIAlertAction(title: "Dismiss", style: UIAlertActionStyle.Default,handler: nil))
         
         self.presentViewController(optionMenu, animated: true, completion: nil)
-
-        }
-    
-   
-    
+    }
    
     
     @IBAction func  selectImage(sender: UITapGestureRecognizer) {

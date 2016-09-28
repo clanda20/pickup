@@ -16,9 +16,9 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
     
     @IBOutlet weak var tableView: UITableView!
     
+    
     @IBOutlet weak var sendBtn: UIButton!
-  //  @IBOutlet weak var commentTxt: UITextView!
-//   @IBOutlet weak var commentField: MaterialTextField!
+ 
     
     @IBOutlet var textFieldToBottomLayoutGuideConstraint: NSLayoutConstraint!
 
@@ -43,7 +43,7 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
      static var imageCache = NSCache()
     
     // 
-    var keyboardHeight: CGFloat!
+  
     
     //variable to hold keyboard frame
    // var keyboard = CGRect()
@@ -58,8 +58,15 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        self.tableView.estimatedRowHeight = 80.0;
+         self.tableView.rowHeight = UITableViewAutomaticDimension;
         
-      //  tableView.backgroundColor = .redColor()
+        
+        self.tableView.setNeedsLayout()
+        self.tableView.layoutIfNeeded()
+        self.tableView.contentInset = UIEdgeInsetsMake(20, 0, 0, 0)
+        
+     
 
         tableView.delegate = self
         tableView.dataSource = self
@@ -80,11 +87,7 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
         self.navigationItem.title = "COMMENTS"
         
         
-        //disable button from the beginning
-      //  sendBtn.enabled = false
-        
-            //
-        
+       
        
         
         postID  = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
@@ -95,8 +98,6 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
         commentsRef = ref.child("post-comments").child(postID)
         
 
-   //   print("Value Postkey3:------------>>>> \(postID)")
-        
    
      DataService.ds.REF_POST_KEY.observeEventType(.Value, withBlock:  { snapshot in
         
@@ -126,95 +127,7 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
         })
     }
     
-    // 
-   /* func alignment(){
-    
-    let width  = self.view.frame.size.width
-    let height = self.view.frame.size.height
-        
-    
-    tableView.frame = CGRectMake(0, 0, width, height / 1.096 - self.navigationController!.navigationBar.frame.size.height - 20)
-    tableView.estimatedRowHeight = width / 5.3333
-    tableView.rowHeight = UITableViewAutomaticDimension
-        
-    commentTxt.frame = CGRectMake(10, tableView.frame.size.height + height / 56.9, width / 1.306, 33)
-    commentTxt.layer.cornerRadius = commentTxt.frame.size.width / 50
-        
-    sendBtn.frame = CGRectMake(commentTxt.frame.origin.x + commentTxt.frame.size.width + width / 32, commentTxt.frame.origin.y,
-                               width - ( commentTxt.frame.origin.x + commentTxt.frame.size.width) - (width / 32) * 2, commentTxt.frame.size.height)
-     
-    tableViewHeight = tableView.frame.size.height
-    commentHeight = commentTxt.frame.size.height
-    commentY = commentTxt.frame.origin.y
-        
-    }  */
-    
-    // func loading when keyboard is shown
-   // func keyboarWillShow(notification: NSNotification){
-
-      //  self.view.frame.origin.y = -150
-        
-      /*  let userInfo : NSDictionary = notification.userInfo!
-        
-        //define keyboard frame size
-        
-        let keyboardSize : CGSize = userInfo[UIKeyboardFrameBeginUserInfoKey]!.CGRectValue().size
-        
-        let offset: CGSize = userInfo[UIKeyboardFrameEndUserInfoKey]!.CGRectValue().size
-       // keyboard = (notification.userInfo?[UIKeyboardFrameEndUserInfoKey]!.CGRectValue)!.size
-        
-        if keyboardSize.height == offset.height {
-            if self.view.frame.origin.y == 0 {
-                UIView.animateWithDuration(0.15, animations: { 
-                    self.view.frame.origin.y -= keyboardSize.height
-                })
-            }
-        }
-        else {
-            UIView.animateWithDuration(0.15, animations: { 
-                self.view.frame.origin.y += keyboardSize.height - offset.height
-            })
-            
-        }
-        
-        //move UI up
-        
-     /*   UIView.animateWithDuration(0.4){
-            self.tableView.frame.size.height = self.tableViewHeight - self.keyboard.height - self.commentTxt.frame.size.height + self.commentHeight
-            
-            self.commentTxt.frame.origin.y = self.commentY - self.keyboard.height - self.commentHeight
-            
-            self.sendBtn.frame.origin.y = self.commentTxt.frame.origin.y
-      */  }   */
- //   }
-    
-    // func loading when keyboar is hidden
-  /*  func keyboarWillHide(notification: NSNotification) {
-        
-        self.view.frame.origin.y = 0
-        
-     /*   let userInfo : NSDictionary = notification.userInfo!
-         let keyboardSize : CGSize = userInfo[UIKeyboardFrameBeginUserInfoKey]!.CGRectValue().size
-        
-        self.view.frame.origin.y += keyboardSize.height  */
-
-        
-        // move UI down
-      /*  UIView.animateWithDuration(0.4) { () -> Void in
-            self.tableView.frame.size.height = self.tableViewHeight
-            self.commentTxt.frame.origin.y = self.commentY
-            self.sendBtn.frame.origin.y = self.commentY
-        
-        
-        }  */
-    }
- */
-    
-    
-    
-  /* override func viewWillAppear(animated: Bool) {
-        postKey = self.postkey
-    } */
+ 
 
     func numberOfSectionsInTableView(tableView: UITableView) -> Int {
         return 1
@@ -253,6 +166,8 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
 
     @IBAction func commentPost(sender: AnyObject) {
         
+      if let txt = commentField.text where txt != "" {
+        
         let uid = FIRAuth.auth()?.currentUser?.uid
   //  commentsRef.observeSingleEventOfType(.Value, withBlock: { (snapshot) in
             
@@ -262,6 +177,11 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
             if let uid = uid, commentField = self.commentField, user = snapshot.value as? [String : AnyObject] {
                 
                 print("Snapshot CommentVC--------: \(snapshot)")
+                
+                let time  = String(Int(NSDate().timeIntervalSince1970))
+
+                
+                
                 let comment = [
                     "uid": uid,
                     
@@ -269,6 +189,8 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
                     "text": commentField.text!,
                     "fullName": self.profileName,
                     "avatar": self.profileImg,
+                    "date" : time,
+                    
                 ]
               
                 
@@ -310,12 +232,39 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
                 }
                 commentField.text = ""
                 self.tableView.reloadData()
+                
+                
+                
+                
             }
         })
         
+        
+        commentField.resignFirstResponder()
+        
+      } else {
+        
+        typeInSomethingAlert()
+        }
+        
     }
     
-    
+
+    func typeInSomethingAlert(){
+        let optionMenu = UIAlertController(title: nil, message: "Type in something!", preferredStyle: .ActionSheet)
+        
+        
+        
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .Cancel, handler: {
+            (alert: UIAlertAction!) -> Void in
+            print("Cancelled")
+        })
+        
+        optionMenu.addAction(UIAlertAction(title: "Dismiss", style: UIAlertActionStyle.Default,handler: nil))
+        
+        self.presentViewController(optionMenu, animated: true, completion: nil)
+    }
     
    
     
@@ -326,10 +275,14 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
     }
     
     override func viewWillDisappear(animated: Bool) {
-        self.navigationController?.setNavigationBarHidden(true, animated: animated);
+       
         super.viewWillDisappear(animated)
         
-    
+         self.navigationController?.setNavigationBarHidden(true, animated: animated);
+        
+        //tableViewHeightConstraint.constant = tableView.contentSize.height
+
+        
             NSNotificationCenter.defaultCenter().removeObserver(self, name: UIKeyboardWillShowNotification, object: self.view.window)
             NSNotificationCenter.defaultCenter().removeObserver(self, name: UIKeyboardWillHideNotification, object: self.view.window)
 
@@ -391,12 +344,20 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
     func keyboardWillShow(notification: NSNotification) {
         if let keyboardSize = (notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.CGRectValue() {
             self.textFieldToBottomLayoutGuideConstraint?.constant += keyboardSize.height
+            
+           var keyboardHeight = keyboardSize.height
+            
+          
+            
+            
+            
         }
     }
     
     func keyboardWillHide(notification: NSNotification) {
         if let keyboardSize = (notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.CGRectValue() {
             self.textFieldToBottomLayoutGuideConstraint?.constant -= keyboardSize.height
+            
           //  self.keyboardHeight = keyboardSize.height
             
             
@@ -409,18 +370,21 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
         return (notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as! NSValue).CGRectValue().height
     }
     
-   // deinit {
-     //   NSNotificationCenter.defaultCenter().removeObserver(self)
-   // }
-    func textFieldDidBeginEditing(textField: UITextField) {
-        
-      // getKeyboardHeight(notification)
     
-        animateViewMoving(true, moveValue: 270)
+
+   
+   func textFieldDidBeginEditing(textField: UITextField) {
+        
+    
+        animateViewMoving(true, moveValue: 260)   // 260
     }
     
+   
+    
     func textFieldDidEndEditing(textField: UITextField) {
-        animateViewMoving(false, moveValue: 270)
+        
+     
+        animateViewMoving(false, moveValue: 260)    //260
     }
     
     // Lifting the view up
@@ -457,7 +421,16 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
             
         }
     }
+    
+    func textFieldShouldReturn(textField: UITextField) -> Bool {
+        view.endEditing(true)
+        commentField.resignFirstResponder()
+       
+        return true
+    }
    
+
+    
 }
 
 

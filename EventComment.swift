@@ -19,6 +19,8 @@ class EventComment {
     private var _commentKey: String!
     private var _commentRef: FIRDatabaseReference!
     private var _uid: String!
+    private var _date: String!
+
     
     var commentDescription: String? {
         return _commentDescription
@@ -53,13 +55,20 @@ class EventComment {
         return _commentRef
     }
     
-    init(description: String, imageUrl2: String?, fullName: String,avatar: String?) {
+    var date: String{
+        return _date
+    }
+    
+    
+    init(description: String, imageUrl2: String?, fullName: String,avatar: String?, date: String) {
         
         self._commentDescription = description
         self._imageUrl2 = imageUrl2
         self._fullName = fullName
         self._avatar = avatar
-        
+        self._date = date
+
+    
     }
     
     init(commentKey: String, dictionary: Dictionary<String, AnyObject>) {
@@ -83,6 +92,9 @@ class EventComment {
         }
         if let uid = dictionary["uid"] as? String {
             self._uid = uid
+        }
+        if let date = dictionary["date"] as? String {
+            self._date = date
         }
         
 self._commentRef = DataService.ds.REF_BASE.child("event-comments").child(self._commentKey)

@@ -1,8 +1,8 @@
 //
-//  AddVC.swift
+//  EditEventVC.swift
 //  pickup
 //
-//  Created by christian landa on 8/19/16.
+//  Created by christian landa on 9/21/16.
 //  Copyright © 2016 christian landa. All rights reserved.
 //
 
@@ -12,18 +12,21 @@ import Firebase
 import FirebaseDatabase
 
 
-
-protocol HandleMapSearch {
+protocol HandleMapSearchEditEvent {
     func dropPinZoomIn(placemark:MKPlacemark)
 }
 
 
-class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextViewDelegate{
+class EditEventVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextViewDelegate{
     
     @IBOutlet  var saveBtnItem: UIBarButtonItem!
     @IBOutlet  var doneBtnItem: UIBarButtonItem!
+    
+    
+    
+    
     @IBOutlet  var doneLeftBtnItem: UIBarButtonItem!
-
+    
     @IBOutlet weak var titleTextField: UITextField!
     @IBOutlet weak var dateBtn: UIButton!
     @IBOutlet weak var descriptionTextView: UITextView!
@@ -32,7 +35,7 @@ class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextV
     @IBOutlet weak var searchBtnText: UIButton!
     @IBOutlet weak var mapViewLarge: MKMapView!
     
-
+    
     
     var addressButton: String!
     var fullAddressString: String!
@@ -62,9 +65,12 @@ class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextV
     var strDate: String!
     
     var activeUserInfo: NSDictionary?
+    var eventDict: NSDictionary?
+    
     var profileName: String!
     var profileImg: String!
-    var eventKey: String!
+    var eventKey: String!  // from segue
+    //var hostUid: String! // from segue
     
     var dateRaw: String!
     override func viewDidLoad() {
@@ -76,21 +82,25 @@ class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextV
         
         let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: "dismissKeyboard")
         view.addGestureRecognizer(tap)
-
+        
         
         // Init the zoom level
-       /* let coordinate:CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: 37.378437, longitude: -122.116825)
-        let span = MKCoordinateSpanMake(2.0, 2.0)
-        let region = MKCoordinateRegionMake(coordinate, span)
-        self.mapViewLarge.setRegion(region, animated: true)  */
+        /* let coordinate:CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: 37.378437, longitude: -122.116825)
+         let span = MKCoordinateSpanMake(2.0, 2.0)
+         let region = MKCoordinateRegionMake(coordinate, span)
+         self.mapViewLarge.setRegion(region, animated: true)  */
         
         
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         locationManager.requestWhenInUseAuthorization()
         locationManager.requestLocation()
-    
+        
         FirebaseFanout()
+        QueryEvent()
+        
+        
+        
         
     }
     
@@ -108,32 +118,39 @@ class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextV
         self.navigationController?.setNavigationBarHidden(false, animated: animated)
         self.navigationItem.rightBarButtonItems = nil
         self.navigationItem.leftBarButtonItem = nil
+        
+        self.navigationItem.rightBarButtonItem = self.saveBtnItem
+        
         FirebaseFanout()
         QueryCurrentUser()
-
+        
+        
     }
     @IBAction func chooseDateBtn(sender: AnyObject) {
         
-    
+        
         self.titleTextField.hidden = true
         self.dateBtn.hidden = true
         self.descriptionTextView.hidden = true
         self.searchBtnText.hidden = true
-      
+        
         self.datePicker.hidden = false
-      
+    
+        self.navigationItem.leftBarButtonItems  = nil
         self.navigationItem.rightBarButtonItem = self.doneBtnItem
- 
+        
+       // self.saveBtnItem = nil
+        
     }
-
+    
     @IBAction func doneDateHidden(sender: AnyObject) {
         
-       
+        
         self.titleTextField.hidden = false
         self.dateBtn.hidden = false
         self.descriptionTextView.hidden = false
         self.datePicker.hidden = true
-    
+        
         self.navigationItem.rightBarButtonItem = self.saveBtnItem
         
         
@@ -154,7 +171,7 @@ class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextV
     @IBAction func datePickerBtn(sender: AnyObject) {
         
         var dateFormatter = NSDateFormatter()
-       
+        
         dateFormatter.dateFormat = "E, d MMM yyyy hh:mm a"
         self.strDate = dateFormatter.stringFromDate(datePicker.date)
         self.dateBtn.setTitle(strDate, forState: .Normal)
@@ -164,7 +181,7 @@ class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextV
     
     
     @IBAction func searchBtn(sender: AnyObject) {
-
+        
         self.titleTextField.hidden = true
         self.dateBtn.hidden = true
         self.descriptionTextView.hidden = true
@@ -180,15 +197,15 @@ class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextV
         self.navigationItem.rightBarButtonItem = nil
         
         self.navigationItem.leftBarButtonItem = self.doneLeftBtnItem
-
-
+        
+        
         //added August 22
         
         let locationSearchTable = storyboard!.instantiateViewControllerWithIdentifier("LocationSearchTable") as! LocationSearchTable
         resultSearchController = UISearchController(searchResultsController: locationSearchTable)
         resultSearchController?.searchResultsUpdater = locationSearchTable
         
-
+        
         self.searchBar = resultSearchController!.searchBar
         self.searchBar!.sizeToFit()
         self.searchBar!.placeholder = "Search for places"
@@ -203,7 +220,7 @@ class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextV
         locationSearchTable.mapViewLarge = mapViewLarge
         locationSearchTable.mapView = mapView
         
-        locationSearchTable.handleMapSearchDelegate = self
+        locationSearchTable.handleMapSearchEditEventDelegate = self
         
         
         
@@ -212,13 +229,13 @@ class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextV
     
     @IBAction func doneLeftBtnItemAction(sender: AnyObject) {
         
-       
+        
         self.titleTextField.hidden = false
         self.dateBtn.hidden = false
         self.descriptionTextView.hidden = false
         self.mapView.hidden = false
         self.searchBtnText.hidden = false
-    
+        
         
         self.mapViewLarge.hidden = true
         self.datePicker.hidden = true
@@ -233,33 +250,37 @@ class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextV
         self.searchBar?.hidden = true
         resultSearchController?.searchResultsUpdater = nil
         
-        //Setting the Search Button text 
+        //Setting the Search Button text
         
         if self.fullAddressString == nil {
-             self.searchBtnText.setTitle("Find a Location", forState: .Normal)
+            self.searchBtnText.setTitle("Find a Location", forState: .Normal)
             self.searchBtnText.titleLabel!.font = UIFont(name: "Marker Felt", size: 16)
-
+            
             
         } else{
-           // self.addressButton = self.fullAddressString
+            // self.addressButton = self.fullAddressString
             self.searchBtnText.setTitle("\(self.fullAddressString)", forState: .Normal)
             self.searchBtnText.titleLabel!.font = UIFont(name: "Marker Felt", size: 14)
             self.searchBtnText.titleLabel?.textAlignment = NSTextAlignment.Center
-
+            
         }
-    
-  
-       }
+        
+        
+    }
     
     
     
     @IBAction func saveBtn(sender: AnyObject) {
         
-        let key = ref.child("user-events").childByAutoId().key
+       // let key = ref.child("user-events").childByAutoId().key
         
-        self.eventKey = key
+      //  self.eventKey = key
+        
+        let key = self.eventKey
         
         let time  = String(Int(NSDate().timeIntervalSince1970))
+        
+        let titleChange = ("CHANGES: \(self.titleTextField.text!)")
         
         let event: Dictionary<String, AnyObject> = [
             "title": self.titleTextField.text!,
@@ -277,15 +298,21 @@ class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextV
             "placemark"  : self.placemark,
             "time": time,
             
-           
-        ]
+            
+            
+            ]
         let descriptionTimeLine: String!
-           descriptionTimeLine = "\(self.fullAddressString_no_breakLine) \n\(self.strDate)\n\(self.descriptionTextView.text!)"
-         //let time  = String(Int(NSDate().timeIntervalSince1970))
+        descriptionTimeLine = "\(self.fullAddressString_no_breakLine) \n\(self.strDate)\n\(self.descriptionTextView.text!)"
+        //let time  = String(Int(NSDate().timeIntervalSince1970))
+        
+       
+        
+        
+        
+        
         
         let eventToTimeline: Dictionary<String, AnyObject> = [
-            
-           
+        
             "description": descriptionTimeLine,
             "time": time,
             "uid":  KEY_UID!,
@@ -293,23 +320,24 @@ class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextV
             "dislikes": 0,
             "fullName": self.profileName,
             "avatar": self.profileImg,
-           "mediaType":"EVENT",
-           "eventKey":self.eventKey,
-           "eventTitle": self.titleTextField.text!
+            "mediaType":"EVENT",
+            "eventKey":self.eventKey,
+            "eventTitle": self.titleTextField.text!,
+            "eventTitleChanges": "CHANGES",
             
-            ]
+        ]
         
         
         
-       
+        
         
         let childUpadates = ["/events/\(key)": event,
                              "/user-events/\(KEY_UID!)/\(key)/":event]
         ref.updateChildValues(childUpadates)
         
-        ref.child("timeline")
+      //  ref.child("timeline")
         
-      //  ref.child("user-events-id").child(KEY_UID!).child(key).setValue(true)
+        //  ref.child("user-events-id").child(KEY_UID!).child(key).setValue(true)
         
         
         for friendID in friendsArray {
@@ -321,15 +349,15 @@ class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextV
             
             ref.updateChildValues(updateTimeline)
             
-            ref.child("event-followers").child(key).child(friendID).setValue(true) 
+          //  ref.child("event-followers").child(key).child(friendID).setValue(true)
             
-            print(" Array inside \(friendID)")
+           
             
             
         }
-         // Event's creator always on the Timeline, events-timeline, event-followers
+        // Event's creator always on the Timeline, events-timeline, event-followers
         
-        let childUpadates2 =  ["/events-timeline/\(KEY_UID!)/\(key)/": event]
+      let childUpadates2 =  ["/events-timeline/\(KEY_UID!)/\(key)/": event]
         ref.updateChildValues(childUpadates2)
         
         
@@ -337,38 +365,38 @@ class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextV
         ref.updateChildValues(updateTimelineEvent)
         
         
-        ref.child("event-followers").child(key).child(KEY_UID!).setValue(true)
+       /* ref.child("event-followers").child(key).child(KEY_UID!).setValue(true)
         
         
         
-            ref.child("host-events-id").child(KEY_UID!).child(key).setValue(true)
+        ref.child("host-events-id").child(KEY_UID!).child(key).setValue(true)
         
-            //host is always going.
-            ref.child("users-event-coming").child(key).child("host").setValue(KEY_UID!)
+        //host is always going.
+        ref.child("users-event-coming").child(key).child("host").setValue(KEY_UID!)
         
-            ref.child("users").child(KEY_UID!).child("events").child(key).setValue(true)
+        ref.child("users").child(KEY_UID!).child("events").child(key).setValue(true)   */
         
         // GEO EVENT
-            
-            geoFireEventRef = FIRDatabase.database().reference().child("geo-user-events").child(KEY_UID!)
-            geoFire = GeoFire(firebaseRef: geoFireEventRef)
-            geoFire.setLocation(CLLocation(latitude: self.latitude, longitude: self.longitude), forKey: key)
+        
+        geoFireEventRef = FIRDatabase.database().reference().child("geo-user-events").child(KEY_UID!)
+        geoFire = GeoFire(firebaseRef: geoFireEventRef)
+        geoFire.setLocation(CLLocation(latitude: self.latitude, longitude: self.longitude), forKey: key)
         
         
-            geoFireRef = FIRDatabase.database().reference().child("geo-events")
-            geoFireEvent = GeoFire(firebaseRef: geoFireRef)
-            geoFireEvent.setLocation(CLLocation(latitude: self.latitude, longitude: self.longitude), forKey: key)
-
+        geoFireRef = FIRDatabase.database().reference().child("geo-events")
+        geoFireEvent = GeoFire(firebaseRef: geoFireRef)
+        geoFireEvent.setLocation(CLLocation(latitude: self.latitude, longitude: self.longitude), forKey: key)
         
-           // geoFireEventRef =
-
         
-        performSegueWithIdentifier("segueToEventVC", sender: nil) 
-    
+       
+        
+        
+        performSegueWithIdentifier("segueReturntoEvent", sender: nil)  //ojo
+        
         
     }
     
-   
+    
     
     func FirebaseFanout(){
         
@@ -409,8 +437,6 @@ class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextV
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    
-    
     // Dismiss keyBoard
     
     func dismissKeyboard() {
@@ -421,7 +447,7 @@ class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextV
     func textFieldShouldReturn(textField: UITextField) -> Bool {
         view.endEditing(true)
         titleTextField.resignFirstResponder()
-       
+        
         
         return true
     }
@@ -430,12 +456,12 @@ class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextV
     func textView(textView: UITextView, shouldChangeTextInRange range: NSRange, replacementText text: String) -> Bool {
         if(text == "\n") {
             descriptionTextView.resignFirstResponder()
-        return false
+            return false
         }
         return true
         
     }
-   
+    
     
     func hideKeyboard()
     {
@@ -472,13 +498,73 @@ class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextV
     
     
     
-
+    
+    func QueryEvent(){
+    
+            DataService.ds.REF_BASE.child("events").child(self.eventKey).observeEventType(.Value, withBlock: { (snapshot)  in
+            
+                let item = snapshot as FIRDataSnapshot
+                print("SNAP-Itemxxxxxxxxxxx: \(item)")
+                
+                // if let dict = item.value as? NSDictionary{
+                
+                if let dict = item.value as? [String : AnyObject]{
+               
+                
+                self.eventDict = dict
+                
+              
+                self.titleTextField.text = " \(self.eventDict!["title"]!.uppercaseString!)"
+              //  self.dateBtn = " \(self.eventDict!["date"]!)"
+                
+                self.dateBtn.setTitle("\(self.eventDict!["date"]!)", forState: .Normal)
+                    
+                self.descriptionTextView.text = " \(self.eventDict!["description"]!)"
+               // self.searchBtnText.text = " \(self.eventDict!["fullAddressWithBreaks"]!)"
+                    self.searchBtnText.setTitle("\(self.eventDict!["fullAddressWithBreaks"]!)", forState: .Normal)
+                    self.strDate = "\(self.eventDict!["date"]!)"
+                    self.fullAddressString_no_breakLine = " \(self.eventDict!["fullAddress"]!)"
+                    self.fullAddressString = " \(self.eventDict!["fullAddressWithBreaks"]!)"
+                    self.dateRaw =  "\(self.eventDict!["dateRaw"]!)"
+                    self.placemark = "\(self.eventDict!["placemark"]!)"
+                
+    
+            }
+    
+    
+    
+                //   completation(imageStr: image!)
+    
+            }, withCancelBlock: {(error) -> Void in
+    
+        })
+    
+    
+    
+    }
+    
+    
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        
+       
+        
+        if segue.identifier == "segueReturntoEvent"
+        {
+            let destinationVC = segue.destinationViewController as! EventDetailVC
+            
+            destinationVC.eventKey   = self.eventKey
+            
+            
+        }
+        
+    }
+    
     
 }
 
 
 
-extension AddVC: HandleMapSearch {
+extension EditEventVC: HandleMapSearchEditEvent {
     func dropPinZoomIn(placemark:MKPlacemark){
         // cache the pin
         selectedPin = placemark
@@ -488,38 +574,62 @@ extension AddVC: HandleMapSearch {
         annotation.coordinate = placemark.coordinate
         
         print("Annotation.coordinate: \(annotation.coordinate)")
-         print("Annotation.coordinate Longitude: \(annotation.coordinate.latitude)")
-         print("Annotation.coordinate: Longitude \(annotation.coordinate.longitude)")
-         self.latitude = annotation.coordinate.latitude
-         self.longitude = annotation.coordinate.longitude
+        print("Annotation.coordinate Longitude: \(annotation.coordinate.latitude)")
+        print("Annotation.coordinate: Longitude \(annotation.coordinate.longitude)")
+        self.latitude = annotation.coordinate.latitude
+        self.longitude = annotation.coordinate.longitude
         
         
         annotation.title = placemark.name
-        if let city = placemark.locality,
-            let state = placemark.administrativeArea {
+        if let city = placemark.locality, let state = placemark.administrativeArea {
+            
+            var locationName = placemark.name
+            if locationName == "nil" || locationName == nil{
+                locationName = ""
+            } else {
+                locationName = placemark.name
+            }
+            
+            
+            var locationNumber = placemark.subThoroughfare
+            
+            if locationNumber == nil || locationNumber == "nil" {
+                locationNumber = ""
+            } else {
+                locationNumber = (placemark.subThoroughfare)
+            }
+            
+            
+            var locationStreet = placemark.thoroughfare
+           // var locationStreet2:String?
+            
+            if locationStreet == "nil" || locationStreet == nil {
+               locationStreet = ""
+            } else {
+                locationStreet = placemark.thoroughfare
+            }
             
             
             annotation.subtitle = "\(city) \(state)"
-           
+            
             // Full Address to be Displayed
-             print("Placemark@@@@@@@@: \(placemark)")
+            print("Placemark@@@@@@@@: \(placemark)")
             
             self.placemark = "\(placemark)"
             
+           // self.fullAddressString =  "\(placemark.name!)\n \(placemark.subThoroughfare!) \(placemark.thoroughfare!) \n \(city), \(state)"
+           // print("New Address: \(self.fullAddressString)")
             
             
-        
-            self.fullAddressString =  "\(placemark.name!)\n \(placemark.subThoroughfare) \(placemark.thoroughfare) \n \(city), \(state)"
+         self.fullAddressString =  "\(locationName!)\n \(locationNumber!) \(locationStreet!) \n \(city), \(state)"
             print("New Address: \(self.fullAddressString)")
             
             // String Without  \n
             
-            self.fullAddressString_no_breakLine =  "\(placemark.name!) \(placemark.subThoroughfare) \(placemark.thoroughfare)  \(city), \(state)"
-            print("New Address: \(self.fullAddressString_no_breakLine)")
+         self.fullAddressString_no_breakLine =  "\(locationName!) \(locationNumber!) \(locationStreet!)  \(city), \(state)"
+          print("New Address: \(self.fullAddressString_no_breakLine)")
             
-            
-        }
-        mapViewLarge.addAnnotation(annotation)
+            mapViewLarge.addAnnotation(annotation)
         mapView.addAnnotation(annotation)
         
         let span = MKCoordinateSpanMake(0.05, 0.05)
@@ -527,40 +637,62 @@ extension AddVC: HandleMapSearch {
         
         mapViewLarge.setRegion(region, animated: true)
         mapView.setRegion(region, animated: true)
+        } else {
+        
+       typeInSomethingAlert()
+        }
+        
+    }
+    
+    
+    func typeInSomethingAlert(){
+        let optionMenu = UIAlertController(title: nil, message: "Can't Be Saved! Try another one! ", preferredStyle: .ActionSheet)
+        
+        
+        
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .Cancel, handler: {
+            (alert: UIAlertAction!) -> Void in
+            print("Cancelled")
+        })
+        
+        optionMenu.addAction(UIAlertAction(title: "Dismiss", style: UIAlertActionStyle.Default,handler: nil))
+        
+        self.presentViewController(optionMenu, animated: true, completion: nil)
     }
     
 }
 
 
 // EXTENSION:
-extension AddVC : CLLocationManagerDelegate {
- func locationManager(manager: CLLocationManager, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
-  
- if status == .AuthorizedWhenInUse {
- locationManager.requestLocation()
- }
- }
- 
- func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
- if let location = locations.first {
- let span = MKCoordinateSpanMake(0.05, 0.05)
- let region = MKCoordinateRegion(center: location.coordinate, span: span)
- mapViewLarge.setRegion(region, animated: true)
- mapView.setRegion(region, animated: true)
+extension EditEventVC : CLLocationManagerDelegate {
+    func locationManager(manager: CLLocationManager, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
+        
+        if status == .AuthorizedWhenInUse {
+            locationManager.requestLocation()
+        }
+    }
     
+    func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        if let location = locations.first {
+            let span = MKCoordinateSpanMake(0.05, 0.05)
+            let region = MKCoordinateRegion(center: location.coordinate, span: span)
+            mapViewLarge.setRegion(region, animated: true)
+            mapView.setRegion(region, animated: true)
+            
+            
+            var location:CLLocationCoordinate2D = (manager.location?.coordinate)!
+            
+            // self.latitude = location.latitude
+            // self.longitude = location.longitude
+            
+            
+            print("location:: \(location)")
+        }
+    }
     
-    var location:CLLocationCoordinate2D = (manager.location?.coordinate)!
+    func locationManager(manager: CLLocationManager, didFailWithError error: NSError) {
+        print("error:: (error)")
+    }
     
-   // self.latitude = location.latitude
-   // self.longitude = location.longitude
- 
- 
- print("location:: \(location)")
- }
- }
- 
- func locationManager(manager: CLLocationManager, didFailWithError error: NSError) {
- print("error:: (error)")
- }
-
 }

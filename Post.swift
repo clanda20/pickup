@@ -30,6 +30,7 @@ class Post {
     private var _mediaType: String!
     private var _eventKey: String?
     private var _eventTitle: String!
+    private var _eventTitleChanges: String?
     
     
     var postDescription: String?{
@@ -100,7 +101,11 @@ class Post {
         return _eventTitle
     }
     
-    init(description: String?, imageUrl: String?, videoUrl: String?, fullName: String, avatar: String?, time: String, mediaType: String, eventKey: String?, eventTitle: String) {
+    var  eventTitleChanges: String?{
+        return _eventTitleChanges
+    }
+    
+    init(description: String?, imageUrl: String?, videoUrl: String?, fullName: String, avatar: String?, time: String, mediaType: String, eventKey: String?, eventTitle: String, eventTitleChanges:String? ) {
         self._postDescription = description
         self._imageUrl = imageUrl
         self._videoUrl = videoUrl
@@ -110,6 +115,7 @@ class Post {
         self._mediaType = mediaType
         self._eventKey = eventKey
         self._eventTitle = eventTitle
+        self._eventTitleChanges = eventTitleChanges
     }
     
     
@@ -160,6 +166,9 @@ class Post {
         }
         if let eventTitle = dictionary["eventTitle"] as? String {
             self._eventTitle = eventTitle
+        }
+        if let eventTitleChanges = dictionary["eventTitleChanges"] as? String {
+            self._eventTitleChanges = eventTitleChanges
         }
         
     //  self._postRef = DataService.ds.REF_POSTS.child(self._postKey)

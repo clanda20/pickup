@@ -25,7 +25,16 @@ class EventCommentCell: UITableViewCell {
     @IBOutlet weak var commentText: UILabel!
     
     
+    
+    @IBOutlet weak var dateLbl: UILabel!
+    
+    @IBOutlet weak var deleteBtn: UIButton!
+    @IBOutlet weak var deleteBtn_friends_comment: UIButton!
+    
+    
+    
     var eventcomment: EventComment!
+    var eventcomments = [EventComment]()
     //  var post: Post!
     
     var value: Int!
@@ -34,10 +43,12 @@ class EventCommentCell: UITableViewCell {
     
     var userCommentsRef: FIRDatabaseReference!
     
-    var postKey:String?  //
-    var eventkey: String!
+    var postKey:String?
     
-    var eventcommentKeyID:String?
+    var eventkey:String?
+    var eventKey: String! // from segue EventDetailVC
+    
+     var eventcommentKeyID:String?
     
     var  DeleteRef: FIRDatabaseReference!
     var  DeleteRef2: FIRDatabaseReference!
@@ -47,8 +58,6 @@ class EventCommentCell: UITableViewCell {
     var myPostArray: [String] = []
     
     
-    @IBOutlet weak var deleteBtn: UIButton!
-    @IBOutlet weak var deleteBtn_friends_comment: UIButton!
     
     var delegate2 : ContactIDEventCommentCellDelegate?
     
@@ -94,10 +103,18 @@ class EventCommentCell: UITableViewCell {
         self.Username2.titleLabel!.font = UIFont(name: "Marker Felt", size: 12)
         
         
-       //  postRefKey = DataService.ds.REF_POSTCOMMENTS.child("postKey")  //added 6-29-16//9-5
-      //  eventRefKey = DataService.ds.REF_BASE.child("user-events").child("eventKey") //9-5 maybe no need
+      //  postRefKey = DataService.ds.REF_POSTCOMMENTS.child("postKey")  //added 6-29-16 //maybe mistake not affect anything
         
         //  print("PostKey PostCell XX: \(post.postKey)")
+        
+        
+        if let  seconds = Double(((eventcomment.date))) {
+            let timeStampDate = NSDate(timeIntervalSince1970: seconds)
+            
+            let dateFormatter = NSDateFormatter()
+            dateFormatter.dateFormat = "E, MMM d, H:mm a"
+            self.dateLbl.text = dateFormatter.stringFromDate(timeStampDate)
+        }
         
         
         
@@ -169,8 +186,8 @@ class EventCommentCell: UITableViewCell {
         //  DeleteRef2 = DataService.ds.REF_USER_USER_POSTS_ID  //("user-posts-id")
         // DeleteRef2.child(KEY_UID!).child(commentID).removeValue()
         
-       // 9-5 DeleteRef3 = DataService.ds.REF_POSTCOMMENTS_ID   //("post-comments" / postID")
-        DeleteRef3 = DataService.ds.REF_BASE.child("event-comments").child(eventkey)
+        // 9-5 DeleteRef3 = DataService.ds.REF_POSTCOMMENTS_ID   //("post-comments" / postID")
+        DeleteRef3 = DataService.ds.REF_BASE.child("event-comments").child(eventkey!)
         
         // let   postID = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
         
@@ -182,9 +199,8 @@ class EventCommentCell: UITableViewCell {
         
         // }
         
-       //9/5 let DeleteRef4 = DataService.ds.REF_POSTCOMMENTS_USER_ID  //URL_BASE.child("post-comments-userID").child(postID)
-    let DeleteRef4 = DataService.ds.REF_BASE.child("event-comments-userID").child(eventkey)  //URL_BASE.child("post-comments-userID").child(postID)
-
+        let DeleteRef4 = DataService.ds.REF_BASE.child("event-comments-userID").child(eventkey!)  //URL_BASE.child("post-comments-userID").child(postID)
+        
         DeleteRef4.child(EventcommentID).removeValue()
         
     }
@@ -204,23 +220,21 @@ class EventCommentCell: UITableViewCell {
         let   eventcommentID = eventcomment.commentKey
         
         
-   //9-5     DeleteRef = DataService.ds.REF_POSTCOMMENTS  //("post-comments") ok/// -------------1
-          DeleteRef = DataService.ds.REF_BASE.child("user-commets")
+        //9-5     DeleteRef = DataService.ds.REF_POSTCOMMENTS  //("post-comments") ok/// -------------1
+        DeleteRef = DataService.ds.REF_BASE.child("user-commets")
         
         for postID in self.myPostArray {   // if post belong to current user  delete the comment on Post-comment
             
-            DeleteRef.child(eventkey).child(eventcommentID).removeValue()
-            
+            DeleteRef.child(eventkey!).child(eventcommentID).removeValue()
         }
         
         
-    // 9-5    let DeleteRef4 = DataService.ds.REF_COMMENTS_USERID  //URL_BASE.child("post-comments-userID").child(postID) ook-----------2
-   let DeleteRef4 = DataService.ds.REF_BASE.child("event-comments-userID").child(eventkey) //URL_BASE.child("post-comments-userID").child(postID) ook-----------2
-
+        let DeleteRef4 = DataService.ds.REF_BASE.child("event-comments-userID").child(eventkey!) //URL_BASE.child("post-comments-userID").child(postID) ook-----------2
+        
         
         for postID in self.myPostArray {   // if post belong to current user  delete the comment on Post-comment
             
-            DeleteRef4.child(eventkey).child(eventcommentID).removeValue()
+            DeleteRef4.child(eventkey!).child(eventcommentID).removeValue()
             
         }
         
@@ -232,10 +246,8 @@ class EventCommentCell: UITableViewCell {
     func FirebaseFanout(){   // grabing the postID form the user-posts-id and userID
         
         
-    // 9-5    userCommentsRef = DataService.ds.REF_USER_USER_POSTS_ID.child(KEY_UID!)   //("user-posts-id")
+        userCommentsRef = DataService.ds.REF_BASE.child("user-posts-id").child(KEY_UID!)   //("user-posts-id")
         
-       userCommentsRef = DataService.ds.REF_BASE.child("user-posts-id").child(KEY_UID!)   //("user-posts-id")
-
         userCommentsRef.observeEventType(.Value, withBlock:  { snapshot in
             
             
