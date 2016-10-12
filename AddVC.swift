@@ -270,12 +270,14 @@ class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextV
             "date": self.strDate,
             "dateRaw": self.dateRaw,
             "host-uid":  KEY_UID!,
+            "host-Name":  self.profileName,
             "geo": 0,
             "eventComments": 0,
             "no-eventComments": 0,
             "no-of-members" : 2,
             "placemark"  : self.placemark,
             "time": time,
+            "eventKey":self.eventKey,
             
            
         ]
@@ -301,7 +303,7 @@ class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextV
         
         
         
-       
+      //   NSUserDefaults.standardUserDefaults().setValue(KEY_UID!, forKey: "eventKeyUID")   ///   user who created this Event
         
         let childUpadates = ["/events/\(key)": event,
                              "/user-events/\(KEY_UID!)/\(key)/":event]

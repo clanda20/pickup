@@ -106,7 +106,8 @@ class ContactsVC: UIViewController, UITableViewDataSource, UISearchBarDelegate {
                         self.contacts.append(contact)
                         
                          print("SNAP ContactsXXXXX: \(self.contacts)")
-                        print("ContactKEY-Outside----------------------: \(contact.contactKey)")                    }
+                        print("ContactKEY-Outside----------------------: \(contact.contactKey)")
+                    }
                 }
             }
             self.contactsTableView.reloadData()

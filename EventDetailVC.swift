@@ -30,8 +30,11 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
     var events = [Event]()
    // var event: Event!
     var eventInfo: NSDictionary?
+    var eventCommentInfo: NSDictionary?
+    
     var eventKey: String!  // from segue coming from EventVC
-    var hostUid: String!  // from segue coming from EventVC
+    var hostUid: String!  //  now from from QueryEventPosts previously from segue coming from EventVC
+    var eventKEY: String! // from QueryEventPosts()
     
     var friendsArray: [String] = []
     
@@ -47,6 +50,7 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
     var contacts = [Contact]()
     
     var contactInfo: NSDictionary?
+    var eventComentInfo: NSDictionary?
     
     var geoFire: GeoFire!
     var geoFireEvent: GeoFire!
@@ -54,12 +58,20 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
     var geoFireEventRef: FIRDatabaseReference!
     
     var postFollowersArray: [String] = []
-  //  let refreshControl: UIRefreshControl = UIRefreshControl()
+    var activeUserInfo: NSDictionary?
+    var postEventCommentArray: [String] = []
+    
+    
+    var profileName: String!
+    var profileImg: String!
+    
+    var eventCommentID: String!
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
         self.tabBarController?.tabBar.hidden = true
+        
         
         QueryMyEvent_Timeline()
      
@@ -69,16 +81,16 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
         tableView.delegate = self
         tableView.dataSource = self
         
-       // QueryUsers()
+       QueryEventPosts()
         
-        if  KEY_UID != hostUid{
-            
-            self.navigationItem.rightBarButtonItems = nil
-            
-        } else {
-            
-            
-        }
+//        if  KEY_UID != self.hostUid{
+//            
+//            self.navigationItem.rightBarButtonItems = nil
+//            
+//        } else {
+//            
+//            self.navigationItem.rightBarButtonItem!.customView!.hidden = false
+//        }
         
         comingsRef = ref.child("users-event-coming").child(self.eventKey).child("coming")
     
@@ -117,6 +129,7 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
         QueryMyEvent_Timeline()
+        QueryEventPosts()
         //FirebaseFanoutFollowers()
         FirebaseFanoutPostFollowers(eventKey)
         // self.navigationController?.toolbarHidden = false
@@ -131,7 +144,8 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
         
         
         FirebaseFanout()
-        //QueryUsers()
+        QueryCurrentUser()
+       
         
     }
     
@@ -199,6 +213,15 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
             //  perhaps we have to add user->userID-events-  for countuning
             self.isComing = false
             
+            
+            
+            //Notification
+            DataService.ds.REF_BASE.child("notifications").child(self.hostUid!).child("N\(self.eventKey)").removeValue()
+            
+            DataService.ds.REF_BASE.child("notifications-postUID").child(self.hostUid!).child("N\(self.eventKey)").removeValue()
+            DataService.ds.REF_BASE.child("post-commentsOnly").child(self.eventKey).child(self.eventKey).removeValue()
+            
+            
             dispatch_after(
                 dispatch_time(
                     DISPATCH_TIME_NOW,
@@ -233,6 +256,48 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
                     self.FirebaseFanout()
                     self.QueryUsers()
             })
+            
+            
+            
+            //Notifications
+              let time  = String(Int(NSDate().timeIntervalSince1970))
+            //let  postID  = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
+            
+            let notificationKey = "N\(self.eventKey)"  /// notificationKey is the same number of the commentKey but with and N before the number
+            print("notificationKEy  :  \(notificationKey)")
+            
+            //  NSUserDefaults.standardUserDefaults().setValue(notificationKey, forKey: "notificationKey")
+            
+            let notification = [
+                "uid": KEY_UID,
+                "fullName": self.profileName,
+                "avatar": self.profileImg,
+                "date" : time,
+                "postKey" : self.eventKey,
+                "commentID": self.eventKey,     // commentID is here consider as eventKey
+                "type": "IS GOING TO AN EVENT",
+                "notificationKey": notificationKey,
+                ]
+            
+            //   self.postUid =  self.post.uid
+            
+            if self.hostUid != KEY_UID {
+                
+                print("HostUID:  \(self.hostUid)")
+                
+                
+                DataService.ds.REF_BASE.child("notifications").child(self.hostUid!).child(notificationKey).setValue(notification)
+                
+                DataService.ds.REF_BASE.child("notifications-postUID").child(self.hostUid!).child(notificationKey).setValue(true)
+                DataService.ds.REF_BASE.child("post-commentsOnly").child(self.eventKey).child(self.eventKey).setValue(true)
+                
+            } else {
+                // do nothing
+                
+            }
+            
+            
+            
             
         }
         
@@ -420,7 +485,78 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
     })
     }
     
+    func QueryCurrentUser(){
+        
+        DataService.ds.REF_USER_CURRENT.observeEventType(.Value, withBlock: { (snapshot)  in
+            
+            let item = snapshot as FIRDataSnapshot
+            print("SNAP-Itemxxxxxxxxxxx: \(item)")
+            
+            // if let dict = item.value as? NSDictionary{
+            
+            if let dict = item.value as? [String : AnyObject]{
+                let avatar = dict["avatar"] as! String
+                // self.image = avatar
+                
+                self.activeUserInfo = dict
+                
+                // self.title = "Welcome \(self.activeUserInfo!["firstName]!)"
+                self.profileName = "\(self.activeUserInfo!["fullName"]!.uppercaseString!)"
+                self.profileImg = "\(self.activeUserInfo!["avatar"]!)"
+                // self.followersLabel.text = " \(self.activeUserInfo!["followers"]!) \n followers"
+                // self.followingLabel.text = " \(self.activeUserInfo!["following"]!) \n following"
+                
+                
+                
+            }
+            
+            
+            
+            //   completation(imageStr: image!)
+            
+            }, withCancelBlock: {(error) -> Void in
+                
+        })
+        
+    }
     
+    func QueryEventPosts(){
+        
+        print("Event Key inside : \(self.eventKey)")
+        
+        DataService.ds.REF_BASE.child("events").child(self.eventKey).observeEventType(.Value , withBlock: { (snapshot) in  //observeSingleEventOfType
+            
+            //postInfo
+            
+            let item = snapshot as FIRDataSnapshot
+            print("SNAP-Itemx-EVent: \(item)")
+            
+            
+            if let dict = item.value as? [String : AnyObject]{
+                
+                self.eventCommentInfo = dict
+                
+                
+                self.hostUid =   self.eventCommentInfo!["host-uid"]! as! String
+                self.eventKEY =   self.eventCommentInfo!["eventKey"]! as! String
+                
+                if  KEY_UID != self.hostUid{
+                    
+                    self.navigationItem.rightBarButtonItems = nil
+                    
+                } else {
+                    
+                   
+                }
+                
+                
+            }
+            
+            }, withCancelBlock: {(error) -> Void in
+                
+        })
+    }
+
     
     
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
@@ -477,6 +613,40 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
     
        func deleteEvent() {
         
+        
+        // delete notification
+        
+        DataService.ds.REF_BASE.child("post-commentsOnly").child(self.eventKey).observeEventType(.Value, withBlock:  { snapshot in
+            
+            self.postEventCommentArray = []
+            
+            for child in snapshot.children {
+                let postComment = child.key as String
+                
+                self.postEventCommentArray.append(postComment)
+                
+                for eventComment in self.postEventCommentArray {
+                    print(" Array friendID tonight  PostCell \(eventComment)")
+                    
+                    DataService.ds.REF_BASE.child("notifications").child(KEY_UID!).child("N\(eventComment)").removeValue()
+                    DataService.ds.REF_BASE.child("notifications-postUID").child(KEY_UID!).child("N\(eventComment)").removeValue()
+                  //  DataService.ds.REF_BASE.child("post-commentsOnly").child(self.eventKey).removeValue()
+                    
+                    DataService.ds.REF_BASE.child("event-comments").child(KEY_UID!).child(eventComment).removeValue()
+                    DataService.ds.REF_BASE.child("event-comments").child(self.eventKey!).child(eventComment).removeValue()
+                    DataService.ds.REF_BASE.child("event-comments-userID").child(self.eventKey!).child(eventComment).removeValue()
+                    
+                }
+                DataService.ds.REF_BASE.child("post-commentsOnly").child(self.eventKey).removeValue()
+            }
+        })
+         
+        
+        
+       
+        
+        
+        
        // performSegueWithIdentifier("segue_Back_to_Events", sender: nil)
         
         ref.child("events").child(eventKey).removeValue()
@@ -517,11 +687,13 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
         geoFireRef = FIRDatabase.database().reference().child("geo-events")
         geoFireEvent = GeoFire(firebaseRef: geoFireRef)
         geoFireEvent.removeKey(eventKey)
-      
+        
+ 
         
         self.performSegueWithIdentifier("segue_Back_to_Events", sender: nil)
     
-        
+       
+
 
         
     }
@@ -533,6 +705,8 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
         
     }
     
+    
+ 
     
    
 }

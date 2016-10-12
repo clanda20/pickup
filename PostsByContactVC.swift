@@ -70,8 +70,7 @@ class PostsByContactVC: UIViewController, UITableViewDelegate, UITableViewDataSo
         
         print("Segue: ----------\(userID!)")
         
-        // postRef.observeEventType(FIRDataEventType.Value, withBlock: { (snapshot) in
-        //  DataService.ds.REF_USER_POSTS_USERID.observeEventType(FIRDataEventType.Value, withBlock: { (snapshot) in
+        
         DataService.ds.REF_USER_POST.child(userID!).observeEventType(FIRDataEventType.Value, withBlock: { (snapshot) in
             
             // print(snapshot.value)

@@ -26,6 +26,8 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
    var comment: Comment!
     var comments = [Comment]()
    
+    var notification: Notification!
+    var notifications = [Notification]()
     
     var postID: String! = ""
     var value:  FIRDatabaseReference!
@@ -37,23 +39,26 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
     var user_commentRef: FIRDatabaseReference!
 
     var activeUserInfo: NSDictionary?
+    var postInfo: NSDictionary?
+    
+    
+    
     var profileName: String!
     var profileImg: String!
     
      static var imageCache = NSCache()
     
-    // 
+    var posts = [Post]()
+   var post: Post!
+    
+    var postUid: String!
   
-    
-    //variable to hold keyboard frame
-   // var keyboard = CGRect()
+    var postArray: [String] = []
 
-
-    // values for seting UI to default
- //    var tableViewHeight : CGFloat = 0
- //   var commentY : CGFloat = 0
- //   var commentHeight : CGFloat = 0
+   var postDictionary = [String: String]()
     
+    
+
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -81,7 +86,7 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
         self.view.addGestureRecognizer(tapGesture)
         
         QueryCurrentUser()
-      //  alignment()
+       
         
        //title at the top
         self.navigationItem.title = "COMMENTS"
@@ -140,9 +145,12 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         
         let comment = comments[indexPath.row]
-        print(comment.commentDescription)
+       // print(comment.commentDescription)
         
         
+      
+        
+    
         
         if let cell = tableView.dequeueReusableCellWithIdentifier("CommentCell")  as? CommentCell  {
              var img: UIImage?
@@ -152,7 +160,7 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
                 img = CommentVC.imageCache.objectForKey(url) as? UIImage
             }
             
-            cell.configureCommentCell(comment, img: img)
+            cell.configureCommentCell(comment, img: img )
             return cell
         } else {
             return CommentCell()
@@ -169,7 +177,7 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
       if let txt = commentField.text where txt != "" {
         
         let uid = FIRAuth.auth()?.currentUser?.uid
-  //  commentsRef.observeSingleEventOfType(.Value, withBlock: { (snapshot) in
+  
             
        DataService.ds.REF_BASE.observeSingleEventOfType(.Value, withBlock: { (snapshot) in
         
@@ -179,6 +187,14 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
                 print("Snapshot CommentVC--------: \(snapshot)")
                 
                 let time  = String(Int(NSDate().timeIntervalSince1970))
+                
+            /*    var dateFormatter = NSDateFormatter()
+                
+                dateFormatter.dateFormat = "E, d MMM yyyy hh:mm a"
+                self.strDate = dateFormatter.stringFromDate(datePicker.date)
+                self.dateBtn.setTitle(strDate, forState: .Normal)
+                
+                self.dateRaw = String(datePicker.date)  */
 
                 
                 
@@ -192,9 +208,8 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
                     "date" : time,
                     
                 ]
-              
                 
-               
+              
                 
                 if let doesNotExist = snapshot.value as? NSNull {
                     
@@ -204,31 +219,66 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
 
                  Comment_PostRef.setValue(comment)
                     
-                 
-                    
-                 //   self.user_commentRef = DataService.ds.REF_BASE.child("user-comments").child(KEY_UID!).child(postID)
-                    
-                  //  self.user_commentRef?.setValue(true)
+              
                     
                     
                 } else {
                     
-              
-                    let key = DataService.ds.REF_BASE.child("post-comments").childByAutoId().key
+                  
                     
-                    let firebaseCommentPost = DataService.ds.REF_POST_KEY.child(key)
+                    let  postID  = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
+
+                    let key = DataService.ds.REF_BASE.child("post-comments").childByAutoId().key  //
+                    
+                  
+                    
+                    
+                    let firebaseCommentPost = DataService.ds.REF_POST_KEY.child(key)   //URL_BASE.child("post-comments").child(postID)
+                    
                     
                     firebaseCommentPost.setValue(comment)
                     
                     print("Firebase: no NUll ------->>>>\(firebaseCommentPost)")
-                    let  postID  = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
                     
-                   // self.user_commentRef = DataService.ds.REF_BASE.child("user-comments").child(KEY_UID!).child(key)
-                    
-                    //self.user_commentRef?.setValue(true)
+                  
                     
                     let post_comment_userID_Ref =  DataService.ds.REF_BASE.child("post-comments-userID").child(postID).child(key).child(KEY_UID!)
                      post_comment_userID_Ref.setValue(true)   // delete it once it delete btn is pressed - needed
+                    
+                    DataService.ds.REF_BASE.child("post-commentsOnly").child(postID).child(key).setValue(true)
+                    
+                    //*****NOTIFICATION*******
+                    
+                    
+                    let notificationKey = "N\(key)"  /// notificationKey is the same number of the commentKey but with and N before the number
+                    print("notificationKEy  :  \(notificationKey)")
+                    
+                  //  NSUserDefaults.standardUserDefaults().setValue(notificationKey, forKey: "notificationKey")
+                    
+                    let notification = [
+                        "uid": KEY_UID,
+                        "fullName": self.profileName,
+                        "avatar": self.profileImg,
+                        "date" : time,
+                        "postKey" : postID,
+                        "commentID": key,
+                        "type": "HAS COMMENTED ON YOUR POST",
+                        "notificationKey": notificationKey,
+                    ]
+                    
+       
+                    
+                    if self.postUid != KEY_UID {
+                 
+                     DataService.ds.REF_BASE.child("notifications").child(self.postUid!).child(notificationKey).setValue(notification)
+                    DataService.ds.REF_BASE.child("notifications-postUID").child(self.postUid!).child(notificationKey).setValue(true)
+                    
+              
+                    } else {
+                        // do nothing
+                        
+                    }
+                    
                 }
                 commentField.text = ""
                 self.tableView.reloadData()
@@ -291,7 +341,8 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
         self.navigationController?.setNavigationBarHidden(false, animated: animated)
-        
+       
+        QueryPosts()
         //Catch notification if the keyboard is hsown or hidden
         
         
@@ -305,6 +356,43 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
         
 
     }
+    
+    
+  /*  func QueryMyNotificationTimeline(){
+        
+        //  FanoutMyFollowing()
+        
+        // for followingIDx in self.following_Array {
+        
+        postID  = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
+        
+        DataService.ds.REF_BASE.child("post-notifications").child(postID).observeEventType(.Value , withBlock: { (snapshot) in  //observeSingleEventOfType
+            
+            print("xxxxxxxxxxxxxxxx: \(snapshot.value)")
+            
+            self.notifications = []
+            
+            if let snapshots = snapshot.children.allObjects as? [FIRDataSnapshot]  {
+                
+                for snap in snapshots {
+                    
+                    if let postDict = snap.value as? [String : AnyObject]  {
+                        
+                        let key = snap.key
+                        let notification = Notification(notificationKey: key, dictionary: postDict)
+                        
+                        self.notifications.append(notification)
+                        
+                        
+                    }
+                }
+            }
+            // self.tableView.reloadData()
+            
+            }, withCancelBlock: nil)
+        
+    }   */
+
     
     func QueryCurrentUser(){
         
@@ -340,6 +428,50 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
         })
         
     }
+    
+    func QueryPosts(){
+        
+        let  postID  = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
+
+        
+        DataService.ds.REF_BASE.child("posts").child(postID).observeEventType(.Value , withBlock: { (snapshot) in  //observeSingleEventOfType
+            
+     //postInfo
+            
+            let item = snapshot as FIRDataSnapshot
+            print("SNAP-Itemxxxxxxxxxxx: \(item)")
+            
+            // if let dict = item.value as? NSDictionary{
+            
+            if let dict = item.value as? [String : AnyObject]{
+              //  let avatar = dict["avatar"] as! String
+                // self.image = avatar
+                
+                self.postInfo = dict
+                
+                // self.title = "Welcome \(self.activeUserInfo!["firstName]!)"
+                self.postUid = "\(self.postInfo!["uid"]!)"
+               // self.profileImg = "\(self.activeUserInfo!["avatar"]!)"
+                // self.followersLabel.text = " \(self.activeUserInfo!["followers"]!) \n followers"
+                // self.followingLabel.text = " \(self.activeUserInfo!["following"]!) \n following"
+                
+                
+                
+            }
+            
+            
+            
+            //   completation(imageStr: image!)
+            
+            }, withCancelBlock: {(error) -> Void in
+                
+        })
+    }
+    
+    
+    
+      
+    
     
     func keyboardWillShow(notification: NSNotification) {
         if let keyboardSize = (notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.CGRectValue() {

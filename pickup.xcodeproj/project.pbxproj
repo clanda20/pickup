@@ -58,6 +58,7 @@
 		AA8EB02E1CF5224E00B5E542 /* FeedVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8EB02D1CF5224E00B5E542 /* FeedVC.swift */; };
 		AA8EB0301CF5237E00B5E542 /* PostCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8EB02F1CF5237E00B5E542 /* PostCell.swift */; };
 		AA8EB0321CF55D3000B5E542 /* Post.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8EB0311CF55D3000B5E542 /* Post.swift */; };
+		AA922ACA1DA33270002550F3 /* Notification.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA922AC91DA33270002550F3 /* Notification.swift */; };
 		AAA5B8891D5E965C00EFEB7E /* GeoFire.m in Sources */ = {isa = PBXBuildFile; fileRef = AAA5B8801D5E965B00EFEB7E /* GeoFire.m */; };
 		AAA5B88A1D5E965C00EFEB7E /* GFBase32Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = AAA5B8821D5E965B00EFEB7E /* GFBase32Utils.m */; };
 		AAA5B88B1D5E965C00EFEB7E /* GFGeoHash.m in Sources */ = {isa = PBXBuildFile; fileRef = AAA5B8841D5E965B00EFEB7E /* GFGeoHash.m */; };
@@ -65,6 +66,14 @@
 		AAA5B88D1D5E965C00EFEB7E /* GFQuery.m in Sources */ = {isa = PBXBuildFile; fileRef = AAA5B8881D5E965B00EFEB7E /* GFQuery.m */; };
 		AAA5B8951D5EAE3400EFEB7E /* MapVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA5B8941D5EAE3400EFEB7E /* MapVC.swift */; };
 		AAA5B8971D5EE95F00EFEB7E /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AAA5B8961D5EE95F00EFEB7E /* CoreLocation.framework */; };
+		AAAB3BBA1DA575F000396920 /* NotificationVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAB3BB91DA575F000396920 /* NotificationVC.swift */; };
+		AAAB3BBC1DA5766000396920 /* NotificationCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAB3BBB1DA5766000396920 /* NotificationCell.swift */; };
+		AAAFAF5E1D9CC8D800588A89 /* users.png in Resources */ = {isa = PBXBuildFile; fileRef = AAAFAF581D9CC8D800588A89 /* users.png */; };
+		AAAFAF5F1D9CC8D800588A89 /* users@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = AAAFAF591D9CC8D800588A89 /* users@2x.png */; };
+		AAAFAF601D9CC8D800588A89 /* users@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AAAFAF5A1D9CC8D800588A89 /* users@3x.png */; };
+		AAAFAF611D9CC8D800588A89 /* news.png in Resources */ = {isa = PBXBuildFile; fileRef = AAAFAF5B1D9CC8D800588A89 /* news.png */; };
+		AAAFAF621D9CC8D800588A89 /* news@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = AAAFAF5C1D9CC8D800588A89 /* news@2x.png */; };
+		AAAFAF631D9CC8D800588A89 /* news@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AAAFAF5D1D9CC8D800588A89 /* news@3x.png */; };
 		AAB2EABF1D8A257C0075607D /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB2EABE1D8A257C0075607D /* Extensions.swift */; };
 		AABC312A1D582D48002F8216 /* ImageShowVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABC31291D582D48002F8216 /* ImageShowVC.swift */; };
 		AAED90B01CF3B705006C4EFE /* MaterialView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAED90AF1CF3B705006C4EFE /* MaterialView.swift */; };
@@ -145,6 +154,7 @@
 		AA8EB02D1CF5224E00B5E542 /* FeedVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FeedVC.swift; sourceTree = "<group>"; };
 		AA8EB02F1CF5237E00B5E542 /* PostCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PostCell.swift; sourceTree = "<group>"; };
 		AA8EB0311CF55D3000B5E542 /* Post.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Post.swift; sourceTree = "<group>"; };
+		AA922AC91DA33270002550F3 /* Notification.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Notification.swift; sourceTree = "<group>"; };
 		AAA5B8791D5E965B00EFEB7E /* GeoFire.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GeoFire.h; sourceTree = "<group>"; };
 		AAA5B87A1D5E965B00EFEB7E /* GFCircleQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GFCircleQuery.h; sourceTree = "<group>"; };
 		AAA5B87B1D5E965B00EFEB7E /* GFQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GFQuery.h; sourceTree = "<group>"; };
@@ -163,6 +173,14 @@
 		AAA5B8931D5E99EB00EFEB7E /* pickup-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "pickup-Bridging-Header.h"; sourceTree = "<group>"; };
 		AAA5B8941D5EAE3400EFEB7E /* MapVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapVC.swift; sourceTree = "<group>"; };
 		AAA5B8961D5EE95F00EFEB7E /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
+		AAAB3BB91DA575F000396920 /* NotificationVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NotificationVC.swift; sourceTree = "<group>"; };
+		AAAB3BBB1DA5766000396920 /* NotificationCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NotificationCell.swift; sourceTree = "<group>"; };
+		AAAFAF581D9CC8D800588A89 /* users.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = users.png; sourceTree = "<group>"; };
+		AAAFAF591D9CC8D800588A89 /* users@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "users@2x.png"; sourceTree = "<group>"; };
+		AAAFAF5A1D9CC8D800588A89 /* users@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "users@3x.png"; sourceTree = "<group>"; };
+		AAAFAF5B1D9CC8D800588A89 /* news.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = news.png; sourceTree = "<group>"; };
+		AAAFAF5C1D9CC8D800588A89 /* news@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "news@2x.png"; sourceTree = "<group>"; };
+		AAAFAF5D1D9CC8D800588A89 /* news@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "news@3x.png"; sourceTree = "<group>"; };
 		AAB2EABE1D8A257C0075607D /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		AABC31291D582D48002F8216 /* ImageShowVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageShowVC.swift; sourceTree = "<group>"; };
 		AAED90AF1CF3B705006C4EFE /* MaterialView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MaterialView.swift; sourceTree = "<group>"; };
@@ -229,6 +247,12 @@
 				AAF657121D9A43EA00EA3982 /* home@3x.png */,
 				AA1CE86E1D1320B000CA8F68 /* images.jpg */,
 				AA5E12D21D90BAA400FC9A16 /* play@2x.png */,
+				AAAFAF581D9CC8D800588A89 /* users.png */,
+				AAAFAF591D9CC8D800588A89 /* users@2x.png */,
+				AAAFAF5A1D9CC8D800588A89 /* users@3x.png */,
+				AAAFAF5B1D9CC8D800588A89 /* news.png */,
+				AAAFAF5C1D9CC8D800588A89 /* news@2x.png */,
+				AAAFAF5D1D9CC8D800588A89 /* news@3x.png */,
 			);
 			name = "Support-files";
 			sourceTree = "<group>";
@@ -329,6 +353,8 @@
 				AA60F55C1CEFFEC8007B215D /* ViewController.swift */,
 				AA8EB02D1CF5224E00B5E542 /* FeedVC.swift */,
 				AA1E7FBD1D1B5D8D0035EF2C /* CommentVC.swift */,
+				AAFAB8A21D7E33CF003B5423 /* EventCommentVC.swift */,
+				AA0CEE2C1D6D630500ABB682 /* EventVC.swift */,
 				AA5FEC581D306C9B002EA1CF /* ProfileVC.swift */,
 				AAFAB8A81D7F98D4003B5423 /* ContactSearchTable.swift */,
 				AA0F36CA1D356F7000E65D41 /* contactProfileVC.swift */,
@@ -340,13 +366,12 @@
 				AA60E0B81D62C93900321FF2 /* PickUp.xcdatamodeld */,
 				AA5606EA1D67F7AB004F99F9 /* AddVC.swift */,
 				AA0CEE2A1D6B79B900ABB682 /* LocationSearchTable.swift */,
-				AA0CEE2C1D6D630500ABB682 /* EventVC.swift */,
 				AA8845981D6E48B800785AC9 /* EventDetailVC.swift */,
 				AAA5B8941D5EAE3400EFEB7E /* MapVC.swift */,
 				AA1F12731D70020C00C2BC35 /* GeoMapVC.swift */,
-				AAFAB8A21D7E33CF003B5423 /* EventCommentVC.swift */,
-				AA5FEC5E1D340CB2002EA1CF /* ContactsVC.swift */,
 				AA46A47E1D93A1E500F9CC9C /* EditEventVC.swift */,
+				AA5FEC5E1D340CB2002EA1CF /* ContactsVC.swift */,
+				AAAB3BB91DA575F000396920 /* NotificationVC.swift */,
 				AAFAB8B01D827F27003B5423 /* Search */,
 			);
 			name = Controller;
@@ -367,6 +392,7 @@
 				AA1F12751D7518C200C2BC35 /* EventAnnot.swift */,
 				AA1F12771D763CD800C2BC35 /* Pin.swift */,
 				AAFAB8A61D7E35A7003B5423 /* EventComment.swift */,
+				AA922AC91DA33270002550F3 /* Notification.swift */,
 			);
 			name = Model;
 			path = ..;
@@ -379,14 +405,15 @@
 				AAED90B51CF3BD99006C4EFE /* MaterialButton.swift */,
 				AAED90B71CF3C4BD006C4EFE /* MaterialTextField.swift */,
 				AA8EB02F1CF5237E00B5E542 /* PostCell.swift */,
-				AA1E7FBF1D1B5EA40035EF2C /* CommentCell.swift */,
 				AA82A10D1D347F4100A133B1 /* ContactCell.swift */,
 				AA5D7BB11D383DC300B25496 /* FriendsCell.swift */,
 				AA5D7BB51D39A5CB00B25496 /* PostsByUserCell.swift */,
 				AA1755E91D3C311E00FD0782 /* PostsByContactCell.swift */,
 				AA0CEE301D6D679F00ABB682 /* EventCell.swift */,
 				AA88459A1D6E9A1800785AC9 /* EventDetailCell.swift */,
+				AA1E7FBF1D1B5EA40035EF2C /* CommentCell.swift */,
 				AAFAB8A41D7E3439003B5423 /* EventCommentCell.swift */,
+				AAAB3BBB1DA5766000396920 /* NotificationCell.swift */,
 			);
 			name = View;
 			path = ..;
@@ -525,14 +552,20 @@
 			files = (
 				AAFAB8B61D827FE6003B5423 /* countries.txt in Resources */,
 				AA60C04E1D6664F600A4A056 /* car.png in Resources */,
+				AAAFAF611D9CC8D800588A89 /* news.png in Resources */,
+				AAAFAF621D9CC8D800588A89 /* news@2x.png in Resources */,
 				AAF657111D9A43E400EA3982 /* home@2x.png in Resources */,
+				AAAFAF5E1D9CC8D800588A89 /* users.png in Resources */,
 				AAF657131D9A43EA00EA3982 /* home@3x.png in Resources */,
+				AAAFAF601D9CC8D800588A89 /* users@3x.png in Resources */,
 				AAF657171D9A451C00EA3982 /* pbg.jpg in Resources */,
 				AAF6570F1D9A43DB00EA3982 /* home.png in Resources */,
 				AA60F5651CEFFEC8007B215D /* LaunchScreen.storyboard in Resources */,
 				AA74BABD1D18B74F0069E11F /* Main.storyboard in Resources */,
 				AA1CE86F1D1320B000CA8F68 /* images.jpg in Resources */,
 				AAF657191D9A45D700EA3982 /* imageHere.png in Resources */,
+				AAAFAF631D9CC8D800588A89 /* news@3x.png in Resources */,
+				AAAFAF5F1D9CC8D800588A89 /* users@2x.png in Resources */,
 				AA8EB02C1CF4318700B5E542 /* GoogleService-Info.plist in Resources */,
 				AAF657151D9A451400EA3982 /* pp.jpg in Resources */,
 				AA5E12D31D90BAA400FC9A16 /* play@2x.png in Resources */,
@@ -585,7 +618,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -626,6 +659,7 @@
 				AA1F12761D7518C300C2BC35 /* EventAnnot.swift in Sources */,
 				AA5D7BB21D383DC300B25496 /* FriendsCell.swift in Sources */,
 				AAED90B01CF3B705006C4EFE /* MaterialView.swift in Sources */,
+				AAAB3BBA1DA575F000396920 /* NotificationVC.swift in Sources */,
 				AA0CEE311D6D679F00ABB682 /* EventCell.swift in Sources */,
 				AA5606EB1D67F7AB004F99F9 /* AddVC.swift in Sources */,
 				AA60E0B71D62C86200321FF2 /* Location.swift in Sources */,
@@ -645,6 +679,7 @@
 				AAFAB8A91D7F98D4003B5423 /* ContactSearchTable.swift in Sources */,
 				AAED90B61CF3BD99006C4EFE /* MaterialButton.swift in Sources */,
 				AA8EB0321CF55D3000B5E542 /* Post.swift in Sources */,
+				AA922ACA1DA33270002550F3 /* Notification.swift in Sources */,
 				AABC312A1D582D48002F8216 /* ImageShowVC.swift in Sources */,
 				AA1E7FC01D1B5EA40035EF2C /* CommentCell.swift in Sources */,
 				AAFAB8A71D7E35A7003B5423 /* EventComment.swift in Sources */,
@@ -653,6 +688,7 @@
 				AAFAB8A31D7E33CF003B5423 /* EventCommentVC.swift in Sources */,
 				AA8845951D6D725C00785AC9 /* Event.swift in Sources */,
 				AA5FEC5F1D340CB2002EA1CF /* ContactsVC.swift in Sources */,
+				AAAB3BBC1DA5766000396920 /* NotificationCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

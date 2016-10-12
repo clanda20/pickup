@@ -9,25 +9,11 @@
 import Foundation
 import Firebase
 
-/* class Comment: NSObject {
-    var uid: String
-    var text: String
-    
-    
-    init(uid: String, text: String){
-        self.uid = uid
-        self.text = text
-    }
-    
-    convenience override init(){
-        self.init(uid: "", text: "")
-    }
-}
-*/
+
   class Comment {
     private var _commentDescription: String?
-    private var _imageUrl2: String?
-    private var _avatar: String?
+   private var _imageUrl2: String?
+   private var _avatar: String?
     private var _fullName: String!
     private var _username2: String!
     private var _commentKey: String!
@@ -39,11 +25,11 @@ import Firebase
         return _commentDescription
     }
     
-    var imageUrl2: String? {
+   var imageUrl2: String? {
         return _imageUrl2
     }
-    
-    var avatar: String? {
+ 
+   var avatar: String? {
         return _avatar
     }
     
@@ -86,7 +72,7 @@ import Firebase
         
         self._commentKey = commentKey
         
-        if let imgUrl2 = dictionary["imageUrl2"] as? String {
+       if let imgUrl2 = dictionary["imageUrl2"] as? String {
             self._imageUrl2 = imgUrl2
         }
         

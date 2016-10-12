@@ -100,8 +100,17 @@ class PostCell: UITableViewCell {
     
      var followersList = []
     
+    var notification: Notification!
+    var notifications = [Notification]()
     
+    var notificationArray: [String] = []
+    var postCommentArray: [String] = []
     
+   
+    var profileUserName: String!
+    var profileUserImg: String!
+    
+    var notificationKey: String!
 
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -119,62 +128,12 @@ class PostCell: UITableViewCell {
         dislikeImage.userInteractionEnabled = true
         
       
-       
+      QueryCurrentUser()
  
     }
     
     
-    func FirebaseFanoutPostFollowers(postKey: String!){
-      
-        followersRef = DataService.ds.REF_BASE.child("posts-followers").child(postKey)
-        followersRef.observeEventType(.Value, withBlock:  { snapshot in
-            
-            
-            print("new snapshot array: \(snapshot.key)")
-            
-            
-            self.postFollowersArray = []    // self.friendsArray = [] for  self.postFollowersArray = []
-          //  self.usersLists = []
-            
-            for child in snapshot.children {
-                let postFollowersID = child.key as String
-                print("friendID  Array IIIIiiiiiiPostCelliiiiiii: \(postFollowersID)")
-                
-                self.postFollowersArray.append(postFollowersID)
-            
-                
-                for postFollowersID in self.postFollowersArray {
-                    print(" Array friendID tonight  PostCell \(postFollowersID)")
-                }
-                
-            }
-        })
-    }
-    
-    func FirebaseFanout(){
-        
-        followersRef.observeEventType(.Value, withBlock:  { snapshot in
-            
-            
-            print("new snapshot array: \(snapshot.key)")
-            
-            
-            self.friendsArray = []
-            
-            for child in snapshot.children {
-                let friendID = child.key as String
-                print("friendID  Array IIIIiiiiiiPostCelliiiiiii: \(friendID)")
-                
-                self.friendsArray.append(friendID)
-               
-                
-                for friendID in self.friendsArray {
-                    print(" Array friendID tonight  PostCell \(friendID)")
-                }
-                
-            }
-        })
-    }
+  
 
 
     override func drawRect(rect: CGRect) {
@@ -427,11 +386,17 @@ class PostCell: UITableViewCell {
    @IBAction func Comment_Post_Btn(sender: AnyObject) {
         
     let postKey = post.postKey
-    print("SNaps July 7 POstKeyxxxxxxxxxxxxxxxx  :\(postKey)")
+    let postKeyUID = post.uid
+    print("SNaps oct 4 POstKeyxxxxxxxxxxxxxxxx  :\(postKey)")
     
     //let postKey =  post.postKey
     NSUserDefaults.standardUserDefaults().setValue(postKey, forKey: "postKey")   ///   postKey
     NSUserDefaults.standardUserDefaults().synchronize()
+    
+    NSUserDefaults.standardUserDefaults().setValue(postKeyUID, forKey: "postKeyUID")   ///   postKey
+    NSUserDefaults.standardUserDefaults().synchronize()
+    
+    
     if(self.delegate != nil){ //Just to be safe.
         self.delegate!.callSegueFromCell(myData: postKey)
         
@@ -459,6 +424,35 @@ class PostCell: UITableViewCell {
                 self.likeRef.setValue(true)
                 
                self.dislikeImage.userInteractionEnabled = false
+                
+                //adding notification
+                 let time  = String(Int(NSDate().timeIntervalSince1970))
+                
+                 let key = DataService.ds.REF_BASE.child("notifications").childByAutoId().key
+                
+                self.notificationKey = "N\(key)"  /// notificationKey is the same number of the commentKey but with and N before the number
+                
+                let notificationLike : [String : AnyObject] = [
+                    "uid": KEY_UID!,
+                    "fullName": self.profileUserName,
+                    "avatar": self.profileUserImg,
+                    "date" : time,
+                    "postKey" : self.post.postKey,
+                    "commentID": key,
+                    "type": "LIKES YOUR POST",
+                    "notificationKey": self.notificationKey,
+                ]
+                
+                if self.post.uid != KEY_UID {
+                
+                DataService.ds.REF_BASE.child("notifications").child(self.post.uid! ).child(self.notificationKey).setValue(notificationLike)
+                DataService.ds.REF_BASE.child("notifications-postUID").child(self.post.uid! ).child(self.notificationKey).setValue(true)
+                }  else {
+                // do nothing
+                
+                }
+            
+            
   
             } else {
                 self.likeImage.image = UIImage(named: "heart-empty")
@@ -466,6 +460,20 @@ class PostCell: UITableViewCell {
                 self.likeRef.removeValue()
                 
                self.dislikeImage.userInteractionEnabled = true
+                
+                //notification 
+                
+                if self.post.uid != KEY_UID {
+                    
+                    DataService.ds.REF_BASE.child("notifications").child(self.post.uid! ).child(self.notificationKey).removeValue()
+                    DataService.ds.REF_BASE.child("notifications-postUID").child(self.post.uid! ).child(self.notificationKey).removeValue()
+                    
+                }  else {
+                    // do nothing
+                    
+                }
+
+                
                 
             }
             
@@ -494,8 +502,35 @@ class PostCell: UITableViewCell {
                 
                 
            self.likeImage.userInteractionEnabled = false
-
                 
+                //adding notification
+                let time  = String(Int(NSDate().timeIntervalSince1970))
+                
+                let key = DataService.ds.REF_BASE.child("notifications").childByAutoId().key
+                
+                self.notificationKey = "N\(key)"  /// notificationKey is the same number of the commentKey but with and N before the number
+                
+                let notificationDislike : [String : AnyObject] = [
+                    "uid": KEY_UID!,
+                    "fullName": self.profileUserName,
+                    "avatar": self.profileUserImg,
+                    "date" : time,
+                    "postKey" : self.post.postKey,
+                    "commentID": key,
+                    "type": "DISKLIKE YOUR POST",
+                    "notificationKey": self.notificationKey,
+                ]
+                
+                if self.post.uid != KEY_UID {
+                    
+                    DataService.ds.REF_BASE.child("notifications").child(self.post.uid! ).child(self.notificationKey).setValue(notificationDislike)
+                    DataService.ds.REF_BASE.child("notifications-postUID").child(self.post.uid! ).child(self.notificationKey).setValue(true)
+                }  else {
+                    // do nothing
+                    
+                }
+                
+  
                 
             }else {
                 self.dislikeImage.image = UIImage(named: "heart2-empty")
@@ -503,6 +538,18 @@ class PostCell: UITableViewCell {
                 self.dislikeRef.removeValue()
                 
                 self.likeImage.userInteractionEnabled = true
+                
+                //notification
+                
+                if self.post.uid != KEY_UID {
+                    
+                    DataService.ds.REF_BASE.child("notifications").child(self.post.uid! ).child(self.notificationKey).removeValue()
+                    DataService.ds.REF_BASE.child("notifications-postUID").child(self.post.uid! ).child(self.notificationKey).removeValue()
+                    
+                }  else {
+                    // do nothing
+                    
+                }
                
                
             }
@@ -546,21 +593,49 @@ class PostCell: UITableViewCell {
         print("Segue Agosto 1xxxxx: contactID_Post_Profile \(contactID_Post_Profile)")
     
         if(self.delegate2 != nil){ //Just to be safe.
-           // self.delegate2!.ContactIDSegueFromCell(contactID: contactID_Post_Profile)
-            self.delegate2!.ContactIDSegueFromCell(contactID: self.contactId)
+            
+             self.delegate2!.ContactIDSegueFromCell(contactID: self.contactId)
             print("Segue Agosto 1xxxxx: \(self.contactId)")
-       // FeedVC.performSegueWithIdentifier("segue_Profile_Name", sender: sender){
-     }
+
+        }
     }
     
     
     //Delete complete post in all its locations.   Only the User's Post. 
     @IBAction func deletePostByUID(sender: AnyObject) {
         
+        let   postID = post.postKey
+        
+        // delete notification
+        
+        DataService.ds.REF_BASE.child("post-commentsOnly").child(postID).observeEventType(.Value, withBlock:  { snapshot in
+            
+            self.postCommentArray = []
+            
+            for child in snapshot.children {
+                let postComment = child.key as String
+                
+                self.postCommentArray.append(postComment)
+                
+                for postComment in self.postCommentArray {
+                    print(" Array friendID tonight  PostCell \(postComment)")
+                    
+                    DataService.ds.REF_BASE.child("notifications").child(KEY_UID!).child("N\(postComment)").removeValue()
+                    DataService.ds.REF_BASE.child("notifications-postUID").child(KEY_UID!).child("N\(postComment)").removeValue()
+                    DataService.ds.REF_BASE.child("post-commentsOnly").child(postID).removeValue()
+                }
+                
+            }
+        })
+        
+        
+        
+   
+        
         print("Delete BTn Pressed")
         print("Delete Photo from Storage: \(post.imageUrl)")
         
-        let   postID = post.postKey
+        
         
        DeleteRef = DataService.ds.REF_POSTS  //("posts")
        DeleteRef.child(postID).removeValue()
@@ -594,6 +669,7 @@ class PostCell: UITableViewCell {
             DataService.ds.REF_BASE.child("posts-followers").child(postID).child(postFollowersID).removeValue()
            
         }
+    
             // Create a reference to the file to delete
              var  imageToDelete = post.mediaType
            // if imageToDelete = "VIDEO" || "PHOTO" {  //"VIDEO" || "PHOTO"
@@ -668,12 +744,11 @@ class PostCell: UITableViewCell {
         
         DeleteRef3 = DataService.ds.REF_TIMELINE_POST_USERID   //child("timeline").child(uid!)
         DeleteRef3.child(postID).removeValue()
+      
         
     }
     
-    
- 
-    
+   
     func tappedImage(sender: UITapGestureRecognizer)
     {
         print("Tapped on Image")
@@ -730,4 +805,130 @@ class PostCell: UITableViewCell {
             
         }
     }
+    
+    
+    func FirebaseFanoutPostFollowers(postKey: String!){
+        
+        followersRef = DataService.ds.REF_BASE.child("posts-followers").child(postKey)
+        followersRef.observeEventType(.Value, withBlock:  { snapshot in
+            
+            
+            print("new snapshot array: \(snapshot.key)")
+            
+            
+            self.postFollowersArray = []    // self.friendsArray = [] for  self.postFollowersArray = []
+            //  self.usersLists = []
+            
+            for child in snapshot.children {
+                let postFollowersID = child.key as String
+                print("friendID  Array IIIIiiiiiiPostCelliiiiiii: \(postFollowersID)")
+                
+                self.postFollowersArray.append(postFollowersID)
+                
+                
+                for postFollowersID in self.postFollowersArray {
+                    print(" Array friendID tonight  PostCell \(postFollowersID)")
+                }
+                
+            }
+        })
+    }
+    
+    func FirebaseFanout(){
+        
+        followersRef.observeEventType(.Value, withBlock:  { snapshot in
+           
+            print("new snapshot array: \(snapshot.key)")
+            
+            self.friendsArray = []
+            
+            for child in snapshot.children {
+                let friendID = child.key as String
+                print("friendID  Array IIIIiiiiiiPostCelliiiiiii: \(friendID)")
+                
+                self.friendsArray.append(friendID)
+                
+                
+                for friendID in self.friendsArray {
+                    print(" Array friendID tonight  PostCell \(friendID)")
+                }
+            }
+        })
+    }
+   
+    
+    func QuerryNotifications(){
+        
+        DataService.ds.REF_BASE.child("notifications").child(KEY_UID!).observeEventType(.Value, withBlock:{ snapshot in
+            
+            // print("new way: \(snapshot)")
+            // self.contacts = []
+            //  let friendID = snapshot.key
+            // let friendReference = DataService.ds.REF_USERS.child(friendID)
+            
+            print(": \(snapshot.value)")
+            
+            self.notifications = []
+            
+             self.notificationArray = []
+            
+            if let snapshots = snapshot.children.allObjects as? [FIRDataSnapshot]  {
+                
+                for snap in snapshots {
+                    
+                    if let notificationDict = snap.value as? [String : AnyObject]  {
+                        
+                        let key = snap.key
+                        let notification = Notification(notificationKey: key, dictionary: notificationDict)
+                        
+                        self.notifications.append(notification)
+                        
+
+                      
+                        
+                    }
+                }
+   
+                
+            }
+            
+            
+           
+           // self.tableView.reloadData()
+            
+            
+            }, withCancelBlock: nil)
+        
+        // }, withCancelBlock: nil)
+        
+    }
+    
+    func QueryCurrentUser(){
+        
+        DataService.ds.REF_USER_CURRENT.observeEventType(.Value, withBlock: { (snapshot)  in
+            
+            let item = snapshot as FIRDataSnapshot
+            print("SNAP-Itemxxxxxxxxxxx: \(item)")
+            
+            // if let dict = item.value as? NSDictionary{
+            
+            if let dict = item.value as? [String : AnyObject]{
+                let avatar = dict["avatar"] as! String
+                // self.image = avatar
+                
+                self.activeUserInfo = dict
+                
+                // self.title = "Welcome \(self.activeUserInfo!["firstName]!)"
+                self.profileUserName = "\(self.activeUserInfo!["fullName"]!.uppercaseString!)"
+                self.profileUserImg = "\(self.activeUserInfo!["avatar"]!)"
+                // self.followersLabel.text = " \(self.activeUserInfo!["followers"]!) \n followers"
+                // self.followingLabel.text = " \(self.activeUserInfo!["following"]!) \n following"
+            }
+            
+            }, withCancelBlock: {(error) -> Void in
+        })
+    }
+    
+
+    
 }

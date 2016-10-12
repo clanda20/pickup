@@ -33,7 +33,7 @@ class CommentCell: UITableViewCell {
     
     
     var comment: Comment!
-    //  var post: Post!
+     var post: Post!
     
     var value: Int!
     
@@ -51,17 +51,30 @@ class CommentCell: UITableViewCell {
     
     var myCommentsArray: [String] = []
     var myPostArray: [String] = []
+    var notifications_Array: [String] = []
     
+    
+    var following_Array: [String] = []
+    
+    var notificationstimelineID_Array: [String] = []
     
     
      var delegate2 : ContactIDCommentCellDelegate?
     
      var contactId: String!
     
+   var notifications = [Notification]()
+
+    var notification: Notification!
+    
+    var notificationID: String!
+    
     override func awakeFromNib() {
         super.awakeFromNib()
         FirebaseFanout()
-      //  FirebaseFanout2()
+       
+      
+      
     }
     
     override func drawRect(rect: CGRect) {
@@ -79,11 +92,19 @@ class CommentCell: UITableViewCell {
 
     func configureCommentCell(comment: Comment,img: UIImage?){
         
-       // self.contactId =  post.uid
+     
         
         let   commentID = comment.commentKey
           self.commentKeyID = comment.uid
+            
+            
+          
         
+        let notificationKey = notification?.notificationKey
+        
+       self.notificationID = notificationKey
+                
+           
        
         self.comment = comment
         
@@ -120,7 +141,7 @@ class CommentCell: UITableViewCell {
         
         
         
-      //  self.contactId =  post.uid
+       
         
         // Delete your own post only so hidden Delete button if the post is not yours
         
@@ -170,23 +191,15 @@ class CommentCell: UITableViewCell {
         
         print("Delete BTn Pressed----------------------------------------")
        
-        
         let   commentID = comment.commentKey
-        
         
         DeleteRef = DataService.ds.Ref_USER_COMMENTS  //("user-comments")
         DeleteRef.child(KEY_UID!).child(commentID).removeValue()
         
-      //  DeleteRef2 = DataService.ds.REF_USER_USER_POSTS_ID  //("user-posts-id")
-      // DeleteRef2.child(KEY_UID!).child(commentID).removeValue()
         
            DeleteRef3 = DataService.ds.REF_POSTCOMMENTS_ID   //("post-comments" / postID")
         
-        // let   postID = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
         
-        
-        
-       // for commentID in self.myCommentsArray {
             
             DeleteRef3.child(commentID).removeValue()
             
@@ -195,14 +208,35 @@ class CommentCell: UITableViewCell {
        let DeleteRef4 = DataService.ds.REF_POSTCOMMENTS_USER_ID  //URL_BASE.child("post-comments-userID").child(postID)
         DeleteRef4.child(commentID).removeValue()
         
+        
+        //delete notifications
+        
+         let postkeyUID = NSUserDefaults.standardUserDefaults().valueForKey("postKeyUID") as! String  // owner of the post
+     
+        
+        if KEY_UID != postkeyUID {
+         
+                
+                
+                DataService.ds.REF_BASE.child("notifications").child(postkeyUID).child("N\(commentID)").removeValue()
+                DataService.ds.REF_BASE.child("notifications-postUID").child(postkeyUID).child("N\(commentID)").removeValue()
+                
+            } else {
+             // do nothing
+        }
+       
     }
-    // Delete only those post on my timeline or Wall
+    
+
+    
+    
+    
+  
     
     // should delete post-comments //post-comments-userID// user-comments
 
     
-    @IBAction func delete_Btn_Not_in_my_timeline(sender: AnyObject) {
-        
+    @IBAction func delete_Btn_Not_in_my_timeline(sender: AnyObject) {   //  Delete only those post on my timeline or Wall
        
         
         print("delete_Btn_Not_in_my_timeline Pressed---------------------------")
@@ -229,9 +263,27 @@ class CommentCell: UITableViewCell {
             
         }
         
-      
+        //delete notifications
         
-    }
+        let postkeyUID = NSUserDefaults.standardUserDefaults().valueForKey("postKeyUID") as! String  // owner of the post
+        let postID  = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String  // might not be necesary 
+        
+          if KEY_UID == postkeyUID {
+        
+            DataService.ds.REF_BASE.child("notifications").child(postkeyUID).child("N\(commentID)").removeValue()
+            DataService.ds.REF_BASE.child("notifications-postUID").child(postkeyUID).child("N\(commentID)").removeValue()
+             DataService.ds.REF_BASE.child("post-commentsOnly").child(postID).child(commentID).removeValue()
+            
+          }  else {
+            // do nothing
+        }
+            
+     
+        
+       
+        
+        
+            }
     
  
     func FirebaseFanout(){   // grabing the postID form the user-posts-id and userID
@@ -264,6 +316,14 @@ class CommentCell: UITableViewCell {
             }
         })
     }
+    
+    
+ 
+    
+    
+    
+    
+    
     @IBAction func profileNameBtn(sender: AnyObject) {
         
         

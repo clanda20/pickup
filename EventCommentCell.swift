@@ -17,10 +17,8 @@ protocol ContactIDEventCommentCellDelegate {
 class EventCommentCell: UITableViewCell {
     
     @IBOutlet weak var profileImg: UIImageView!
-    // @IBOutlet weak var Username2: UILabel!
     
     @IBOutlet weak var Username2: UIButton!
-    // @IBOutlet weak var commentText: UITextView!
     
     @IBOutlet weak var commentText: UILabel!
     
@@ -55,7 +53,7 @@ class EventCommentCell: UITableViewCell {
     var  DeleteRef3: FIRDatabaseReference!
     
     var myCommentsArray: [String] = []
-    var myPostArray: [String] = []
+    var myEventCommentArray: [String] = []
     
     
     
@@ -63,10 +61,13 @@ class EventCommentCell: UITableViewCell {
     
     var contactId: String!
     
+    var eventInfo: NSDictionary?
+    var eventUid: String!
+    
     override func awakeFromNib() {
         super.awakeFromNib()
         FirebaseFanout()
-        //  FirebaseFanout2()
+        //QueryEventPosts()
     }
     
     override func drawRect(rect: CGRect) {
@@ -90,7 +91,7 @@ class EventCommentCell: UITableViewCell {
         self.eventcommentKeyID = eventcomment.uid
         
         self.eventkey = eventKey
-        
+        QueryEventPosts(eventKey)
         self.eventcomment = eventcomment
         
         
@@ -174,7 +175,7 @@ class EventCommentCell: UITableViewCell {
     //Delete complete post in all its locations.   Only the User Post.
     @IBAction func deleteCommentByUID(sender: AnyObject) {
         
-        print("Delete BTn Pressed----------------------------------------")
+        print("Delete BTn Pressed-----white can--------------------------")
         
         
         let   EventcommentID = eventcomment.commentKey
@@ -203,6 +204,30 @@ class EventCommentCell: UITableViewCell {
         
         DeleteRef4.child(EventcommentID).removeValue()
         
+        
+        //delete notifications
+        
+     //  let eventKeyUID = NSUserDefaults.standardUserDefaults().valueForKey("eventKeyUID") as! String  // owner of the event
+        // let eventKeyUID = self.eventUid
+        
+        
+        DataService.ds.REF_BASE.child("post-commentsOnly").child(eventkey!).child(EventcommentID).removeValue()
+    
+        if KEY_UID != self.eventUid {
+            
+            
+            
+            DataService.ds.REF_BASE.child("notifications").child(self.eventUid ).child("N\(EventcommentID)").removeValue()
+            DataService.ds.REF_BASE.child("notifications-postUID").child(self.eventUid ).child("N\(EventcommentID)").removeValue()
+          //  DataService.ds.REF_BASE.child("post-commentsOnly").child(self.eventUid).child(EventcommentID).removeValue()
+
+        } else {
+            // do nothing
+        }
+        
+        
+        
+        
     }
     // Delete only those post on my timeline or Wall
     
@@ -210,8 +235,6 @@ class EventCommentCell: UITableViewCell {
     
     
     @IBAction func delete_Btn_Not_in_my_timeline(sender: AnyObject) {
-        
-        
         
         print("delete_Btn_Not_in_my_timeline Pressed---------------------------")
         // should delete post-comments //post-comments-userID//
@@ -221,24 +244,37 @@ class EventCommentCell: UITableViewCell {
         
         
         //9-5     DeleteRef = DataService.ds.REF_POSTCOMMENTS  //("post-comments") ok/// -------------1
-        DeleteRef = DataService.ds.REF_BASE.child("user-commets")
+      
         
-        for postID in self.myPostArray {   // if post belong to current user  delete the comment on Post-comment
+//        for eventID in self.myEventCommentArray {   // if post belong to current user  delete the comment on Post-comment
+//            
+//            
+//        }
+        
+        
+        //URL_BASE.child("post-comments-userID").child(postID) ook-----------2
+        
+        
+        for eventID in self.myEventCommentArray {   // if post belong to current user  delete the comment on Post-comment
             
-            DeleteRef.child(eventkey!).child(eventcommentID).removeValue()
+             DataService.ds.REF_BASE.child("event-comments-userID").child(eventkey!).child(eventcommentID).removeValue()
+            DataService.ds.REF_BASE.child("event-comments").child(eventkey!).child(eventcommentID).removeValue()
         }
         
+        //delete notifications
+        let eventKeyUID = self.eventUid
+//let eventKeyUID = NSUserDefaults.standardUserDefaults().valueForKey("eventKeyUID") as! String  // owner of the post
+        //let postID  = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
         
-        let DeleteRef4 = DataService.ds.REF_BASE.child("event-comments-userID").child(eventkey!) //URL_BASE.child("post-comments-userID").child(postID) ook-----------2
-        
-        
-        for postID in self.myPostArray {   // if post belong to current user  delete the comment on Post-comment
+        if KEY_UID == eventKeyUID {
             
-            DeleteRef4.child(eventkey!).child(eventcommentID).removeValue()
+            DataService.ds.REF_BASE.child("notifications").child(eventKeyUID).child("N\(eventcommentID)").removeValue()
+            DataService.ds.REF_BASE.child("notifications-postUID").child(eventKeyUID).child("N\(eventcommentID)").removeValue()
+            DataService.ds.REF_BASE.child("post-commentsOnly").child(eventkey!).child(eventcommentID).removeValue()
             
+        }  else {
+            // do nothing
         }
-        
-        
         
     }
     
@@ -246,7 +282,7 @@ class EventCommentCell: UITableViewCell {
     func FirebaseFanout(){   // grabing the postID form the user-posts-id and userID
         
         
-        userCommentsRef = DataService.ds.REF_BASE.child("user-posts-id").child(KEY_UID!)   //("user-posts-id")
+        userCommentsRef = DataService.ds.REF_BASE.child("host-events-id").child(KEY_UID!)   //("user-posts-id")
         
         userCommentsRef.observeEventType(.Value, withBlock:  { snapshot in
             
@@ -254,26 +290,85 @@ class EventCommentCell: UITableViewCell {
             print("new snapshot array: \(snapshot.key)")
             
             
-            self.myPostArray = []
+            self.myEventCommentArray = []
             //  self.usersLists = []
             
             for child in snapshot.children {
                 let eventID = child.key as String
                 print("postID  Array IIIIiiiiiipostIDDiii: \(eventID)")
                 
-                self.myPostArray.append(eventID)
+                self.myEventCommentArray.append(eventID)
                 
                 //   _ = Post(followersList: self.friendsArray)
                 
                 // self.usersLists.append(usersList)
                 
-                for eventID in self.myPostArray {
+                for eventID in self.myEventCommentArray {
                     print(" Array postID tonight  postID \(eventID)")
                 }
                 
             }
         })
     }
+    
+    func QueryEventPosts(eventKey: String!){
+        
+        print("Event Key inside : \(eventKey)")
+        
+        DataService.ds.REF_BASE.child("events").child(eventKey!).observeEventType(.Value , withBlock: { (snapshot) in  //observeSingleEventOfType
+            
+            //postInfo
+            
+            let item = snapshot as FIRDataSnapshot
+            print("SNAP-Itemx-EVent: \(item)")
+            
+            
+            if let dict = item.value as? [String : AnyObject]{
+                
+                self.eventInfo = dict
+                
+                
+                self.eventUid =   self.eventInfo!["host-uid"]! as! String
+                
+                
+            }
+            
+            }, withCancelBlock: {(error) -> Void in
+                
+        })
+    }
+    
+//    func FirebaseFanout(){   // grabing the postID form the user-posts-id and userID
+//        
+//        
+//        userCommentsRef = DataService.ds.REF_BASE.child("host-events-id").child(KEY_UID!)   //("user-posts-id")
+//        userCommentsRef.observeEventType(.Value, withBlock:  { snapshot in
+//            
+//            
+//            print("new snapshot array: \(snapshot.key)")
+//            
+//            
+//            self.myPostArray = []
+//            //  self.usersLists = []
+//            
+//            for child in snapshot.children {
+//                let postID = child.key as String
+//                print("postID  Array IIIIiiiiiipostIDDiii: \(postID)")
+//                
+//                self.myPostArray.append(postID)
+//                
+//                //   _ = Post(followersList: self.friendsArray)
+//                
+//                // self.usersLists.append(usersList)
+//                
+//                for postID in self.myPostArray {
+//                    print(" Array postID tonight  postID \(postID)")
+//                }
+//                
+//            }
+//        })
+//    }
+
     @IBAction func profileNameBtn(sender: AnyObject) {
         
         

@@ -108,7 +108,7 @@ class PostsByContactCell: UITableViewCell {
         
         
         
-        print(" Printing Full Name  \(post.fullName)")
+     //   print(" Printing Full Name  \(post.fullName)")
         
         self.profileName.setTitle("\(post.fullName)", forState: .Normal)
         self.profileName.titleLabel!.font = UIFont(name: "Marker Felt", size: 16)

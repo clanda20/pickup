@@ -28,8 +28,15 @@ class contactProfileVC: UIViewController {
     var posts_contactID_Array: [String] = []
     
     var activeUserInfo: NSDictionary?
+    var userWhoWillFollowInfo: NSDictionary?
     
     var isFollowed: Bool = false
+    
+    var fullName: String!
+    var profileUserImg: String!
+    var userID: String!
+    var userContactID: String!
+    var notificationKey: String!
     
     @IBOutlet weak var avatarImageView: UIImageView!
     @IBOutlet weak var postsLabel: UILabel!
@@ -42,6 +49,40 @@ class contactProfileVC: UIViewController {
                followContact(isFollowed) { (followRef) in
                 
              print("You are now following \(self.activeUserInfo!["fullName"]!)   ")
+                
+                // Notification Begin
+                //adding notification
+//                let time  = String(Int(NSDate().timeIntervalSince1970))
+//                
+//                let key = DataService.ds.REF_BASE.child("notification").childByAutoId().key
+//                
+//                let notificationKey = "N\(key)"  /// notificationKey is the same number of the commentKey but with and N before the number
+//                
+//                let notificationFollowing : [String : AnyObject] = [
+//                    "uid": KEY_UID!,
+//                    "fullName": self.fullName!,
+//                    "avatar": self.profileUserImg,
+//                    "date" : time,
+//                    "postKey" : "",
+//                    "commentID": "",
+//                    "type": "IS FOLLOWING YOU",
+//                    "notificationKey": notificationKey,
+//                    ]
+//                
+//                
+//                
+//                if self.userContactID != KEY_UID {
+//                    
+//                    DataService.ds.REF_BASE.child("notifications").child(self.userContactID).child(notificationKey).setValue(notificationFollowing)
+//                    DataService.ds.REF_BASE.child("notifications-postUID").child(self.userContactID).child(notificationKey).setValue(true)
+//                    
+//                    
+//                } else {
+//                    // do nothing
+//                    
+//                }
+//  
+              
                 
         }
             
@@ -59,7 +100,8 @@ class contactProfileVC: UIViewController {
         //  NSFetchRequest()
         FirebaseFanoutEvent()
         FirebaseFanout_ContactID()
-        
+        QueryCurrentUser()
+        fanoutToBeFollowedUser()
         
         let tapGesture = UITapGestureRecognizer(target: self, action: Selector("hideKeyboard"))
         tapGesture.cancelsTouchesInView = true
@@ -78,67 +120,25 @@ class contactProfileVC: UIViewController {
             if self.isFollowed {
                 self.followBtn.setTitle("Following", forState: .Normal)
                 
+                // Notification Begin
+
+                
+                
+                print("Following  Right now Notification ")
+                
+                // Notification Ended
+                
+                
+                
             } else {
                 self.followBtn.setTitle("Follow", forState: .Normal)
+                
+                
+                print("Noooo  Following  Right now Notification ")
             }
         }
         
-       
-        
-        
-        
-        
       
-        print("ContactKEY- Destination-----xxxxx-----------------: \(contactId)")
-        
-        var image: String?
-        
-        DataService.ds.REF_USERS.child(contactId!).observeEventType(.Value, withBlock: { (snapshot)  in
-            
-            let item = snapshot as FIRDataSnapshot
-            print("SNAP-Itemxxxxxxxxxxx: \(item)")
-            
-            // if let dict = item.value as? NSDictionary{
-            
-            if let dict = item.value as? [String : AnyObject]{
-                let avatar = dict["avatar"] as! String
-                image = avatar
-                
-                self.activeUserInfo = dict
-                
-                //contact's information
-                
-                self.title = " \(self.activeUserInfo!["fullName"]!.uppercaseString!)'s Profile"
-                self.postsLabel.text = " \(self.activeUserInfo!["postNumber"]!) \n posts"
-                self.followersLabel.text = " \(self.activeUserInfo!["followers"]!) \n followers"
-                self.followingLabel.text = " \(self.activeUserInfo!["following"]!) \n following"
-                
-                let  activeUserInfoID = self.activeUserInfo!["id"] as! String
-                
-                print("activeUserInfoID----xxxx-------:\(activeUserInfoID)")
-                
-                
-                
-                self.downloadAvatar(avatar, completion: { (data) in
-                    
-                    self.avatarImageView.image = UIImage(data: data)
-                    
-                    self.avatarImageView.layer.cornerRadius = 50.0
-                    self.avatarImageView.clipsToBounds = true
-                })
-                
-            }
-            
-            
-            
-           
-            
-            }, withCancelBlock: {(error) -> Void in
-                
-                print(error.description)
-                
-        })
-        
     
     }
     
@@ -197,19 +197,25 @@ class contactProfileVC: UIViewController {
             followerRefUserID.removeValue()
           
             
-            // Removing all  posts of the unfollowed user.
             
-         /*   for postIDx in self.posts_Array {
-                
-                DataService.ds.REF_TIMELINE_POST_USERID.child(postIDx).removeValue()
-                
-                
-            } */
+       
             
             
-            //Events Delte
+            //Events Delete
             
+            //Remove Notification
             
+            if self.userContactID != nil {
+            
+            DataService.ds.REF_BASE.child("notifications").child(self.userContactID).child(self.notificationKey).removeValue()
+            DataService.ds.REF_BASE.child("notifications-postUID").child(self.userContactID).child(self.notificationKey).removeValue()
+            
+            DataService.ds.REF_BASE.child("notifications").child(KEY_UID!).child(self.notificationKey).removeValue()
+            DataService.ds.REF_BASE.child("notifications-postUID").child(KEY_UID!).child(self.notificationKey).removeValue()
+            
+            }
+            
+            //End Of Remove Notification
             
             for event2IDx in self.event_Array {   //   delete  event from timeline of the deleted user
                 
@@ -267,6 +273,8 @@ class contactProfileVC: UIViewController {
             self.followBtn.setTitle("Follow", forState: .Normal)
             self.isFollowed = false
             
+           
+            
             
         } else {
         
@@ -277,6 +285,42 @@ class contactProfileVC: UIViewController {
             
             self.followBtn.setTitle("Following", forState: .Normal)
             self.isFollowed = true
+            
+            
+            //posible notification
+            
+            
+            let time  = String(Int(NSDate().timeIntervalSince1970))
+            
+            let key = DataService.ds.REF_BASE.child("notification").childByAutoId().key
+            
+            self.notificationKey = "N\(key)"  /// notificationKey is the same number of the commentKey but with and N before the number
+            
+            let notificationFollowing : [String : AnyObject] = [
+                "uid": KEY_UID!,
+                "fullName": self.fullName!,
+                "avatar": self.profileUserImg,
+                "date" : time,
+                "postKey" : "",
+                "commentID": "",
+                "type": "IS FOLLOWING YOU",
+                "notificationKey": notificationKey,
+                ]
+            
+            
+            
+            if self.userContactID != KEY_UID {
+                
+                DataService.ds.REF_BASE.child("notifications").child(self.userContactID).child(self.notificationKey).setValue(notificationFollowing)
+                DataService.ds.REF_BASE.child("notifications-postUID").child(self.userContactID).child(self.notificationKey).setValue(true)
+                
+                
+            } else {
+                // do nothing
+                
+            }
+            
+            // end notification
             
         }
         
@@ -481,6 +525,83 @@ class contactProfileVC: UIViewController {
         })
     }
 
+    func fanoutToBeFollowedUser() {
     
+    var image: String?
+    
+    DataService.ds.REF_USERS.child(contactId!).observeEventType(.Value, withBlock: { (snapshot)  in
+    
+    let item = snapshot as FIRDataSnapshot
+    print("SNAP-Itemxxxxxxxxxxx: \(item)")
+    
+    // if let dict = item.value as? NSDictionary{
+    
+    if let dict = item.value as? [String : AnyObject]{
+    let avatar = dict["avatar"] as! String
+    image = avatar
+    
+    self.activeUserInfo = dict
+    
+    //contact's information
+    
+    self.title = " \(self.activeUserInfo!["fullName"]!.uppercaseString!)'s Profile"
+    self.postsLabel.text = " \(self.activeUserInfo!["postNumber"]!) \n posts"
+    self.followersLabel.text = " \(self.activeUserInfo!["followers"]!) \n followers"
+    self.followingLabel.text = " \(self.activeUserInfo!["following"]!) \n following"
+    self.userContactID = "\(self.activeUserInfo!["id"]!)"
+    
+    let  activeUserInfoID = self.activeUserInfo!["id"] as! String
+    
+    print("activeUserInfoID----xxxx-------:\(activeUserInfoID)")
+    
+    
+    
+    self.downloadAvatar(avatar, completion: { (data) in
+    
+    self.avatarImageView.image = UIImage(data: data)
+    
+    self.avatarImageView.layer.cornerRadius = 50.0
+    self.avatarImageView.clipsToBounds = true
+    })
+    
+    }
+    
+    
+    
+    
+    
+    }, withCancelBlock: {(error) -> Void in
+    
+    print(error.description)
+    
+    })
+    
+    }
+    
+    func QueryCurrentUser(){
+     
+        DataService.ds.REF_USER_CURRENT.observeEventType(.Value, withBlock: { (snapshot)  in
+     
+            let item = snapshot as FIRDataSnapshot
+            print("SNAP-Itemxxxxxxxxxxx: \(item)")
+     
+            
+     
+            if let dict = item.value as? [String : AnyObject]{
+                let avatar = dict["avatar"] as! String
+                // self.image = avatar
+     
+                self.userWhoWillFollowInfo = dict
+               
+                self.fullName = self.userWhoWillFollowInfo!["fullName"]! as! String
+                self.profileUserImg = "\(self.userWhoWillFollowInfo!["avatar"]!)"
+                self.userID = "\(self.userWhoWillFollowInfo!["id"]!)"
+                
+                
+            }
+            
+            }, withCancelBlock: {(error) -> Void in
+        })
+    }
 
     }

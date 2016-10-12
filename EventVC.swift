@@ -143,7 +143,7 @@ class EventVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
             let destinationVC = segue.destinationViewController as! EventDetailVC
             
             destinationVC.eventKey   = eventSelected.eventKey
-            destinationVC.hostUid = eventSelected.hostUid
+           // destinationVC.hostUid = eventSelected.hostUid
             
             
             

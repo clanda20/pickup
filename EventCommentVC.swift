@@ -28,6 +28,7 @@ class EventCommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate
     
     var eventKey: String! // from segue EventDetailVC
     
+    var eventKEY: String! 
     
     
     var postID: String! = ""
@@ -44,6 +45,9 @@ class EventCommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate
     var profileImg: String!
     
     static var imageCache = NSCache()
+    
+    var eventInfo: NSDictionary?
+    var eventUid: String!
     
     //
     
@@ -82,8 +86,9 @@ class EventCommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate
         let tapGesture = UITapGestureRecognizer(target: self, action: Selector("hideKeyboard"))
         tapGesture.cancelsTouchesInView = true
         self.view.addGestureRecognizer(tapGesture)
-        
+         QueryEventPosts()
         QueryCurrentUser()
+       
         //  alignment()
         
         //title at the top
@@ -174,6 +179,7 @@ class EventCommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate
             
             DataService.ds.REF_BASE.observeSingleEventOfType(.Value, withBlock: { (snapshot) in
                 
+                let key = DataService.ds.REF_BASE.child("event-comments").childByAutoId().key  // creating CommentKey
                 
                 if let uid = uid, commentField = self.commentField, user = snapshot.value as? [String : AnyObject] {
                     
@@ -191,6 +197,7 @@ class EventCommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate
                         "fullName": self.profileName,
                         "avatar": self.profileImg,
                         "date" : time,
+                        "commentKey": key,
                         
                     ]
                     
@@ -209,7 +216,7 @@ class EventCommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate
                     } else {
                         
                         
-                        let key = DataService.ds.REF_BASE.child("event-comments").childByAutoId().key
+                      //  let key = DataService.ds.REF_BASE.child("event-comments").childByAutoId().key
                         
                         // let firebaseCommentPost = DataService.ds.REF_POST_KEY.child(key)
                         let firebaseEventCommentPost = DataService.ds.REF_BASE.child("event-comments").child(self.eventKey).child(key)
@@ -223,6 +230,46 @@ class EventCommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate
                         
                         let post_comment_userID_Ref =  DataService.ds.REF_BASE.child("event-comments-userID").child(self.eventKey).child(key).child(KEY_UID!)
                         post_comment_userID_Ref.setValue(true)   // delete it once it delete btn is pressed - needed
+                        
+                        DataService.ds.REF_BASE.child("post-commentsOnly").child(self.eventKey).child(key).setValue(true)
+                        //*****NOTIFICATION*******
+                        
+                        
+                        let notificationKey = "N\(key)"  /// notificationKey is the same number of the commentKey but with and N before the number
+                        print("notificationKEy  :  \(notificationKey)")
+                        
+                        //postKey = eventKey here
+                        
+                        let notification = [
+                            "uid": KEY_UID,
+                            "fullName": self.profileName,
+                            "avatar": self.profileImg,
+                            "date" : time,
+                            "postKey" : self.eventKey,
+                            "commentID": key,
+                            "type": "HAS COMMENTED ON YOUR EVENT",
+                            "notificationKey": notificationKey,
+                        ]
+                        
+                        
+                        
+                        if self.eventUid != KEY_UID {
+                            
+                            print("EVENTUID: \(self.eventUid)")
+                            
+                            DataService.ds.REF_BASE.child("notifications").child(self.eventUid!).child(notificationKey).setValue(notification)
+                            DataService.ds.REF_BASE.child("notifications-postUID").child(self.eventUid!).child(notificationKey).setValue(true)
+                            
+                            
+                        } else {
+                            // do nothing
+                            
+                        }
+                        
+                        
+                        //**END NOTIFICATION**
+                        
+                        
                     }
                     commentField.text = ""
                     self.tableView.reloadData()
@@ -315,25 +362,48 @@ class EventCommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate
                 
                 self.activeUserInfo = dict
                 
-                // self.title = "Welcome \(self.activeUserInfo!["firstName]!)"
                 self.profileName = "\(self.activeUserInfo!["fullName"]!.uppercaseString!)"
                 self.profileImg = "\(self.activeUserInfo!["avatar"]!)"
-                // self.followersLabel.text = " \(self.activeUserInfo!["followers"]!) \n followers"
-                // self.followingLabel.text = " \(self.activeUserInfo!["following"]!) \n following"
-                
-                
-                
+               
             }
             
-            
-            
-            //   completation(imageStr: image!)
             
             }, withCancelBlock: {(error) -> Void in
                 
         })
         
     }
+    
+    func QueryEventPosts(){
+        
+        print("Event Key inside : \(self.eventKey)")
+        
+        DataService.ds.REF_BASE.child("events").child(self.eventKey).observeEventType(.Value , withBlock: { (snapshot) in  //observeSingleEventOfType
+            
+            //postInfo
+            
+            let item = snapshot as FIRDataSnapshot
+            print("SNAP-Itemx-EVent: \(item)")
+            
+            
+            if let dict = item.value as? [String : AnyObject]{
+               
+                 self.eventInfo = dict
+                
+               
+              self.eventUid =   self.eventInfo!["host-uid"]! as! String
+              self.eventKEY =   self.eventInfo!["eventKey"]! as! String
+                
+                
+            }
+            
+            }, withCancelBlock: {(error) -> Void in
+                
+        })
+    }
+    
+    
+    
     
     func keyboardWillShow(notification: NSNotification) {
         if let keyboardSize = (notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.CGRectValue() {

@@ -111,6 +111,9 @@ class ViewController: UIViewController, UITextFieldDelegate{
                         var firstName: String = myFullNameStringArr [0]
                         var lastName: String = myFullNameStringArr [1]
                         
+                        var interval = NSDate().timeIntervalSince1970
+                        var date = NSDate(timeIntervalSince1970: interval)
+                        
                         
                         NSUserDefaults.standardUserDefaults().setValue(authID, forKey: "uid")
                          NSUserDefaults.standardUserDefaults().setValue(authData?.uid, forKey: "userID") /// temporal to prevent crash 
@@ -118,7 +121,7 @@ class ViewController: UIViewController, UITextFieldDelegate{
 
                         //Write DataBase
                         
-                        let user = ["provider": credential.provider,"id": "\(authID!)", "fullName": "\(fullName!.uppercaseString)", "firstName": firstName, "lastName": lastName,  "avatar": "\(photoURL!)" , "email": "\(email!)"]
+                        let user = ["provider": credential.provider,"id": "\(authID!)", "fullName": "\(fullName!.uppercaseString)", "firstName": firstName, "lastName": lastName,  "avatar": "\(photoURL!)" , "email": "\(email!)","postNumber": "0", "followers": "0", "following": "0", "time": "\(date)"]
                       //  DataService.ds.createFirebaseUser(authID!, user: user )
                         self.createFirebaseUser(authID!, user: user )
                         
