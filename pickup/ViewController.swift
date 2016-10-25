@@ -121,7 +121,7 @@ class ViewController: UIViewController, UITextFieldDelegate{
 
                         //Write DataBase
                         
-                        let user = ["provider": credential.provider,"id": "\(authID!)", "fullName": "\(fullName!.uppercaseString)", "firstName": firstName, "lastName": lastName,  "avatar": "\(photoURL!)" , "email": "\(email!)","postNumber": "0", "followers": "0", "following": "0", "time": "\(date)"]
+                        let user = ["provider": credential.provider,"id": "\(authID!)", "fullName": "\(fullName!.uppercaseString)", "firstName": firstName, "lastName": lastName,  "avatar": "\(photoURL!)" , "email": "\(email!)","notifications": "0","postNumber": "0", "followers": "0", "following": "0", "time": "\(date)"]
                       //  DataService.ds.createFirebaseUser(authID!, user: user )
                         self.createFirebaseUser(authID!, user: user )
                         
@@ -404,7 +404,7 @@ class ViewController: UIViewController, UITextFieldDelegate{
         let authData = authData
         let  date = date
         
-        let user = ["provider": authData!.providerID,"id": "\(authID!)", "fullName":  self.myFullNameString, "firstName":  self.firstName, "lastName":  self.lastName,  "avatar": "avatar" ,"likes":"0", "dislikes":"0", "email": authData!.email,"postNumber":"0", "followers": "0", "following": "0", "time": "\(date)"]
+        let user = ["provider": authData!.providerID,"id": "\(authID!)", "fullName":  self.myFullNameString, "firstName":  self.firstName, "lastName":  self.lastName,"notifications": "0","avatar": "avatar" ,"likes":"0", "dislikes":"0", "email": authData!.email,"postNumber":"0", "followers": "0", "following": "0", "time": "\(date)"]
         authData!
         self.createFirebaseUser(authID!, user: user as! Dictionary<String, String>)
         

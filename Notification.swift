@@ -18,6 +18,7 @@ class Notification {
     private var _uid: String?
     private var _date: String!
     private var _type: String!
+    private var _checked: Bool!
     private var _notificationRef: FIRDatabaseReference!
     
     
@@ -53,6 +54,10 @@ class Notification {
         return _type
     }
     
+    var checked: Bool{
+        return _checked
+    }
+    
     var date: String{
         return _date
     }
@@ -61,7 +66,7 @@ class Notification {
     }
     
     
-    init(commentID: String?, fullName: String, avatar: String?, date: String, type: String, postKey: String, notificationKey: String ) {
+    init(commentID: String?, fullName: String, avatar: String?, date: String, type: String, postKey: String, notificationKey: String, checked: Bool ) {
         self._commentID = commentID
         self._fullName = fullName
         self._avatar = avatar
@@ -69,6 +74,7 @@ class Notification {
         self._type = type
         self._postKey = postKey
         self._notificationKey = notificationKey
+        self._checked = checked
         
     }
     
@@ -108,6 +114,10 @@ class Notification {
         if let postKey = dictionary["postKey"] as? String {
             self._postKey = postKey
         }
+        if let checked = dictionary["checked"] as? Bool {
+            self._checked = checked
+        }
+        
         
         
        self._notificationRef = DataService.ds.REF_BASE.child("notifications").child(self._notificationKey)

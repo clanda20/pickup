@@ -15,6 +15,7 @@ class ProfileVC: UIViewController {
     @IBOutlet weak var postsLabel: UILabel!
     @IBOutlet weak var followersLabel: UILabel!
     @IBOutlet weak var followingLabel: UILabel!
+    @IBOutlet weak var notificationLabel: UILabel!
     
    
    // var followingsReg: FIRDatabaseReference?
@@ -44,7 +45,35 @@ class ProfileVC: UIViewController {
         
         self.tabBarController?.navigationItem.leftBarButtonItem = signoutButton
         
-   
+    // counting number of posts
+        DataService.ds.REF_BASE.child("user-posts").child(KEY_UID!).observeEventType(.Value, withBlock: { (snapshot)  in
+            
+            //counting posts
+            var countingPosts = snapshot.value?.count
+            
+            var post = ["postNumber":  (countingPosts!) ]
+            
+            DataService.ds.REF_BASE.child("users").child(KEY_UID!).updateChildValues(post)
+            
+            }, withCancelBlock: {(error) -> Void in
+                
+        })
+        
+        // counting number of posts
+        DataService.ds.REF_BASE.child("followers").child(KEY_UID!).observeEventType(.Value, withBlock: { (snapshot)  in
+            
+            //counting posts
+            var countingFollowers = snapshot.value?.count
+            
+            var followers = ["followers":  (countingFollowers!) ]
+            
+            DataService.ds.REF_BASE.child("users").child(KEY_UID!).updateChildValues(followers)
+            
+            }, withCancelBlock: {(error) -> Void in
+                
+        })
+        
+        
         
         DataService.ds.REF_USER_CURRENT.observeEventType(.Value, withBlock: { (snapshot)  in
             
@@ -62,8 +91,10 @@ class ProfileVC: UIViewController {
                // self.title = "Welcome \(self.activeUserInfo!["firstName]!)"
                 self.title = " \(self.activeUserInfo!["firstName"]!.uppercaseString!)"
                 self.postsLabel.text = " \(self.activeUserInfo!["postNumber"]!) \n posts"
-                self.followersLabel.text = " \(self.activeUserInfo!["followers"]!) \n followers"
-                self.followingLabel.text = " \(self.activeUserInfo!["following"]!) \n following"
+               self.followersLabel.text = " \(self.activeUserInfo!["followers"]!) \n followers"  // following and followers got the same number for now.  replaced by Friends
+              
+                self.followingLabel.text = " \(self.activeUserInfo!["following"]!) \n Friends"
+                 self.notificationLabel.text = " \(self.activeUserInfo!["notifications"]!)\n notifications"
                 
                 self.downloadAvatar(avatar, completion: { (data) in
                     
@@ -84,16 +115,25 @@ class ProfileVC: UIViewController {
         })
         
         
+      
+        
+        
+        
+        
     }
+    
+    
+    
+    
 
     override func viewWillDisappear(animated: Bool) {
-        self.navigationController?.setNavigationBarHidden(true, animated: animated);
+       self.navigationController?.setNavigationBarHidden(true, animated: animated);
         super.viewWillDisappear(animated)
     }
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
-        self.navigationController?.setNavigationBarHidden(false, animated: animated)
+       self.navigationController?.setNavigationBarHidden(false, animated: animated)
     }
     
     

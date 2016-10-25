@@ -33,7 +33,8 @@ class FriendsVC: UIViewController, UITableViewDataSource {
         
         DataService.ds.REF_USER_CURRENT.child("followings").observeEventType(.ChildAdded, withBlock:{ snapshot in
             
-            // print("new way: \(snapshot)")
+           
+            
             self.contacts = []
             let friendID = snapshot.key
             let friendReference = DataService.ds.REF_USERS.child(friendID)

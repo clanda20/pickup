@@ -23,6 +23,7 @@ class Contact{
     private var _contactKey: String!
     private var _contactRef: FIRDatabaseReference!
     private var _contactAdd: NSDictionary!
+    private var _notifications: Int!
     
     
     var fullName: String{
@@ -79,6 +80,10 @@ class Contact{
         return _followings
     }
     
+    var notifications: Int{
+        return _notifications
+    }
+    
     init(data: NSDictionary){
         
         self._contactAdd = data
@@ -86,7 +91,7 @@ class Contact{
     }
     
     
-    init(fullName: String, username: String, avatar: String?, likes: Int, dislikes: Int, email: String, postNumber: Int,followings: NSDictionary, following: Int, followers:Int) {
+    init(fullName: String, username: String, avatar: String?, likes: Int, dislikes: Int, email: String, postNumber: Int,followings: NSDictionary, following: Int, followers:Int, notifications: Int) {
         self._fullName = fullName
          self._username = username
         self._avatar = avatar
@@ -97,6 +102,7 @@ class Contact{
         self._following = following
         self._followings = followings
         self._followers = followers
+        self._notifications = notifications
         
     }
     
@@ -147,6 +153,9 @@ class Contact{
             self._followings = followings
         }
         
+        if let notifications = dictionary["notifications"] as? Int{
+            self._notifications = notifications
+        }
         
           self._contactRef = DataService.ds.REF_USERS.child(self._contactKey)
         
@@ -191,7 +200,9 @@ class Contact{
             self._followers = followers
         }
         
-       
+        if let notifications = dictionary_Nesting["notifications"] as? Int{
+            self._notifications = notifications
+        }
         
         
         self._contactRef = DataService.ds.REF_USERS.child(self._contactKey)

@@ -54,7 +54,7 @@ class NotificationCell: UITableViewCell {
         
         
         self.contentView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat(
-            "H:|-5-[ava(30)]-5-[fullname(150)]-5-[info(150)]-5-[date(100)]",
+            "H:|-3-[ava(30)]-2-[fullname(100)]-2-[info(160)]-2-[date(30)]-2-|",
             options: [], metrics: nil, views: ["ava":avatar, "fullname":fullName,"info":infoLbl, "date":dateLbl]))
         
         self.contentView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat(
@@ -119,19 +119,19 @@ class NotificationCell: UITableViewCell {
             dateLbl.text = "now"
         }
         if difference.second > 0 && difference.minute == 0 {
-            dateLbl.text = "\(difference.second)s."
+            dateLbl.text = "\(difference.second) s."
         }
         if difference.minute > 0 && difference.hour == 0 {
-            dateLbl.text = "\(difference.minute)m."
+            dateLbl.text = "\(difference.minute) m."
         }
         if difference.hour > 0 && difference.day == 0 {
-            dateLbl.text = "\(difference.hour)h."
+            dateLbl.text = "\(difference.hour) h."
         }
         if difference.day > 0 && difference.weekOfMonth == 0 {
-            dateLbl.text = "\(difference.day)d."
+            dateLbl.text = "\(difference.day) d."
         }
         if difference.weekOfMonth > 0 {
-           dateLbl.text = "\(difference.weekOfMonth)w."
+           dateLbl.text = "\(difference.weekOfMonth) w."
         }
         
        

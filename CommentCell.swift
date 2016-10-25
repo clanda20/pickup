@@ -293,7 +293,7 @@ class CommentCell: UITableViewCell {
         userCommentsRef.observeEventType(.Value, withBlock:  { snapshot in
             
             
-            print("new snapshot array: \(snapshot.key)")
+            
             
             
            self.myPostArray = []

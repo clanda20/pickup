@@ -441,6 +441,7 @@ class PostCell: UITableViewCell {
                     "commentID": key,
                     "type": "LIKES YOUR POST",
                     "notificationKey": self.notificationKey,
+                    "checked": "no",
                 ]
                 
                 if self.post.uid != KEY_UID {
@@ -517,8 +518,9 @@ class PostCell: UITableViewCell {
                     "date" : time,
                     "postKey" : self.post.postKey,
                     "commentID": key,
-                    "type": "DISKLIKE YOUR POST",
+                    "type": "DISLIKES YOUR POST",
                     "notificationKey": self.notificationKey,
+                    "checked": "no",
                 ]
                 
                 if self.post.uid != KEY_UID {
@@ -870,7 +872,7 @@ class PostCell: UITableViewCell {
             
             self.notifications = []
             
-             self.notificationArray = []
+            // self.notificationArray = []
             
             if let snapshots = snapshot.children.allObjects as? [FIRDataSnapshot]  {
                 

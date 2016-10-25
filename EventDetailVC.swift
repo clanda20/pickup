@@ -277,6 +277,7 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
                 "commentID": self.eventKey,     // commentID is here consider as eventKey
                 "type": "IS GOING TO AN EVENT",
                 "notificationKey": notificationKey,
+                "checked": "no",
                 ]
             
             //   self.postUid =  self.post.uid
@@ -295,9 +296,6 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
                 // do nothing
                 
             }
-            
-            
-            
             
         }
         
@@ -356,7 +354,6 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
                    // self.mapBtn.titleLabel!.font = UIFont(name: "Marker Felt", size: 14)
                    self.mapBtn.titleLabel?.textAlignment = NSTextAlignment.Center
                
-                
             }
             
             
@@ -374,10 +371,7 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
         
         ref.child("users-event-coming").child(self.eventKey).child("coming").observeEventType(.Value, withBlock:  { snapshot in
         
-            
-            
             print("new snapshot coming: \(snapshot.key)")
-            
             
             self.coming_Array = []
            

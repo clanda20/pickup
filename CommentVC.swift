@@ -264,6 +264,7 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
                         "commentID": key,
                         "type": "HAS COMMENTED ON YOUR POST",
                         "notificationKey": notificationKey,
+                        "checked": "no",
                     ]
                     
        

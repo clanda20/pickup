@@ -249,6 +249,7 @@ class EventCommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate
                             "commentID": key,
                             "type": "HAS COMMENTED ON YOUR EVENT",
                             "notificationKey": notificationKey,
+                            "checked": "no",
                         ]
                         
                         

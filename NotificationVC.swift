@@ -10,30 +10,29 @@ import UIKit
 import Firebase
 
 class NotificationVC: UITableViewController, ContactIDNotificationCellDelegate   {
-    
-  //  @IBOutlet weak var tableView: UITableView!
-    
+  
     var snapshot2Dict = [String: String]()
     
-  //  var contacts = [Contact]()
-    
-    
-  //  var contactInfo: NSDictionary?
-    
-    
+
     var notification: Notification!
     var notifications = [Notification]()
     
-  //  var delegate: NotificationCellDelegate!
+   var postEventCommentArray: [String] = []
+    
+   var myNotificationArrays: [String] = []
+    
+    var eventKey: String!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+     
+      navigationItem.leftBarButtonItem = editButtonItem()
         
-      //  tableView.dataSource = self
-     //   tableView.delegate = self
-        
+        myNotifications()
         QuerryUserFollowing()
+        
+        
     }
     
     func QuerryUserFollowing(){
@@ -57,7 +56,27 @@ class NotificationVC: UITableViewController, ContactIDNotificationCellDelegate  
                         
                         self.notifications.append(notification)
                         
-                    }
+                        self.eventKey = notification.postKey
+                        
+                        // hide icons View with animation
+                        
+                        UIView.animateWithDuration(1, animations: { () -> Void in
+                            
+                            icons.alpha = 0
+                            corner.alpha = 0
+                            dot.alpha = 0
+                            
+                        })
+                        
+                       for myNotification in self.myNotificationArrays {
+                            
+                              let check = ["checked": "yes" ]
+                        
+                       DataService.ds.REF_BASE.child("notifications").child(KEY_UID!).child(myNotification).updateChildValues(check)
+                            
+                        }
+                        
+                     }
                     }
                 }
             
@@ -67,10 +86,24 @@ class NotificationVC: UITableViewController, ContactIDNotificationCellDelegate  
            
                 
             }, withCancelBlock: nil)
-            
-         // }, withCancelBlock: nil)
         
     }
+    
+    
+    override func setEditing(editing: Bool, animated: Bool) {
+        super.setEditing(editing, animated: animated)
+        if editing {
+            tableView.setEditing(true, animated: true)
+            navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Delete All",
+                                                                style: .Plain,
+                                                                target: self,
+                                                                action: #selector(NotificationVC.deleteAll))
+        } else {
+            tableView.setEditing(false, animated: true)
+            navigationItem.rightBarButtonItem = nil
+        }
+    }
+    
     
     
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
@@ -84,7 +117,82 @@ class NotificationVC: UITableViewController, ContactIDNotificationCellDelegate  
         return notifications.count
     }
     
+    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
+        if editingStyle == UITableViewCellEditingStyle.Delete {
+           
+            let contactSelected = notifications[indexPath.row]
+           let commentID = contactSelected.commentID
+            let notificationID = ("N\(commentID!)")
+          
+            
+            print("commentID: \(commentID)")
+            print("notificationID: \(notificationID)")
+            print("postKey: \(contactSelected.postKey)")
+            
+            
+            DataService.ds.REF_BASE.child("notifications").child(KEY_UID!).child(notificationID).removeValue()
+            DataService.ds.REF_BASE.child("notifications-postUID").child(KEY_UID!).child(notificationID).removeValue()
+            DataService.ds.REF_BASE.child("post-commentsOnly").child(contactSelected.postKey).child(commentID!).removeValue()
+            
+            
+       
+        
+        }
+    }
     
+    func deleteAll(){
+        
+        
+        
+        DataService.ds.REF_BASE.child("post-commentsOnly").child(self.eventKey).observeEventType(.Value, withBlock:  { snapshot in
+            
+            self.postEventCommentArray = []
+            
+            for child in snapshot.children {
+                let postComment = child.key as String
+                
+                self.postEventCommentArray.append(postComment)
+                
+                for eventComment in self.postEventCommentArray {
+                    print(" Array friendID tonight  PostCell \(eventComment)")
+                    
+                    DataService.ds.REF_BASE.child("notifications").child(KEY_UID!).child("N\(eventComment)").removeValue()
+                    DataService.ds.REF_BASE.child("notifications-postUID").child(KEY_UID!).child("N\(eventComment)").removeValue()
+                    
+                }
+                DataService.ds.REF_BASE.child("post-commentsOnly").child(self.eventKey).removeValue()
+            }
+        })
+        
+     // performSegueWithIdentifier("segueReturnToMain", sender: nil)
+        
+    }
+    
+    
+    func myNotifications(){
+        
+        
+        
+        DataService.ds.REF_BASE.child("notifications-postUID").child(KEY_UID!).observeEventType(.Value, withBlock:  { snapshot in
+            
+            self.myNotificationArrays = []
+            
+            for child in snapshot.children {
+                let postComment = child.key as String
+                
+                self.myNotificationArrays.append(postComment)
+                
+                for myNotification in self.myNotificationArrays {
+                    print(" Array friendID tonight  PostCell \(myNotification)")
+                   
+                }
+               
+            }
+        })
+        
+        // performSegueWithIdentifier("segueReturnToMain", sender: nil)
+        
+    }
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell{
         
@@ -144,55 +252,7 @@ class NotificationVC: UITableViewController, ContactIDNotificationCellDelegate  
             }
         }
         
-//     //  if contactSelected2.  == "IS GOING TO AN EVENT" {
-//        // X join your event
-//       if  segue.identifier == "segueNotification_Event"  {                        //var eventKey: String!  // from segue coming from EventVC
-//                                                                                     // var hostUid: String!    from segue coming from EventVC
-//            
-//            let index = tableView.indexPathForSelectedRow
-//            let contactSelected = notifications[index!.row]
-//            
-//          //  print("ContactKEY-Outside-----xxxxx-----------------: \(contactSelected.contactKey)")
-//            let destinationVC = segue.destinationViewController as! EventDetailVC
-//            
-//            destinationVC.eventKey   = contactSelected.postKey   // postKey = eventKey
-//            destinationVC.hostUid   = contactSelected.uid
-////
-//        }
-//        
-//       // }
-//        // X Commented on your post
-//       if segue.identifier == "segueNotification_to_Comment_Post"   //CommentVC
-//        {
-//            let index = tableView.indexPathForSelectedRow
-//            let contactSelected = notifications[index!.row]
-//            
-//            //  print("ContactKEY-Outside-----xxxxx-----------------: \(contactSelected.contactKey)")
-//            let destinationVC = segue.destinationViewController as! CommentVC
-//            
-//             NSUserDefaults.standardUserDefaults().setValue(contactSelected.postKey, forKey: "postKey")    
-//            
-//          //  destinationVC.eventKey   = contactSelected.postKey   // postKey = eventKey
-//         //   destinationVC.hostUid   = contactSelected.uid
-//            //
-//            
-//            
-//        }
-//        // X likes your post 
-//         if segue.identifier == "segue_Notification_T0_Post"
-//        {
-//            
-//            let index = tableView.indexPathForSelectedRow
-//            let contactSelected = notifications[index!.row]
-//            
-//            //  print("ContactKEY-Outside-----xxxxx-----------------: \(contactSelected.contactKey)")
-//            let destinationVC = segue.destinationViewController as! FeedVC
-//            
-//          //  destinationVC.eventKey   = contactSelected.postKey   // postKey = eventKey
-//          //  destinationVC.hostUid   = contactSelected.uid
-//       
-//        
-//    }
+
         
     }
     
@@ -205,7 +265,9 @@ class NotificationVC: UITableViewController, ContactIDNotificationCellDelegate  
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
-        self.navigationController?.setNavigationBarHidden(false, animated: animated)
+       self.navigationController?.setNavigationBarHidden(false, animated: animated)
+
+
         self.tableView.reloadData()
     }
     
@@ -278,6 +340,20 @@ class NotificationVC: UITableViewController, ContactIDNotificationCellDelegate  
         self.navigationController?.pushViewController(likes, animated: true)
         }
         
+        // going to liked post  //var userID: String?
+      else  if cell.infoLbl.text == "DISLIKES YOUR POST" {  // create a separate view controller to display a single post for now let do My Post
+        
+        let index = tableView.indexPathForSelectedRow
+        let contactSelected = notifications[index!.row]
+        
+        
+        
+        let dislikes = self.storyboard?.instantiateViewControllerWithIdentifier("PostsByUserVC") as! PostsByUserVC//("segue_Notification_T0_Post") as! FeedVC
+        
+        dislikes.userID = contactSelected.uid
+        self.navigationController?.pushViewController(dislikes, animated: true)
+      }
+        
         // going to the following user
       else  if cell.infoLbl.text == "IS FOLLOWING YOU" {      //var contactId: String?
             
@@ -294,6 +370,12 @@ class NotificationVC: UITableViewController, ContactIDNotificationCellDelegate  
         
         
     }
+    
+    
+   
+    
+
+    
   
 }
 

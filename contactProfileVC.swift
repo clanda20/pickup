@@ -38,6 +38,7 @@ class contactProfileVC: UIViewController {
     var userContactID: String!
     var notificationKey: String!
     
+    
     @IBOutlet weak var avatarImageView: UIImageView!
     @IBOutlet weak var postsLabel: UILabel!
     @IBOutlet weak var followersLabel: UILabel!
@@ -50,44 +51,7 @@ class contactProfileVC: UIViewController {
                 
              print("You are now following \(self.activeUserInfo!["fullName"]!)   ")
                 
-                // Notification Begin
-                //adding notification
-//                let time  = String(Int(NSDate().timeIntervalSince1970))
-//                
-//                let key = DataService.ds.REF_BASE.child("notification").childByAutoId().key
-//                
-//                let notificationKey = "N\(key)"  /// notificationKey is the same number of the commentKey but with and N before the number
-//                
-//                let notificationFollowing : [String : AnyObject] = [
-//                    "uid": KEY_UID!,
-//                    "fullName": self.fullName!,
-//                    "avatar": self.profileUserImg,
-//                    "date" : time,
-//                    "postKey" : "",
-//                    "commentID": "",
-//                    "type": "IS FOLLOWING YOU",
-//                    "notificationKey": notificationKey,
-//                    ]
-//                
-//                
-//                
-//                if self.userContactID != KEY_UID {
-//                    
-//                    DataService.ds.REF_BASE.child("notifications").child(self.userContactID).child(notificationKey).setValue(notificationFollowing)
-//                    DataService.ds.REF_BASE.child("notifications-postUID").child(self.userContactID).child(notificationKey).setValue(true)
-//                    
-//                    
-//                } else {
-//                    // do nothing
-//                    
-//                }
-//  
-              
-                
         }
-            
-           
-            
     }
     
     override func viewDidLoad() {
@@ -161,6 +125,17 @@ class contactProfileVC: UIViewController {
     func queryFollowing( completion:(following:Bool) -> ()) {
     
     activeUserRef?.child("followings").observeEventType(.Value, withBlock: { snapshot in
+        
+                //counting followings
+                         var countingFollowings = snapshot.value?.count
+                       print("countingFollowings: \(countingFollowings!)")
+                      //  self.followingLabel.text =  "\(self.countingFollowings!) \n Following"
+                        
+                        var following = ["following":  (countingFollowings!) ]
+                        
+                        DataService.ds.REF_BASE.child("users").child(KEY_UID!).updateChildValues(following)
+                        
+        
         for child in snapshot.children {
             let userID = child.key as String
             print("USER ID IIIIiiiiiiiiiiiiiiiii: \(userID)")
@@ -305,6 +280,7 @@ class contactProfileVC: UIViewController {
                 "commentID": "",
                 "type": "IS FOLLOWING YOU",
                 "notificationKey": notificationKey,
+                "checked": "no",
                 ]
             
             

@@ -44,6 +44,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let notificationSettings = UIUserNotificationSettings(forTypes: notificationTypes, categories: nil)
         application.registerForRemoteNotifications()
         application.registerUserNotificationSettings(notificationSettings)
+        
+        UIApplication.sharedApplication().applicationIconBadgeNumber = 0
        
         return true
        
