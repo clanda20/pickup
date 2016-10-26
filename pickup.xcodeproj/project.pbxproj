@@ -25,6 +25,7 @@
 		AA1F12761D7518C300C2BC35 /* EventAnnot.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1F12751D7518C200C2BC35 /* EventAnnot.swift */; };
 		AA1F12781D763CD800C2BC35 /* Pin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1F12771D763CD800C2BC35 /* Pin.swift */; };
 		AA1F5DEC1D499BE80004EE0B /* ArrayList.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1F5DEB1D499BE80004EE0B /* ArrayList.swift */; };
+		AA3FBD1D1DC016990048051A /* EventMapByTouchVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA3FBD1C1DC016980048051A /* EventMapByTouchVC.swift */; };
 		AA414FF21D6972370082D8E0 /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA414FF11D6972370082D8E0 /* MapKit.framework */; };
 		AA46A47F1D93A1E500F9CC9C /* EditEventVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA46A47E1D93A1E500F9CC9C /* EditEventVC.swift */; };
 		AA5606EB1D67F7AB004F99F9 /* AddVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5606EA1D67F7AB004F99F9 /* AddVC.swift */; };
@@ -123,6 +124,7 @@
 		AA1F12751D7518C200C2BC35 /* EventAnnot.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EventAnnot.swift; sourceTree = "<group>"; };
 		AA1F12771D763CD800C2BC35 /* Pin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Pin.swift; sourceTree = "<group>"; };
 		AA1F5DEB1D499BE80004EE0B /* ArrayList.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArrayList.swift; sourceTree = "<group>"; };
+		AA3FBD1C1DC016980048051A /* EventMapByTouchVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EventMapByTouchVC.swift; sourceTree = "<group>"; };
 		AA414FF11D6972370082D8E0 /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
 		AA46A47E1D93A1E500F9CC9C /* EditEventVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EditEventVC.swift; sourceTree = "<group>"; };
 		AA5606EA1D67F7AB004F99F9 /* AddVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddVC.swift; sourceTree = "<group>"; };
@@ -378,15 +380,16 @@
 				AA57FC0E1D42E28300DB76F0 /* EditProfileVC.swift */,
 				AABC31291D582D48002F8216 /* ImageShowVC.swift */,
 				AA60E0B81D62C93900321FF2 /* PickUp.xcdatamodeld */,
-				AA5606EA1D67F7AB004F99F9 /* AddVC.swift */,
 				AA0CEE2A1D6B79B900ABB682 /* LocationSearchTable.swift */,
 				AA8845981D6E48B800785AC9 /* EventDetailVC.swift */,
-				AAA5B8941D5EAE3400EFEB7E /* MapVC.swift */,
 				AA1F12731D70020C00C2BC35 /* GeoMapVC.swift */,
 				AA46A47E1D93A1E500F9CC9C /* EditEventVC.swift */,
 				AA5FEC5E1D340CB2002EA1CF /* ContactsVC.swift */,
 				AAAB3BB91DA575F000396920 /* NotificationVC.swift */,
 				AABAAFCF1DAEE10900B4C5B3 /* tabbarVC.swift */,
+				AAA5B8941D5EAE3400EFEB7E /* MapVC.swift */,
+				AA5606EA1D67F7AB004F99F9 /* AddVC.swift */,
+				AA3FBD1C1DC016980048051A /* EventMapByTouchVC.swift */,
 				AAFAB8B01D827F27003B5423 /* Search */,
 			);
 			name = Controller;
@@ -708,6 +711,7 @@
 				AAFAB8A31D7E33CF003B5423 /* EventCommentVC.swift in Sources */,
 				AA8845951D6D725C00785AC9 /* Event.swift in Sources */,
 				AA5FEC5F1D340CB2002EA1CF /* ContactsVC.swift in Sources */,
+				AA3FBD1D1DC016990048051A /* EventMapByTouchVC.swift in Sources */,
 				AAAB3BBC1DA5766000396920 /* NotificationCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

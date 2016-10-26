@@ -23,7 +23,10 @@ class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextV
     @IBOutlet  var saveBtnItem: UIBarButtonItem!
     @IBOutlet  var doneBtnItem: UIBarButtonItem!
     @IBOutlet  var doneLeftBtnItem: UIBarButtonItem!
+    @IBOutlet  var PreviousButton: UIBarButtonItem!
 
+    
+    
     @IBOutlet weak var titleTextField: UITextField!
     @IBOutlet weak var dateBtn: UIButton!
     @IBOutlet weak var descriptionTextView: UITextView!
@@ -31,13 +34,19 @@ class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextV
     @IBOutlet weak var datePicker: UIDatePicker!
     @IBOutlet weak var searchBtnText: UIButton!
     @IBOutlet weak var mapViewLarge: MKMapView!
+    @IBOutlet weak var searchBtnByTouch: UIButton!
     
-
+    
     
     var addressButton: String!
     var fullAddressString: String!
     var fullAddressString_no_breakLine: String!
-    var placemark: String!
+    var placemark: String!   // data received from EventMapByTouchVC when search by touch
+    //ByTouch
+    
+    var fullAddressStringByTouch: String!   // data received from EventMapByTouchVC
+    var fullAddressString_no_breakLineByTouch: String! // data received from EventMapByTouchVC
+    
     
     let locationManager = CLLocationManager()
     
@@ -70,13 +79,18 @@ class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextV
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        
+       
+        
         // for keyboard dismiss
         self.titleTextField.delegate = self
         self.descriptionTextView.delegate = self
         
-        let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: "dismissKeyboard")
+        let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(AddVC.dismissKeyboard))
         view.addGestureRecognizer(tap)
 
+
+        
         
         // Init the zoom level
        /* let coordinate:CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: 37.378437, longitude: -122.116825)
@@ -92,12 +106,52 @@ class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextV
     
         FirebaseFanout()
         
+        
+        //ByTouch
+        
+        if self.fullAddressStringByTouch == nil {
+            self.searchBtnByTouch.setTitle("Find a Location by Touch", forState: .Normal)
+            self.searchBtnByTouch.titleLabel!.font = UIFont(name: "Marker Felt", size: 18)
+            
+            
+            
+        } else{
+            // self.addressButton = self.fullAddressString
+            self.searchBtnByTouch.setTitle("\(self.fullAddressStringByTouch)", forState: .Normal)
+            self.searchBtnByTouch.titleLabel!.font = UIFont(name: "Marker Felt", size: 15)
+            self.searchBtnByTouch.titleLabel!.textColor = UIColor.redColor()
+            self.searchBtnByTouch.titleLabel?.textAlignment = NSTextAlignment.Center
+            
+            let tempFullAdressText = self.fullAddressStringByTouch
+            
+            self.fullAddressString = tempFullAdressText
+            
+            self.fullAddressString_no_breakLine = self.fullAddressString_no_breakLineByTouch
+            
+        }
+        
     }
+    
+
+    
     
     override func viewWillDisappear(animated: Bool) {
         super.viewWillDisappear(animated)
-        self.navigationController?.setNavigationBarHidden(true , animated: animated);
+        self.navigationController?.setNavigationBarHidden(true , animated: animated)
+        self.navigationController?.toolbarHidden = true
+        
+        
         FirebaseFanout()
+        
+        
+//        // Get storyboard
+//        let storyboard =   UIStoryboard(name:"Main",bundle: NSBundle(forClass: self.dynamicType))
+//        
+//        
+//        // Get profile NC
+//        let profileNC = storyboard.instantiateViewControllerWithIdentifier("MainNC") as! UINavigationController
+//        
+//        profileNC.setNavigationBarHidden(true, animated: animated)
     }
     
     
@@ -105,9 +159,32 @@ class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextV
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
-        self.navigationController?.setNavigationBarHidden(false, animated: animated)
+       self.navigationController?.setNavigationBarHidden(false, animated: animated)
+       // self.navigationController?.setNavigationBarHidden(true, animated: animated)
+
         self.navigationItem.rightBarButtonItems = nil
-        self.navigationItem.leftBarButtonItem = nil
+      self.navigationItem.leftBarButtonItem = nil
+      self.navigationItem.leftBarButtonItem = self.PreviousButton
+         self.navigationItem.setHidesBackButton(true, animated: false)
+        
+    //  self.navigationController?.toolbarHidden = false
+        
+       // self.navigationController?.toolbarHidden = false
+        
+//            // Get storyboard
+//       // let storyboard =   UIStoryboard(name:"Main",bundle: NSBundle(forClass: self.dynamicType))
+//        let storyboard = UIStoryboard(name: "Main", bundle: NSBundle.mainBundle())
+//
+//        
+//        // Get profile NC
+//        let profileNC = storyboard.instantiateViewControllerWithIdentifier("MainNC") as! UINavigationController
+//        
+//        profileNC.setNavigationBarHidden(false, animated: animated)
+//        profileNC.toolbarHidden = false
+
+        
+        
+        
         FirebaseFanout()
         QueryCurrentUser()
 
@@ -119,6 +196,7 @@ class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextV
         self.dateBtn.hidden = true
         self.descriptionTextView.hidden = true
         self.searchBtnText.hidden = true
+        self.searchBtnByTouch.hidden = true
       
         self.datePicker.hidden = false
       
@@ -146,6 +224,7 @@ class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextV
         self.dateBtn.hidden = false
         self.descriptionTextView.hidden = false
         self.searchBtnText.hidden = false
+        self.searchBtnByTouch.hidden = false
         self.datePicker.hidden = true
         
         self.navigationItem.rightBarButtonItem = self.saveBtnItem
@@ -172,6 +251,7 @@ class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextV
         self.datePicker.hidden = true
         self.datePicker.hidden = true
         self.searchBtnText.hidden = true
+        self.searchBtnByTouch.hidden = true
         
         
         
@@ -218,6 +298,7 @@ class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextV
         self.descriptionTextView.hidden = false
         self.mapView.hidden = false
         self.searchBtnText.hidden = false
+        self.searchBtnByTouch.hidden = false
     
         
         self.mapViewLarge.hidden = true
@@ -236,8 +317,11 @@ class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextV
         //Setting the Search Button text 
         
         if self.fullAddressString == nil {
-             self.searchBtnText.setTitle("Find a Location", forState: .Normal)
-            self.searchBtnText.titleLabel!.font = UIFont(name: "Marker Felt", size: 16)
+             self.searchBtnText.setTitle("Find a Location by Address", forState: .Normal)
+            self.searchBtnText.titleLabel!.font = UIFont(name: "Marker Felt", size: 18)
+            
+//            self.searchBtnByTouch.setTitle("Find a Location by Touch", forState: .Normal)
+//            self.searchBtnByTouch.titleLabel!.font = UIFont(name: "Marker Felt", size: 18)
 
             
         } else{
@@ -245,15 +329,32 @@ class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextV
             self.searchBtnText.setTitle("\(self.fullAddressString)", forState: .Normal)
             self.searchBtnText.titleLabel!.font = UIFont(name: "Marker Felt", size: 14)
             self.searchBtnText.titleLabel?.textAlignment = NSTextAlignment.Center
+            
+            //Reset SearchButtonByTouch
+            self.searchBtnByTouch.setTitle("Find a Location by Touch", forState: .Normal)
+            self.searchBtnByTouch.titleLabel!.font = UIFont(name: "Marker Felt", size: 18)
 
         }
+        
+       
     
   
        }
     
     
+    @IBAction func PreviousBtn(sender: AnyObject) {
+        
+        
+       // performSegueWithIdentifier("segue_To_Event_Detail", sender: nil)
+    
+    
+    }
     
     @IBAction func saveBtn(sender: AnyObject) {
+        
+        
+if self.titleTextField.text != "" && self.descriptionTextView.text  != "" && self.fullAddressString_no_breakLine != nil && self.strDate != nil && self.fullAddressString != nil {
+       
         
         let key = ref.child("user-events").childByAutoId().key
         
@@ -365,12 +466,42 @@ class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextV
            // geoFireEventRef =
 
         
-        performSegueWithIdentifier("segueToEventVC", sender: nil) 
+        performSegueWithIdentifier("segueToEventVC", sender: nil)
+            
+    } else {
+            typeInSomethingAlert()
+        }
     
-        
     }
     
-   
+ 
+    @IBAction func searchBtnByTouchFC(sender: AnyObject) {
+        
+        
+            
+            self.titleTextField.hidden = true
+            self.dateBtn.hidden = true
+            self.descriptionTextView.hidden = true
+            self.mapView.hidden = true
+            self.datePicker.hidden = true
+            self.datePicker.hidden = true
+            self.searchBtnText.hidden = true
+            self.searchBtnByTouch.hidden = true
+            
+            
+            
+            self.mapViewLarge.hidden = false
+            self.navigationItem.leftBarButtonItem = nil
+            self.navigationItem.rightBarButtonItem = nil
+            
+            self.navigationItem.leftBarButtonItem = self.doneLeftBtnItem
+        
+        
+
+
+       
+        
+    }
     
     func FirebaseFanout(){
         
@@ -500,38 +631,89 @@ extension AddVC: HandleMapSearch {
         if let city = placemark.locality,
             let state = placemark.administrativeArea {
             
+            var locationName = placemark.name
+            if locationName == "nil" || locationName == nil{
+                locationName = ""
+            } else {
+                locationName = placemark.name
+            }
+            
+            
+            var locationNumber = placemark.subThoroughfare
+            
+            if locationNumber == nil || locationNumber == "nil" {
+                locationNumber = ""
+            } else {
+                locationNumber = (placemark.subThoroughfare)
+            }
+            
+            
+            var locationStreet = placemark.thoroughfare
+            // var locationStreet2:String?
+            
+            if locationStreet == "nil" || locationStreet == nil {
+                locationStreet = ""
+            } else {
+                locationStreet = placemark.thoroughfare
+            }
+            
             
             annotation.subtitle = "\(city) \(state)"
-           
+            
             // Full Address to be Displayed
-             print("Placemark@@@@@@@@: \(placemark)")
+            print("Placemark@@@@@@@@: \(placemark)")
             
             self.placemark = "\(placemark)"
             
+            // self.fullAddressString =  "\(placemark.name!)\n \(placemark.subThoroughfare!) \(placemark.thoroughfare!) \n \(city), \(state)"
+            // print("New Address: \(self.fullAddressString)")
             
             
-        
-            self.fullAddressString =  "\(placemark.name!)\n \(placemark.subThoroughfare) \(placemark.thoroughfare) \n \(city), \(state)"
+            self.fullAddressString =  "\(locationName!)\n \(locationNumber!) \(locationStreet!) \n \(city), \(state)"
             print("New Address: \(self.fullAddressString)")
             
             // String Without  \n
             
-            self.fullAddressString_no_breakLine =  "\(placemark.name!) \(placemark.subThoroughfare) \(placemark.thoroughfare)  \(city), \(state)"
+            self.fullAddressString_no_breakLine =  "\(locationName!) \(locationNumber!) \(locationStreet!)  \(city), \(state)"
             print("New Address: \(self.fullAddressString_no_breakLine)")
             
+            mapViewLarge.addAnnotation(annotation)
+            mapView.addAnnotation(annotation)
             
+            let span = MKCoordinateSpanMake(0.05, 0.05)
+            let region = MKCoordinateRegionMake(placemark.coordinate, span)
+            
+            mapViewLarge.setRegion(region, animated: true)
+            mapView.setRegion(region, animated: true)
+        }  else {
+            
+            typeInSomethingAlert()
         }
-        mapViewLarge.addAnnotation(annotation)
-        mapView.addAnnotation(annotation)
         
-        let span = MKCoordinateSpanMake(0.05, 0.05)
-        let region = MKCoordinateRegionMake(placemark.coordinate, span)
-        
-        mapViewLarge.setRegion(region, animated: true)
-        mapView.setRegion(region, animated: true)
     }
     
+    
+        func typeInSomethingAlert(){
+        let optionMenu = UIAlertController(title: nil, message: "Can't Be Saved! Try again! ", preferredStyle: .ActionSheet)
+        
+        
+        
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .Cancel, handler: {
+            (alert: UIAlertAction!) -> Void in
+            print("Cancelled")
+        })
+        
+        optionMenu.addAction(UIAlertAction(title: "Dismiss", style: UIAlertActionStyle.Default,handler: nil))
+        
+        self.presentViewController(optionMenu, animated: true, completion: nil)
+    }
+        
 }
+    
+  
+
+
 
 
 // EXTENSION:

@@ -29,6 +29,8 @@ class EventVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         
       QueryMyEvent_Timeline()
         
+        
+        
     }
     
     override func viewWillDisappear(animated: Bool) {
@@ -39,11 +41,15 @@ class EventVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
-        // self.navigationController?.toolbarHidden = false
+        
+        
+       // self.navigationController?.toolbarHidden = false
+        
         self.navigationController?.setNavigationBarHidden(false, animated: animated)
        // self.navigationItem.leftBarButtonItem = nil
         self.navigationItem.setHidesBackButton(true, animated: false)
-        
+       
+
         
     }
     

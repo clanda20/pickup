@@ -135,6 +135,8 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
         centerMapOnLocation(initialLocation)
         
         
+       
+        
     
     }
     
@@ -752,7 +754,9 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
        // }
     }
         
-        
+    
+    
+    
     }
 
 
