@@ -43,22 +43,25 @@ class tabbarVC: UITabBarController {
         FanoutNotificationUserID()
 
         // create total icons
-        icons.frame = CGRectMake(self.view.frame.size.width / 5 * 3 + 10, self.view.frame.size.height - self.tabBar.frame.size.height * 2 - 3, 50, 35)
+      //  icons.frame = CGRectMake(self.view.frame.size.width / 5 * 3 + 10, self.view.frame.size.height - self.tabBar.frame.size.height * 2 - 3, 50, 35)
+        icons.frame = CGRect(x: self.view.frame.size.width / 5 * 3 + 10, y: self.view.frame.size.height - self.tabBar.frame.size.height * 2 - 3, width: 50, height: 35)
         self.view.addSubview(icons)
         
         // create corner
-        corner.frame = CGRectMake(icons.frame.origin.x, icons.frame.origin.y + icons.frame.size.height, 20, 14)
+        //corner.frame = CGRectMake(icons.frame.origin.x, icons.frame.origin.y + icons.frame.size.height, 20, 14)
+        corner.frame = CGRect(x: icons.frame.origin.x, y: icons.frame.origin.y + icons.frame.size.height, width: 20, height: 14)
         corner.center.x = icons.center.x
         corner.image = UIImage(named: "corner.png")
-        corner.hidden = true
+        corner.isHidden = true
         self.view.addSubview(corner)
         
         // create dot
-        dot.frame = CGRectMake(self.view.frame.size.width / 5 * 3, self.view.frame.size.height - 5, 7, 7)
+       // dot.frame = CGRectMake(self.view.frame.size.width / 5 * 3, self.view.frame.size.height - 5, 7, 7)
+        dot.frame = CGRect(x: self.view.frame.size.width / 5 * 3, y: self.view.frame.size.height - 5, width: 7, height: 7)
         dot.center.x = self.view.frame.size.width / 5 * 3 + (self.view.frame.size.width / 5) / 2
         dot.backgroundColor = UIColor(red: 251/255, green: 103/255, blue: 29/255, alpha: 1)
         dot.layer.cornerRadius = dot.frame.size.width / 2
-        dot.hidden = true
+        dot.isHidden = true
         self.view.addSubview(dot)
     
         
@@ -67,7 +70,7 @@ class tabbarVC: UITabBarController {
        
 }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated) // No need for semicolon
         
         
@@ -81,7 +84,7 @@ class tabbarVC: UITabBarController {
 
 
     
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
         
@@ -89,7 +92,7 @@ class tabbarVC: UITabBarController {
         if self.countComment > 0 {
         
         let imageComm = UIImage(named: "commentIcon.png")
-        self.placeIcon(imageComm!, text: "\(self.countComment)")
+        self.placeIcon(image: imageComm!, text: "\(self.countComment)")
             
         }
         
@@ -97,12 +100,12 @@ class tabbarVC: UITabBarController {
 
             let image = UIImage(named: "likeIcon.png")
 
-            self.placeIcon(image!, text: "\(self.likeCount)")
+            self.placeIcon(image: image!, text: "\(self.likeCount)")
         }
         
         if self.countFollowing > 0  {
             let imageFollow = UIImage(named: "followIcon.png")
-            self.placeIcon(imageFollow!, text: "\(self.countFollowing)")
+            self.placeIcon(image: imageFollow!, text: "\(self.countFollowing)")
         
         }
         
@@ -124,7 +127,7 @@ class tabbarVC: UITabBarController {
    func  FanoutNotificationUserID(){
     
 
-    DataService.ds.REF_BASE.child("notifications-postUID").child(KEY_UID!).observeEventType(.Value ,  withBlock:  { snapshot in  //observeSingleEventOfType, observeEventType
+    DataService.ds.REF_BASE.child("notifications-postUID").child(KEY_UID!).observe(.value ,  with:  { snapshot in  //observeSingleEventOfType, observeEventType
         
         
         print("new snapshot Notification arrays: \(snapshot.key)")
@@ -134,7 +137,7 @@ class tabbarVC: UITabBarController {
         
         
         for child in snapshot.children {
-            let notificationUserID = child.key as String
+            let notificationUserID = (child as AnyObject).key as String
             print("notificationUserID: \(notificationUserID)")
             
             self.notificationPostIDArray.append(notificationUserID)
@@ -162,7 +165,7 @@ class tabbarVC: UITabBarController {
                 
 
                 
-                DataService.ds.REF_BASE.child("notifications").child(KEY_UID!).child(notificationUserID).observeEventType(.Value, withBlock: { (snapshot)  in
+                DataService.ds.REF_BASE.child("notifications").child(KEY_UID!).child(notificationUserID).observe(.value, with: { (snapshot)  in
                     
                     
                     let item = snapshot as FIRDataSnapshot
@@ -172,7 +175,7 @@ class tabbarVC: UITabBarController {
                     
                     if let dict = item.value as? [String : AnyObject]{
                         
-                        self.notificationInfo = dict
+                        self.notificationInfo = dict as NSDictionary?
                         
                         let notificationInfo2 = dict
                         
@@ -184,7 +187,7 @@ class tabbarVC: UITabBarController {
                         
                         
                         var fullName2              = notificationInfo2["fullName"]! as! String
-                        var typeNotification2   = notificationInfo2["type"]! as! String
+                        let typeNotification2   = notificationInfo2["type"]! as! String
                         var checkedNotification2 = notificationInfo2["checked"]! as! String
                         
                         print("Fullname: \(self.fullName)")
@@ -248,25 +251,27 @@ class tabbarVC: UITabBarController {
     func placeIcon (image:UIImage?, text:String?) {
         
         // create separate icon
-        let view = UIImageView(frame: CGRectMake(icons.contentSize.width, 0, 50, 35))
+       // let view = UIImageView(frame: CGRectMake(icons.contentSize.width, 0, 50, 35))
+        let view = UIImageView(frame: CGRect(x: icons.contentSize.width, y: 0, width: 50, height: 35))
         view.image = image
         icons.addSubview(view)
         
         
         if image == nil {
-            icons.hidden = true
-            corner.hidden = true
-            dot.hidden = true
+            icons.isHidden = true
+            corner.isHidden = true
+            dot.isHidden = true
             
             
         }
         
         // create label
-        let label = UILabel(frame: CGRectMake(view.frame.size.width / 2, 0, view.frame.size.width / 2, view.frame.size.height))
+       // let label = UILabel(frame: CGRectMake(view.frame.size.width / 2, 0, view.frame.size.width / 2, view.frame.size.height))
+        let label = UILabel(frame: CGRect(x: view.frame.size.width / 2, y: 0, width: view.frame.size.width / 2, height: view.frame.size.height))
         label.font = UIFont(name: "HelveticaNeue-Medium", size: 18)
         label.text = text
-        label.textAlignment = .Center
-        label.textColor = .whiteColor()
+        label.textAlignment = .center
+        label.textColor = .white
         view.addSubview(label)
         
         // update icons view frame
@@ -275,8 +280,8 @@ class tabbarVC: UITabBarController {
         icons.center.x = self.view.frame.size.width / 5 * 4 - (self.view.frame.size.width / 5) / 4
         
         // unhide elements
-        corner.hidden = false
-        dot.hidden = false
+        corner.isHidden = false
+        dot.isHidden = false
     }
 
 

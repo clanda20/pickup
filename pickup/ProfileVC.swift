@@ -36,46 +36,47 @@ class ProfileVC: UIViewController {
         
         // Add Edit Button
         
-        let editButton = UIBarButtonItem(barButtonSystemItem: .Edit, target: self, action: "editProfile")
+        let editButton = UIBarButtonItem(barButtonSystemItem: .edit, target: self, action: #selector(ProfileVC.editProfile))
         
         self.tabBarController?.navigationItem.rightBarButtonItem = editButton
         
        
-        var signoutButton = UIBarButtonItem(title: "Sign Out", style: .Plain, target: self, action: "signOut")
+        var signoutButton = UIBarButtonItem(title: "Sign Out", style: .plain, target: self, action: #selector(ProfileVC.signOut))
         
         self.tabBarController?.navigationItem.leftBarButtonItem = signoutButton
         
     // counting number of posts
-        DataService.ds.REF_BASE.child("user-posts").child(KEY_UID!).observeEventType(.Value, withBlock: { (snapshot)  in
+        DataService.ds.REF_BASE.child("user-posts").child(KEY_UID!).observe(.value, with: { (snapshot)  in
             
             //counting posts
-            var countingPosts = snapshot.value?.count
+          //  var countingPosts = (snapshot.value as AnyObject).count  // correction for swift 3
+            var countingPosts = snapshot.childrenCount
             
-            var post = ["postNumber":  (countingPosts!) ]
+            var post = ["postNumber":  (countingPosts) ]
             
             DataService.ds.REF_BASE.child("users").child(KEY_UID!).updateChildValues(post)
             
-            }, withCancelBlock: {(error) -> Void in
+        }, withCancel: {(error) -> Void in
                 
         })
         
         // counting number of posts
-        DataService.ds.REF_BASE.child("followers").child(KEY_UID!).observeEventType(.Value, withBlock: { (snapshot)  in
+        DataService.ds.REF_BASE.child("followers").child(KEY_UID!).observe(.value, with: { (snapshot)  in
             
             //counting posts
-            var countingFollowers = snapshot.value?.count
+            var countingFollowers = (snapshot.value as AnyObject).count
             
             var followers = ["followers":  (countingFollowers!) ]
             
             DataService.ds.REF_BASE.child("users").child(KEY_UID!).updateChildValues(followers)
             
-            }, withCancelBlock: {(error) -> Void in
+        }, withCancel: {(error) -> Void in
                 
         })
         
         
         
-        DataService.ds.REF_USER_CURRENT.observeEventType(.Value, withBlock: { (snapshot)  in
+        DataService.ds.REF_USER_CURRENT.observe(.value, with: { (snapshot)  in
             
             let item = snapshot as FIRDataSnapshot
             print("SNAP-Itemxxxxxxxxxxx: \(item)")
@@ -86,19 +87,19 @@ class ProfileVC: UIViewController {
                 let avatar = dict["avatar"] as! String
                 image = avatar
                 
-                self.activeUserInfo = dict
+                self.activeUserInfo = dict as NSDictionary?
                 
-               // self.title = "Welcome \(self.activeUserInfo!["firstName]!)"
-                self.title = " \(self.activeUserInfo!["firstName"]!.uppercaseString!)"
+                // self.title = "Welcome \(self.activeUserInfo!["firstName]!)"
+                self.title = " \((self.activeUserInfo!["firstName"]! as AnyObject).uppercased!)"
                 self.postsLabel.text = " \(self.activeUserInfo!["postNumber"]!) \n posts"
-               self.followersLabel.text = " \(self.activeUserInfo!["followers"]!) \n followers"  // following and followers got the same number for now.  replaced by Friends
-              
-                self.followingLabel.text = " \(self.activeUserInfo!["following"]!) \n Friends"
-                 self.notificationLabel.text = " \(self.activeUserInfo!["notifications"]!)\n notifications"
+                self.followersLabel.text = " \(self.activeUserInfo!["followers"]!) \n followers"  // following and followers got the same number for now.  replaced by Friends
                 
-                self.downloadAvatar(avatar, completion: { (data) in
+                self.followingLabel.text = " \(self.activeUserInfo!["following"]!) \n Friends"
+                self.notificationLabel.text = " \(self.activeUserInfo!["notifications"]!)\n notifications"
+                
+                self.downloadAvatar(image: avatar, completion: { (data) in
                     
-                    self.profileImageView.image = UIImage(data: data)
+                    self.profileImageView.image = UIImage(data: data as Data)
                     
                     self.profileImageView.layer.cornerRadius = 50.0
                     self.profileImageView.clipsToBounds = true
@@ -110,7 +111,7 @@ class ProfileVC: UIViewController {
             
             //   completation(imageStr: image!)
             
-            }, withCancelBlock: {(error) -> Void in
+        }, withCancel: {(error) -> Void in
                 
         })
         
@@ -126,27 +127,27 @@ class ProfileVC: UIViewController {
     
     
 
-    override func viewWillDisappear(animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
        self.navigationController?.setNavigationBarHidden(true, animated: animated);
         super.viewWillDisappear(animated)
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
        self.navigationController?.setNavigationBarHidden(false, animated: animated)
     }
     
     
-    func editProfile(){
+    @objc func editProfile(){
         
         print("edit profile")
         
-        self.performSegueWithIdentifier("segue_EditPost", sender: self)
+        self.performSegue(withIdentifier: "segue_EditPost", sender: self)
         
         
     }
     
-    func signOut(){
+    @objc func signOut(){
         
         print("edit profile")
         
@@ -156,22 +157,22 @@ class ProfileVC: UIViewController {
         
         // Remove the user's uid from storage.
         
-        NSUserDefaults.standardUserDefaults().setValue(nil, forKey: "uid")
+        UserDefaults.standard.setValue(nil, forKey: "uid")
         
         // Head back to Login!
         
-        let ViewController = self.storyboard!.instantiateViewControllerWithIdentifier("Login")
-        UIApplication.sharedApplication().keyWindow?.rootViewController = ViewController
+        let ViewController = self.storyboard!.instantiateViewController(withIdentifier: "Login")
+        UIApplication.shared.keyWindow?.rootViewController = ViewController
         
     
     }
 
     
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        if segue.identifier == "segue_passID"
+      override func prepare(for forsegue: UIStoryboardSegue, sender: Any?) {
+        if forsegue.identifier == "segue_passID"
         {
-            if let destinationVC = segue.destinationViewController as? PostsByUserVC {
-                let uid = NSUserDefaults.standardUserDefaults().valueForKey("uid") as? String
+            if let destinationVC = forsegue.destination as? PostsByUserVC {
+                let uid = UserDefaults.standard.value(forKey: "uid") as? String
                 destinationVC.userID = uid
                 
             }
@@ -186,17 +187,17 @@ class ProfileVC: UIViewController {
     
     // downloading profile image from Facebook
     
-    func downloadAvatar(image:String, completion:(data:NSData)-> ()) {
+    func downloadAvatar(image:String, completion:@escaping (_ data:NSData)-> ()) {
         
         let urlString = NSURL(string: image)
-        let request = NSURLSession.sharedSession().dataTaskWithURL(urlString!){ (data, response, error) -> Void in
+        let request = URLSession.shared.dataTask(with: urlString! as URL){ (data, response, error) -> Void in
             
             if error == nil {
                 
                 if let dataValid = data {
                     
-                    dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                        completion(data: dataValid)
+                    DispatchQueue.main.async(execute: { () -> Void in
+                        completion(dataValid as NSData)
                     })
                     
                 }

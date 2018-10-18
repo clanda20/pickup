@@ -43,11 +43,11 @@ class CustomSearchController: UISearchController, UISearchBarDelegate {
     init(searchResultsController: UIViewController!, searchBarFrame: CGRect, searchBarFont: UIFont, searchBarTextColor: UIColor, searchBarTintColor: UIColor) {
         super.init(searchResultsController: searchResultsController)
         
-        configureSearchBar(searchBarFrame, font: searchBarFont, textColor: searchBarTextColor, bgColor: searchBarTintColor)
+        configureSearchBar(frame: searchBarFrame, font: searchBarFont, textColor: searchBarTextColor, bgColor: searchBarTintColor)
     }
     
     
-    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: NSBundle?) {
+    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
     }
     
@@ -72,25 +72,25 @@ class CustomSearchController: UISearchController, UISearchBarDelegate {
     
     // MARK: UISearchBarDelegate functions
     
-    func searchBarTextDidBeginEditing(searchBar: UISearchBar) {
+    func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
         customDelegate.didStartSearching()
     }
     
     
-    func searchBarSearchButtonClicked(searchBar: UISearchBar) {
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         customSearchBar.resignFirstResponder()
         customDelegate.didTapOnSearchButton()
     }
     
     
-    func searchBarCancelButtonClicked(searchBar: UISearchBar) {
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         customSearchBar.resignFirstResponder()
         customDelegate.didTapOnCancelButton()
     }
     
     
-    func searchBar(searchBar: UISearchBar, textDidChange searchText: String) {
-        customDelegate.didChangeSearchText(searchText)
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        customDelegate.didChangeSearchText(searchText: searchText)
     }
     
 }

@@ -82,6 +82,7 @@
 		AABAAFCE1DAEE07300B4C5B3 /* likeIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = AABAAFCA1DAEE07300B4C5B3 /* likeIcon.png */; };
 		AABAAFD01DAEE10900B4C5B3 /* tabbarVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABAAFCF1DAEE10900B4C5B3 /* tabbarVC.swift */; };
 		AABC312A1D582D48002F8216 /* ImageShowVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABC31291D582D48002F8216 /* ImageShowVC.swift */; };
+		AADD4CFB1DC40DA9007E2D2C /* EditEventMapByTouchVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = AADD4CFA1DC40DA9007E2D2C /* EditEventMapByTouchVC.swift */; };
 		AAED90B01CF3B705006C4EFE /* MaterialView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAED90AF1CF3B705006C4EFE /* MaterialView.swift */; };
 		AAED90B41CF3B7E3006C4EFE /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAED90B31CF3B7E3006C4EFE /* Constants.swift */; };
 		AAED90B61CF3BD99006C4EFE /* MaterialButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAED90B51CF3BD99006C4EFE /* MaterialButton.swift */; };
@@ -195,6 +196,7 @@
 		AABAAFCA1DAEE07300B4C5B3 /* likeIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = likeIcon.png; sourceTree = "<group>"; };
 		AABAAFCF1DAEE10900B4C5B3 /* tabbarVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = tabbarVC.swift; sourceTree = "<group>"; };
 		AABC31291D582D48002F8216 /* ImageShowVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageShowVC.swift; sourceTree = "<group>"; };
+		AADD4CFA1DC40DA9007E2D2C /* EditEventMapByTouchVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EditEventMapByTouchVC.swift; sourceTree = "<group>"; };
 		AAED90AF1CF3B705006C4EFE /* MaterialView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MaterialView.swift; sourceTree = "<group>"; };
 		AAED90B31CF3B7E3006C4EFE /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		AAED90B51CF3BD99006C4EFE /* MaterialButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MaterialButton.swift; sourceTree = "<group>"; };
@@ -367,10 +369,8 @@
 				AA60C04D1D6664F600A4A056 /* car.png */,
 				AA5E12C71D8F22DD00FC9A16 /* PlayVideoVC.swift */,
 				AA60F55C1CEFFEC8007B215D /* ViewController.swift */,
-				AA8EB02D1CF5224E00B5E542 /* FeedVC.swift */,
 				AA1E7FBD1D1B5D8D0035EF2C /* CommentVC.swift */,
 				AAFAB8A21D7E33CF003B5423 /* EventCommentVC.swift */,
-				AA0CEE2C1D6D630500ABB682 /* EventVC.swift */,
 				AA5FEC581D306C9B002EA1CF /* ProfileVC.swift */,
 				AAFAB8A81D7F98D4003B5423 /* ContactSearchTable.swift */,
 				AA0F36CA1D356F7000E65D41 /* contactProfileVC.swift */,
@@ -381,15 +381,18 @@
 				AABC31291D582D48002F8216 /* ImageShowVC.swift */,
 				AA60E0B81D62C93900321FF2 /* PickUp.xcdatamodeld */,
 				AA0CEE2A1D6B79B900ABB682 /* LocationSearchTable.swift */,
-				AA8845981D6E48B800785AC9 /* EventDetailVC.swift */,
-				AA1F12731D70020C00C2BC35 /* GeoMapVC.swift */,
-				AA46A47E1D93A1E500F9CC9C /* EditEventVC.swift */,
 				AA5FEC5E1D340CB2002EA1CF /* ContactsVC.swift */,
 				AAAB3BB91DA575F000396920 /* NotificationVC.swift */,
 				AABAAFCF1DAEE10900B4C5B3 /* tabbarVC.swift */,
 				AAA5B8941D5EAE3400EFEB7E /* MapVC.swift */,
+				AA1F12731D70020C00C2BC35 /* GeoMapVC.swift */,
+				AA8845981D6E48B800785AC9 /* EventDetailVC.swift */,
+				AA8EB02D1CF5224E00B5E542 /* FeedVC.swift */,
+				AA0CEE2C1D6D630500ABB682 /* EventVC.swift */,
 				AA5606EA1D67F7AB004F99F9 /* AddVC.swift */,
 				AA3FBD1C1DC016980048051A /* EventMapByTouchVC.swift */,
+				AA46A47E1D93A1E500F9CC9C /* EditEventVC.swift */,
+				AADD4CFA1DC40DA9007E2D2C /* EditEventMapByTouchVC.swift */,
 				AAFAB8B01D827F27003B5423 /* Search */,
 			);
 			name = Controller;
@@ -525,12 +528,14 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0730;
-				LastUpgradeCheck = 0730;
+				LastUpgradeCheck = 1000;
 				ORGANIZATIONNAME = "christian landa";
 				TargetAttributes = {
 					AA60F5561CEFFEC8007B215D = {
 						CreatedOnToolsVersion = 7.3;
 						DevelopmentTeam = ZFRU6SA44A;
+						LastSwiftMigration = 1000;
+						ProvisioningStyle = Manual;
 						SystemCapabilities = {
 							com.apple.BackgroundModes = {
 								enabled = 1;
@@ -701,6 +706,7 @@
 				AAFAB8B41D827F8F003B5423 /* CustomSearchController.swift in Sources */,
 				AAFAB8A91D7F98D4003B5423 /* ContactSearchTable.swift in Sources */,
 				AAED90B61CF3BD99006C4EFE /* MaterialButton.swift in Sources */,
+				AADD4CFB1DC40DA9007E2D2C /* EditEventMapByTouchVC.swift in Sources */,
 				AA8EB0321CF55D3000B5E542 /* Post.swift in Sources */,
 				AA922ACA1DA33270002550F3 /* Notification.swift in Sources */,
 				AABC312A1D582D48002F8216 /* ImageShowVC.swift in Sources */,
@@ -747,17 +753,27 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_IDENTITY = "iPhone Developer: Christian Landa (F3G2Z25SG5)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Christian Landa (F3G2Z25SG5)";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_BITCODE = NO;
@@ -795,13 +811,23 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
@@ -822,6 +848,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 			};
@@ -834,7 +861,9 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer: Christian Landa (F3G2Z25SG5)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Christian Landa (F3G2Z25SG5)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = ZFRU6SA44A;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -845,9 +874,13 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.poquito.pickup;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "";
+				PROVISIONING_PROFILE = "fb15758d-96a0-4fa1-b955-34771155cba1";
+				PROVISIONING_PROFILE_SPECIFIER = "Dev com.poquito.pickup";
 				SWIFT_OBJC_BRIDGING_HEADER = "pickup/pickup-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				SWIFT_VERSION = 4.2;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -857,8 +890,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Distribution: Christian Landa (ZFRU6SA44A)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = ZFRU6SA44A;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -869,8 +904,12 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.poquito.pickup;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "";
+				PROVISIONING_PROFILE = "fb15758d-96a0-4fa1-b955-34771155cba1";
+				PROVISIONING_PROFILE_SPECIFIER = dist_com.poquito.pickup;
 				SWIFT_OBJC_BRIDGING_HEADER = "pickup/pickup-Bridging-Header.h";
+				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				SWIFT_VERSION = 4.2;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};

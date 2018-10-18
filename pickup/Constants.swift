@@ -14,7 +14,7 @@ import FirebaseDatabase
 let SHADOW_COLOR: CGFloat = 157.0 / 255.0
 
 
-let KEY_UID =  NSUserDefaults.standardUserDefaults().valueForKey("uid") as? String
+let KEY_UID =  UserDefaults.standard.value(forKey: "uid") as? String
 let postKey = "postKey"
 
 // var POST_KEY_ID = "postKey"
@@ -27,7 +27,7 @@ var user_postsRef = ref.child("user-posts")
 //STORAGE
 
 let storage = FIRStorage.storage()
-let storageRef = storage.referenceForURL("gs://pickup-9b67a.appspot.com")
+let storageRef = storage.reference(forURL: "gs://pickup-9b67a.appspot.com")
 
 
 //Segues

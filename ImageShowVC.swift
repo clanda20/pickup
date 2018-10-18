@@ -38,33 +38,33 @@ class ImageShowVC: UIViewController, UIScrollViewDelegate {
         
         
         scrollImg = UIScrollView(frame: view.bounds)
-        scrollImg.autoresizingMask = [.FlexibleWidth, .FlexibleHeight]
+        scrollImg.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         scrollImg.contentOffset = CGPoint(x: 0, y: 0)
         
         
-        DataService.ds.REF_POSTS.child(postKey_Segue!).observeEventType(.Value, withBlock: { (snapshot)  in
+        DataService.ds.REF_POSTS.child(postKey_Segue!).observe(.value, with: { (snapshot)  in
             
             let item = snapshot as FIRDataSnapshot
             print("SNAP-Itemxxxxxxxxxxx: \(item)")
             
-        
+            
             
             if let dict = item.value as? [String : AnyObject]{
                 let imageUrl = dict["imageUrl"] as! String
-            //    image = avatar
+                //    image = avatar
                 
-                self.activeUserInfo = dict
+                self.activeUserInfo = dict as NSDictionary?
                 
-                self.title = " \(self.activeUserInfo!["fullName"]!.uppercaseString!)'s Post"
-             
-                self.downloadAvatar(imageUrl, completion: { (data) in
+                self.title = " \((self.activeUserInfo!["fullName"]! as AnyObject).uppercased!)'s Post"
+                
+                self.downloadAvatar(image: imageUrl, completion: { (data) in
                     
-                    self.imageShowView.image = UIImage(data: data)
-                  
+                    self.imageShowView.image = UIImage(data: data as Data)
+                    
                 })
             }
             
-            }, withCancelBlock: {(error) -> Void in
+        }, withCancel: {(error) -> Void in
                 
         })
     }
@@ -73,17 +73,17 @@ class ImageShowVC: UIViewController, UIScrollViewDelegate {
     
     // downloading profile image from Facebook
     
-    func downloadAvatar(image:String, completion:(data:NSData)-> ()) {
+    func downloadAvatar(image:String, completion:@escaping (_ data:NSData)-> ()) {
         
         let urlString = NSURL(string: image)
-        let request = NSURLSession.sharedSession().dataTaskWithURL(urlString!){ (data, response, error) -> Void in
+        let request = URLSession.shared.dataTask(with: urlString! as URL){ (data, response, error) -> Void in
             
             if error == nil {
                 
                 if let dataValid = data {
                     
-                    dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                        completion(data: dataValid)
+                    DispatchQueue.main.async(execute: { () -> Void in
+                        completion(dataValid as NSData)
                     })
                     
                 }
@@ -96,12 +96,12 @@ class ImageShowVC: UIViewController, UIScrollViewDelegate {
     }
     
     
-    override func viewWillDisappear(animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         self.navigationController?.setNavigationBarHidden(true, animated: animated);
         super.viewWillDisappear(animated)
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.navigationController?.setNavigationBarHidden(false, animated: animated)
        // FirebaseFanout()
@@ -111,7 +111,9 @@ class ImageShowVC: UIViewController, UIScrollViewDelegate {
         super.didReceiveMemoryWarning()
     }
     
-    func viewForZoomingInScrollView(scrollView: UIScrollView) -> UIView? {
+   // func viewForZoomingInScrollView(scrollView: UIScrollView) -> UIView? {
+    func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+      
         return self.imageShowView
     }
     

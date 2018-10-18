@@ -47,7 +47,7 @@ class contactProfileVC: UIViewController {
     
     @IBAction func followContactAction(sender: AnyObject) {
         
-               followContact(isFollowed) { (followRef) in
+               followContact(isFollowing: isFollowed) { (followRef) in
                 
              print("You are now following \(self.activeUserInfo!["fullName"]!)   ")
                 
@@ -67,7 +67,7 @@ class contactProfileVC: UIViewController {
         QueryCurrentUser()
         fanoutToBeFollowedUser()
         
-        let tapGesture = UITapGestureRecognizer(target: self, action: Selector("hideKeyboard"))
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(contactProfileVC.hideKeyboard))
         tapGesture.cancelsTouchesInView = true
         self.view.addGestureRecognizer(tapGesture)
         
@@ -82,7 +82,7 @@ class contactProfileVC: UIViewController {
             //following Btn Status update
             
             if self.isFollowed {
-                self.followBtn.setTitle("Following", forState: .Normal)
+                self.followBtn.setTitle("Following", for: .normal)
                 
                 // Notification Begin
 
@@ -95,7 +95,7 @@ class contactProfileVC: UIViewController {
                 
                 
             } else {
-                self.followBtn.setTitle("Follow", forState: .Normal)
+                self.followBtn.setTitle("Follow", for: .normal)
                 
                 
                 print("Noooo  Following  Right now Notification ")
@@ -106,12 +106,12 @@ class contactProfileVC: UIViewController {
     
     }
     
-    override func viewWillDisappear(animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         self.navigationController?.setNavigationBarHidden(true, animated: animated);
         super.viewWillDisappear(animated)
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.navigationController?.setNavigationBarHidden(false, animated: animated)
        // FirebaseFanout()
@@ -122,42 +122,43 @@ class contactProfileVC: UIViewController {
     
    
     
-    func queryFollowing( completion:(following:Bool) -> ()) {
+    func queryFollowing( completion:@escaping (_ following:Bool) -> ()) {
     
-    activeUserRef?.child("followings").observeEventType(.Value, withBlock: { snapshot in
-        
-                //counting followings
-                         var countingFollowings = snapshot.value?.count
-                       print("countingFollowings: \(countingFollowings!)")
-                      //  self.followingLabel.text =  "\(self.countingFollowings!) \n Following"
-                        
-                        var following = ["following":  (countingFollowings!) ]
-                        
-                        DataService.ds.REF_BASE.child("users").child(KEY_UID!).updateChildValues(following)
-                        
-        
-        for child in snapshot.children {
-            let userID = child.key as String
-            print("USER ID IIIIiiiiiiiiiiiiiiiii: \(userID)")
+        activeUserRef?.child("followings").observe(.value, with: { snapshot in    //activeUserRef = DataService.ds.REF_USER_CURRENT   // user - userID
             
-            if userID ==  self.contactId {
+            //counting followings
+           // let countingFollowings = (snapshot.value as AnyObject).count
+            let countingFollowings = snapshot.childrenCount
+         //   print("countingFollowings: \(countingFollowings!)")
+            //  self.followingLabel.text =  "\(self.countingFollowings!) \n Following"
+            
+            let following = ["following":  (countingFollowings) ]
+            
+            DataService.ds.REF_BASE.child("users").child(KEY_UID!).updateChildValues(following)
+            
+            
+            for child in snapshot.children {
+                let userID = (child as AnyObject).key as String
+                print("USER ID IIIIiiiiiiiiiiiiiiiii: \(userID)")
                 
-                self.isFollowed = true
+                if userID ==  self.contactId {
+                    
+                    self.isFollowed = true
+                }
             }
-        }
-        completion(following: self.isFollowed)
-        }, withCancelBlock: { (error) -> Void in
+            completion(self.isFollowed)
+        }, withCancel: { (error) -> Void in
     })
     
     }
     
-    func followContact(isFollowing:Bool, completion:(followRef:FIRDatabaseReference!) -> ()) {
+    func followContact(isFollowing:Bool, completion:(_ followRef:FIRDatabaseReference?) -> ()) {
         
         // followingsRef = users---> userID-----[avatar:, dislikes:, firstname, FOLLOWINGS:...]
         
       let followingRef = self.followingsRef?.child("\(self.activeUserInfo!["id"]!)")  //  puting contactId on child(contactId!) also works
       let followingRef2 = DataService.ds.REF_FOLLOWING_USERID.child("\(self.activeUserInfo!["id"]!)")
-        let uid = NSUserDefaults.standardUserDefaults().valueForKey("uid") as? String
+        let uid = UserDefaults.standard.value(forKey: "uid") as? String
         let followerRefContactID = DataService.ds.REF_FOLLOWER.child(contactId!).child(uid!)
         let followerRefUserID = DataService.ds.REF_FOLLOWER.child(KEY_UID!).child(contactId!)
         
@@ -245,7 +246,7 @@ class contactProfileVC: UIViewController {
             
            }
             
-            self.followBtn.setTitle("Follow", forState: .Normal)
+            self.followBtn.setTitle("Follow", for: .normal)
             self.isFollowed = false
             
            
@@ -258,7 +259,7 @@ class contactProfileVC: UIViewController {
             followerRefContactID.setValue(true)
             followerRefUserID.setValue(true)
             
-            self.followBtn.setTitle("Following", forState: .Normal)
+            self.followBtn.setTitle("Following", for: .normal)
             self.isFollowed = true
             
             
@@ -269,18 +270,18 @@ class contactProfileVC: UIViewController {
             
             let key = DataService.ds.REF_BASE.child("notification").childByAutoId().key
             
-            self.notificationKey = "N\(key)"  /// notificationKey is the same number of the commentKey but with and N before the number
+            self.notificationKey = "(N\(key))!"  /// notificationKey is the same number of the commentKey but with and N before the number
             
             let notificationFollowing : [String : AnyObject] = [
-                "uid": KEY_UID!,
-                "fullName": self.fullName!,
-                "avatar": self.profileUserImg,
-                "date" : time,
-                "postKey" : "",
-                "commentID": "",
-                "type": "IS FOLLOWING YOU",
-                "notificationKey": notificationKey,
-                "checked": "no",
+                "uid": KEY_UID! as AnyObject,
+                "fullName": self.fullName! as AnyObject,
+                "avatar": self.profileUserImg as AnyObject,
+                "date" : time as AnyObject,
+                "postKey" : "" as AnyObject,
+                "commentID": "" as AnyObject,
+                "type": "IS FOLLOWING YOU" as AnyObject,
+                "notificationKey": notificationKey as AnyObject,
+                "checked": "no" as AnyObject,
                 ]
             
             
@@ -300,23 +301,23 @@ class contactProfileVC: UIViewController {
             
         }
         
-        completion(followRef: followingRef!)
+        completion(followingRef!)
         
     }
     
   
     
-    func downloadAvatar(image:String, completion:(data:NSData)-> ()) {
+    func downloadAvatar(image:String, completion:@escaping (_ data:NSData)-> ()) {
         
         let urlString = NSURL(string: image)
-        let request = NSURLSession.sharedSession().dataTaskWithURL(urlString!){ (data, response, error) -> Void in
+        let request = URLSession.shared.dataTask(with: urlString! as URL){ (data, response, error) -> Void in
             
             if error == nil {
                 
                 if let dataValid = data {
                     
-                    dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                        completion(data: dataValid)
+                    DispatchQueue.main.async(execute: { () -> Void in
+                        completion(dataValid as NSData)
                     })
                     
                 }
@@ -328,10 +329,10 @@ class contactProfileVC: UIViewController {
         request.resume()
     }
     
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        if segue.identifier == "segue_contactProfToPost"
+    override func prepare(for forsegue: UIStoryboardSegue, sender: Any?) {
+        if forsegue.identifier == "segue_contactProfToPost"
         {
-            if let destinationVC = segue.destinationViewController as? PostsByContactVC {
+            if let destinationVC = forsegue.destination as? PostsByContactVC {
               
                 destinationVC.userID = contactId
                 print("USER ID IIIIiiiiiiiiiiiiiiiii: \(contactId)")            }
@@ -343,7 +344,7 @@ class contactProfileVC: UIViewController {
     }
     
     //Keyboard dismiss
-    func hideKeyboard()
+    @objc func hideKeyboard()
     {
         self.view.endEditing(true)
     }
@@ -357,24 +358,24 @@ class contactProfileVC: UIViewController {
         
         
         followersRef = DataService.ds.REF_BASE.child("user-posts-id").child(KEY_UID!) // followersRef = DataService.ds.REF_USER_POST.child(self.contactId!)
-        followersRef!.observeEventType(.Value, withBlock:  { snapshot in
+        followersRef!.observe(.value, with:  { snapshot in
             
             
             print("new snapshot array: \(snapshot.key)")
             
             
             self.posts_Array = []
-           
+            
             
             for child in snapshot.children {
-                let postID = child.key as String
+                let postID = (child as AnyObject).key as String
                 print("postID  Array IIIIiiiiiDelete Postiiiiiiiii: \(postID)")
                 
                 self.posts_Array.append(postID)
                 
                 _ = Post(followersList: self.posts_Array)
                 
-               
+                
                 
                 for postIDx in self.posts_Array {
                     print(" Array postID Delete Post \(postIDx)")
@@ -383,9 +384,9 @@ class contactProfileVC: UIViewController {
             }
             
             
-           
             
-            }, withCancelBlock: { (error) ->  Void in
+            
+        }, withCancel: { (error) ->  Void in
                 
                 
         })
@@ -396,7 +397,7 @@ class contactProfileVC: UIViewController {
         
         
         followersRef = DataService.ds.REF_BASE.child("user-posts-id").child(self.contactId!) // followersRef = DataService.ds.REF_USER_POST.child(self.contactId!)
-        followersRef!.observeEventType(.Value, withBlock:  { snapshot in
+        followersRef!.observe(.value, with:  { snapshot in
             
             
             print("new snapshot array: \(snapshot.key)")
@@ -406,7 +407,7 @@ class contactProfileVC: UIViewController {
             
             
             for child in snapshot.children {
-                let postID = child.key as String
+                let postID = (child as AnyObject).key as String
                 print("postID  Array IIIIiiiiiDelete Postiiiiiiiii: \(postID)")
                 
                 self.posts_contactID_Array.append(postID)
@@ -424,7 +425,7 @@ class contactProfileVC: UIViewController {
             
             
             
-            }, withCancelBlock: { (error) ->  Void in
+        }, withCancel: { (error) ->  Void in
                 
                 
         })
@@ -436,7 +437,7 @@ class contactProfileVC: UIViewController {
         
         
         followersRef = DataService.ds.REF_BASE.child("host-events-id").child(self.contactId!)
-        followersRef!.observeEventType(.Value, withBlock:  { snapshot in
+        followersRef!.observe(.value, with:  { snapshot in
             
             
             print("new snapshot array: \(snapshot.key)")
@@ -446,8 +447,8 @@ class contactProfileVC: UIViewController {
             
             
             for child in snapshot.children {
-                let eventID = child.key as String
-              
+                let eventID = (child as AnyObject).key as String
+                
                 
                 self.event_Array.append(eventID)
                 
@@ -464,7 +465,7 @@ class contactProfileVC: UIViewController {
             
             
             
-            }, withCancelBlock: { (error) ->  Void in
+        }, withCancel: { (error) ->  Void in
                 
                 
         })
@@ -477,14 +478,14 @@ class contactProfileVC: UIViewController {
     func  InsideQueryUserEvent(/*comingIDx: String*/){
         
         
-        DataService.ds.REF_BASE.child("host-events-id").child(KEY_UID!).observeEventType(.Value, withBlock: { (snapshot) in
+        DataService.ds.REF_BASE.child("host-events-id").child(KEY_UID!).observe(.value, with: { (snapshot) in
             
             
             self.eventsArray = []
             //  self.usersLists = []
             
             for child in snapshot.children {
-                let eventID = child.key as String
+                let eventID = (child as AnyObject).key as String
               //  print("eventID  Array IIIIiiiiiiPostCelliiiiiii: \(eventID)")
                 
                 self.eventsArray.append(eventID)
@@ -505,7 +506,7 @@ class contactProfileVC: UIViewController {
     
     var image: String?
     
-    DataService.ds.REF_USERS.child(contactId!).observeEventType(.Value, withBlock: { (snapshot)  in
+    DataService.ds.REF_USERS.child(contactId!).observe(.value, with: { (snapshot)  in
     
     let item = snapshot as FIRDataSnapshot
     print("SNAP-Itemxxxxxxxxxxx: \(item)")
@@ -516,11 +517,11 @@ class contactProfileVC: UIViewController {
     let avatar = dict["avatar"] as! String
     image = avatar
     
-    self.activeUserInfo = dict
+    self.activeUserInfo = dict as NSDictionary?
     
     //contact's information
     
-    self.title = " \(self.activeUserInfo!["fullName"]!.uppercaseString!)'s Profile"
+    self.title = " \((self.activeUserInfo!["fullName"]! as AnyObject).uppercased!)'s Profile"
     self.postsLabel.text = " \(self.activeUserInfo!["postNumber"]!) \n posts"
     self.followersLabel.text = " \(self.activeUserInfo!["followers"]!) \n followers"
     self.followingLabel.text = " \(self.activeUserInfo!["following"]!) \n following"
@@ -532,9 +533,9 @@ class contactProfileVC: UIViewController {
     
     
     
-    self.downloadAvatar(avatar, completion: { (data) in
+    self.downloadAvatar(image: avatar, completion: { (data) in
     
-    self.avatarImageView.image = UIImage(data: data)
+    self.avatarImageView.image = UIImage(data: data as Data)
     
     self.avatarImageView.layer.cornerRadius = 50.0
     self.avatarImageView.clipsToBounds = true
@@ -542,33 +543,30 @@ class contactProfileVC: UIViewController {
     
     }
     
+  
     
+    }) {(error)  in
     
+    print(error.localizedDescription)
     
-    
-    }, withCancelBlock: {(error) -> Void in
-    
-    print(error.description)
-    
-    })
-    
+    }
     }
     
     func QueryCurrentUser(){
      
-        DataService.ds.REF_USER_CURRENT.observeEventType(.Value, withBlock: { (snapshot)  in
-     
+        DataService.ds.REF_USER_CURRENT.observe(.value, with: { (snapshot)  in
+            
             let item = snapshot as FIRDataSnapshot
             print("SNAP-Itemxxxxxxxxxxx: \(item)")
-     
             
-     
+            
+            
             if let dict = item.value as? [String : AnyObject]{
                 let avatar = dict["avatar"] as! String
                 // self.image = avatar
-     
-                self.userWhoWillFollowInfo = dict
-               
+                
+                self.userWhoWillFollowInfo = dict as NSDictionary?
+                
                 self.fullName = self.userWhoWillFollowInfo!["fullName"]! as! String
                 self.profileUserImg = "\(self.userWhoWillFollowInfo!["avatar"]!)"
                 self.userID = "\(self.userWhoWillFollowInfo!["id"]!)"
@@ -576,7 +574,7 @@ class contactProfileVC: UIViewController {
                 
             }
             
-            }, withCancelBlock: {(error) -> Void in
+        }, withCancel: {(error) -> Void in
         })
     }
 

@@ -26,20 +26,23 @@ class NotificationVC: UITableViewController, ContactIDNotificationCellDelegate  
     override func viewDidLoad() {
         super.viewDidLoad()
         
-     
-      navigationItem.leftBarButtonItem = editButtonItem()
+      
         
+      navigationItem.leftBarButtonItem = editButtonItem
+        self.myNotificationArrays = []
         myNotifications()
         QuerryUserFollowing()
         
         
     }
+
     
     func QuerryUserFollowing(){
         
-        DataService.ds.REF_BASE.child("notifications").child(KEY_UID!).queryOrderedByChild("date").observeEventType(.Value, withBlock:{ snapshot in
-            
-          
+        DataService.ds.REF_BASE.child("notifications").child(KEY_UID!).queryOrdered(byChild: "date").observe(.value, with:{ snapshot in
+       // DataService.ds.REF_BASE.child("notifications").child(KEY_UID!).queryOrdered(byChild: "date").observe(of: .value, with: { snapshot in
+
+        
             
             print("xxxxxxxxxxxxxxxx: \(snapshot.value)")
             
@@ -60,7 +63,7 @@ class NotificationVC: UITableViewController, ContactIDNotificationCellDelegate  
                         
                         // hide icons View with animation
                         
-                        UIView.animateWithDuration(1, animations: { () -> Void in
+                        UIView.animate(withDuration: 1, animations: { () -> Void in
                             
                             icons.alpha = 0
                             corner.alpha = 0
@@ -68,34 +71,35 @@ class NotificationVC: UITableViewController, ContactIDNotificationCellDelegate  
                             
                         })
                         
-                       for myNotification in self.myNotificationArrays {
+                        for myNotification in self.myNotificationArrays {
                             
-                              let check = ["checked": "yes" ]
-                        
-                       DataService.ds.REF_BASE.child("notifications").child(KEY_UID!).child(myNotification).updateChildValues(check)
+                            let check = ["checked": "yes" ]
                             
+                            DataService.ds.REF_BASE.child("notifications").child(KEY_UID!).child(myNotification).updateChildValues(check)
+                            
+                           // self.myNotificationArrays = []
                         }
                         
-                     }
                     }
                 }
+            }
             
             
-             self.notifications = self.notifications.reverse()
-                self.tableView.reloadData()
-           
-                
-            }, withCancelBlock: nil)
+            self.notifications = self.notifications.reversed()
+            self.tableView.reloadData()
+            
+            
+        }, withCancel: nil)
         
     }
     
     
-    override func setEditing(editing: Bool, animated: Bool) {
+    override func setEditing(_ editing: Bool, animated: Bool) {
         super.setEditing(editing, animated: animated)
         if editing {
             tableView.setEditing(true, animated: true)
             navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Delete All",
-                                                                style: .Plain,
+                                                                style: .plain,
                                                                 target: self,
                                                                 action: #selector(NotificationVC.deleteAll))
         } else {
@@ -106,19 +110,21 @@ class NotificationVC: UITableViewController, ContactIDNotificationCellDelegate  
     
     
     
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+     // func numberOfSectionsInTableView(_ tableView: UITableView) -> Int {
+    override func numberOfSections(in tableView: UITableView) -> Int {
+     
         return 1
     }
     
     
     
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
         return notifications.count
     }
     
-    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-        if editingStyle == UITableViewCellEditingStyle.Delete {
+      override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == UITableViewCell.EditingStyle.delete {
            
             let contactSelected = notifications[indexPath.row]
            let commentID = contactSelected.commentID
@@ -134,36 +140,39 @@ class NotificationVC: UITableViewController, ContactIDNotificationCellDelegate  
             DataService.ds.REF_BASE.child("notifications-postUID").child(KEY_UID!).child(notificationID).removeValue()
             DataService.ds.REF_BASE.child("post-commentsOnly").child(contactSelected.postKey).child(commentID!).removeValue()
             
-            
+            self.myNotificationArrays = []
        
         
         }
     }
     
-    func deleteAll(){
+    @objc func deleteAll(){
         
         
         
-        DataService.ds.REF_BASE.child("post-commentsOnly").child(self.eventKey).observeEventType(.Value, withBlock:  { snapshot in
-            
+      //  DataService.ds.REF_BASE.child("post-commentsOnly").child(self.eventKey).observe(.value, with:  { snapshot in
+        DataService.ds.REF_BASE.child("notifications-postUID").child(KEY_UID!).observe(.value, with:  { snapshot in
+    
             self.postEventCommentArray = []
             
             for child in snapshot.children {
-                let postComment = child.key as String
+                let postComment = (child as AnyObject).key as String
                 
                 self.postEventCommentArray.append(postComment)
                 
                 for eventComment in self.postEventCommentArray {
                     print(" Array friendID tonight  PostCell \(eventComment)")
                     
-                    DataService.ds.REF_BASE.child("notifications").child(KEY_UID!).child("N\(eventComment)").removeValue()
-                    DataService.ds.REF_BASE.child("notifications-postUID").child(KEY_UID!).child("N\(eventComment)").removeValue()
+                    DataService.ds.REF_BASE.child("notifications").child(KEY_UID!).child(eventComment).removeValue()
+                    DataService.ds.REF_BASE.child("notifications-postUID").child(KEY_UID!).child(eventComment).removeValue()
                     
                 }
                 DataService.ds.REF_BASE.child("post-commentsOnly").child(self.eventKey).removeValue()
+                
             }
+            self.myNotificationArrays = []
         })
-        
+        //self.myNotificationArrays = []
      // performSegueWithIdentifier("segueReturnToMain", sender: nil)
         
     }
@@ -173,12 +182,12 @@ class NotificationVC: UITableViewController, ContactIDNotificationCellDelegate  
         
         
         
-        DataService.ds.REF_BASE.child("notifications-postUID").child(KEY_UID!).observeEventType(.Value, withBlock:  { snapshot in
+        DataService.ds.REF_BASE.child("notifications-postUID").child(KEY_UID!).observe(.value, with:  { snapshot in
             
             self.myNotificationArrays = []
             
             for child in snapshot.children {
-                let postComment = child.key as String
+                let postComment = (child as AnyObject).key as String
                 
                 self.myNotificationArrays.append(postComment)
                 
@@ -194,19 +203,19 @@ class NotificationVC: UITableViewController, ContactIDNotificationCellDelegate  
         
     }
     
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell{
+     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell{
         
         let notification = notifications[indexPath.row]
         print("testing Full Name: \(notification.fullName)")
         
-        if let cell =  tableView.dequeueReusableCellWithIdentifier("Cell") as? NotificationCell {
+        if let cell =  tableView.dequeueReusableCell(withIdentifier: "Cell") as? NotificationCell {
             
            // cell.delegate = self // july 7, 2016
             cell.delegate2 = self
             
           //  cell.infoLbl.text = infolbl[[index.row]]
             
-            cell.configureCell(notification)
+            cell.configureCell(notification: notification)
             
             
             
@@ -223,7 +232,7 @@ class NotificationVC: UITableViewController, ContactIDNotificationCellDelegate  
     override func viewDidLayoutSubviews() {
         if let rect = self.navigationController?.navigationBar.frame {
             let y = rect.size.height + rect.origin.y
-            self.tableView.contentInset = UIEdgeInsetsMake( y, 0, 0, 0)
+            self.tableView.contentInset = UIEdgeInsets.init( top: y, left: 0, bottom: 0, right: 0)
         }
     }
     
@@ -232,7 +241,7 @@ class NotificationVC: UITableViewController, ContactIDNotificationCellDelegate  
         
       //  dispatch_async(dispatch_get_main_queue()){
             //try not to send self, just to avoid retain cycles(depends on how you handle the code on the next controller)
-            self.performSegueWithIdentifier("segue_Notification_to_Profile_Name", sender:dataobject )
+            self.performSegue(withIdentifier: "segue_Notification_to_Profile_Name", sender:dataobject )
         
            let  notificationUserId = dataobject
         print("notification 1: \(notificationUserId)")
@@ -240,13 +249,13 @@ class NotificationVC: UITableViewController, ContactIDNotificationCellDelegate  
        // }
     }
     
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    override func prepare(for forsegue: UIStoryboardSegue, sender: Any?) {
         
         
         // X check profile
-        if segue.identifier == "segue_Notification_to_Profile_Name"
+        if forsegue.identifier == "segue_Notification_to_Profile_Name"
         {
-            let destinationVC = segue.destinationViewController as? contactProfileVC
+            let destinationVC = forsegue.destination as? contactProfileVC
             if let theString = sender as? String {
                 destinationVC!.contactId =  theString
             }
@@ -257,25 +266,27 @@ class NotificationVC: UITableViewController, ContactIDNotificationCellDelegate  
     }
     
     
-    override func viewWillDisappear(animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         self.navigationController?.setNavigationBarHidden(true, animated: animated);
         super.viewWillDisappear(animated)
         //self.friendsTableView.reloadData()
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
        self.navigationController?.setNavigationBarHidden(false, animated: animated)
 
+      
 
         self.tableView.reloadData()
     }
     
     // clicked cell
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        
+    // func tableView(_ tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    
         // call cell for calling cell data
-        let cell = tableView.cellForRowAtIndexPath(indexPath) as! NotificationCell
+        let cell = tableView.cellForRow(at: indexPath as IndexPath) as! NotificationCell
         
         
         // going to event
@@ -287,7 +298,7 @@ class NotificationVC: UITableViewController, ContactIDNotificationCellDelegate  
         
         
             // go comments
-       let event = self.storyboard?.instantiateViewControllerWithIdentifier("EventDetailVC") as! EventDetailVC//("segueNotification_Event") as! EventDetailVC
+       let event = self.storyboard?.instantiateViewController(withIdentifier: "EventDetailVC") as! EventDetailVC//("segueNotification_Event") as! EventDetailVC
         
         event.eventKey = contactSelected.postKey
         event.hostUid = contactSelected.uid
@@ -301,10 +312,10 @@ class NotificationVC: UITableViewController, ContactIDNotificationCellDelegate  
         let index = tableView.indexPathForSelectedRow
         let contactSelected = notifications[index!.row]
         
-        let comment = self.storyboard?.instantiateViewControllerWithIdentifier("CommentVC") as!  CommentVC //("segueNotification_to_Comment_Post") as!  CommentVC
+        let comment = self.storyboard?.instantiateViewController(withIdentifier: "CommentVC") as!  CommentVC //("segueNotification_to_Comment_Post") as!  CommentVC
         
         
-        NSUserDefaults.standardUserDefaults().setValue(contactSelected.postKey, forKey: "postKey")
+        UserDefaults.standard.setValue(contactSelected.postKey, forKey: "postKey")
 
         
         self.navigationController?.pushViewController(comment, animated: true)
@@ -316,7 +327,7 @@ class NotificationVC: UITableViewController, ContactIDNotificationCellDelegate  
         let index = tableView.indexPathForSelectedRow
         let contactSelected = notifications[index!.row]
         
-        let eventComment = self.storyboard?.instantiateViewControllerWithIdentifier("EventCommentVC") as!  EventCommentVC //("segueNotification_to_Comment_Post") as!  CommentVC
+        let eventComment = self.storyboard?.instantiateViewController(withIdentifier: "EventCommentVC") as!  EventCommentVC //("segueNotification_to_Comment_Post") as!  CommentVC
         
         eventComment.eventKey = contactSelected.postKey
        // NSUserDefaults.standardUserDefaults().setValue(contactSelected.postKey, forKey: "postKey")
@@ -334,7 +345,7 @@ class NotificationVC: UITableViewController, ContactIDNotificationCellDelegate  
         
             
             
-        let likes = self.storyboard?.instantiateViewControllerWithIdentifier("PostsByUserVC") as! PostsByUserVC//("segue_Notification_T0_Post") as! FeedVC
+        let likes = self.storyboard?.instantiateViewController(withIdentifier: "PostsByUserVC") as! PostsByUserVC//("segue_Notification_T0_Post") as! FeedVC
         
         likes.userID = contactSelected.uid
         self.navigationController?.pushViewController(likes, animated: true)
@@ -348,7 +359,7 @@ class NotificationVC: UITableViewController, ContactIDNotificationCellDelegate  
         
         
         
-        let dislikes = self.storyboard?.instantiateViewControllerWithIdentifier("PostsByUserVC") as! PostsByUserVC//("segue_Notification_T0_Post") as! FeedVC
+        let dislikes = self.storyboard?.instantiateViewController(withIdentifier: "PostsByUserVC") as! PostsByUserVC//("segue_Notification_T0_Post") as! FeedVC
         
         dislikes.userID = contactSelected.uid
         self.navigationController?.pushViewController(dislikes, animated: true)
@@ -361,21 +372,13 @@ class NotificationVC: UITableViewController, ContactIDNotificationCellDelegate  
             let contactSelected = notifications[index!.row]
         
         
-            let following = self.storyboard?.instantiateViewControllerWithIdentifier("contactProfileVC") as! contactProfileVC //("segue_Notification_to_Profile_Name") as! contactProfileVC
+            let following = self.storyboard?.instantiateViewController(withIdentifier: "contactProfileVC") as! contactProfileVC //("segue_Notification_to_Profile_Name") as! contactProfileVC
         
             following.contactId = contactSelected.uid
         
             self.navigationController?.pushViewController(following, animated: true)
         }
-        
-        
     }
     
-    
-   
-    
-
-    
-  
 }
-
+/* 12-7-16 Edit delete all need to be stopped once the all the notifications are deleted.  Right now , it keeps on deleting new notifications without pressing the delete buttom */

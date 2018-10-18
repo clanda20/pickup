@@ -24,6 +24,7 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
     @IBOutlet weak var commentsBtn: UIButton!
     @IBOutlet weak var mapBtn: UIButton!
     @IBOutlet weak var comingBtn: UIButton!
+    @IBOutlet weak var doneBtn: UIBarButtonItem!
     
     @IBOutlet weak var tableView: UITableView!
     
@@ -70,7 +71,7 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        self.tabBarController?.tabBar.hidden = true
+        self.tabBarController?.tabBar.isHidden = false
         
         
         QueryMyEvent_Timeline()
@@ -99,15 +100,15 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
             //coming Btn Status update
             
             if self.isComing {
-                self.comingBtn.setTitle("You Status:  YES", forState: .Normal)
+                self.comingBtn.setTitle("You Status:  YES", for: .normal)
                  self.comingBtn.titleLabel!.font = UIFont(name: "Marker Felt", size: 14)
-                 self.comingBtn.setTitleColor(UIColor.redColor(), forState: .Normal)
+                 self.comingBtn.setTitleColor(UIColor.red, for: .normal)
                 
             } else {
-                self.comingBtn.setTitle("Your Status:  NO", forState: .Normal)
+                self.comingBtn.setTitle("Your Status:  NO", for: .normal)
                 self.comingBtn.titleLabel!.font = UIFont(name: "Marker Felt", size: 14)
-                self.comingBtn.titleLabel?.textAlignment = NSTextAlignment.Center
-                self.comingBtn.setTitleColor(UIColor.whiteColor(), forState: .Normal)
+                self.comingBtn.titleLabel?.textAlignment = NSTextAlignment.center
+                self.comingBtn.setTitleColor(UIColor.white, for: .normal)
                 
             }
         }
@@ -120,26 +121,29 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
         print("uiRefresh")
     }  */
     
-    override func viewDidAppear(animated: Bool){
+    override func viewDidAppear(_ animated: Bool){
         super.viewDidAppear(animated)
+        
+       self.tabBarController?.tabBar.isHidden = false
          QueryUsers()
+        self.hidesBottomBarWhenPushed = false
     }
     
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         QueryMyEvent_Timeline()
         QueryEventPosts()
         //FirebaseFanoutFollowers()
-        FirebaseFanoutPostFollowers(eventKey)
+        FirebaseFanoutPostFollowers(eventKey: eventKey)
         // self.navigationController?.toolbarHidden = false
         self.navigationController?.setNavigationBarHidden(false, animated: animated)
-        self.tabBarController?.tabBar.hidden = false
+      self.tabBarController?.tabBar.isHidden = false
         //self.navigationController?.setNavigationBarHidden(false, animated: animated)
-        
+      self.tabBarController?.tabBar.isTranslucent = false
        
-        // self.navigationItem.leftBarButtonItem = nil
-        //self.navigationItem.setHidesBackButton(true, animated: false)
+      self.hidesBottomBarWhenPushed = false //1/11/17
+       self.navigationItem.setHidesBackButton(true, animated: false)
         print("EVentKEy: \(self.eventKey)")
         
         
@@ -155,25 +159,27 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
     }
     
     
-    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        return 1
+  //  func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    func numberOfSections(in tableView: UITableView) -> Int {
+     
+    return 1
     }
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return contacts.count
         
     }
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         
         let contact = contacts[indexPath.row]
         print("testing Full Name: \(contact.fullName)")
         
         
-        if let cell =  tableView.dequeueReusableCellWithIdentifier("EventDetailCell") as? EventDetailCell {
+        if let cell =  tableView.dequeueReusableCell(withIdentifier: "EventDetailCell") as? EventDetailCell {
             
-            cell.configureCell(contact)
+            cell.configureCell(contact: contact)
             
           
             
@@ -189,24 +195,24 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
     
     @IBAction func CommingBtnAction(sender: AnyObject) {
         
-            comingContact(isComing) { (comingRef) in
+            comingContact(isComing: isComing) { (comingRef) in
                 
         }
       self.tableView.reloadData()
     }
     
     
-    func comingContact(isComing:Bool, completion:(comingRef:FIRDatabaseReference!) -> ())  {  //comingsRef = ref.child("users-event-coming").child(self.eventKey).child("coming")
+    func comingContact(isComing:Bool, completion:(_ comingRef:FIRDatabaseReference?) -> ())  {  //comingsRef = ref.child("users-event-coming").child(self.eventKey).child("coming")
         
        let comingRef = self.comingsRef?.child(KEY_UID!)   //  not needed ,,
         
         //   to set your Status of Firebase,  going or not going
         if isComing {
             
-            self.comingBtn.setTitle("Your Status:  NO", forState: .Normal)
+            self.comingBtn.setTitle("Your Status:  NO", for: .normal)
             self.comingBtn.titleLabel!.font = UIFont(name: "Marker Felt", size: 16)
-            self.comingBtn.setTitleColor(UIColor.whiteColor(), forState: .Normal)
-            self.comingBtn.titleLabel?.textAlignment = NSTextAlignment.Center
+            self.comingBtn.setTitleColor(UIColor.white, for: .normal)
+            self.comingBtn.titleLabel?.textAlignment = NSTextAlignment.center
             
             ref.child("users-event-coming").child(self.eventKey).child("coming").child(KEY_UID!).removeValue()
             ref.child("users-event-coming").child(self.eventKey).child("not-coming").updateChildValues([KEY_UID!: "true"])
@@ -222,40 +228,55 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
             DataService.ds.REF_BASE.child("post-commentsOnly").child(self.eventKey).child(self.eventKey).removeValue()
             
             
-            dispatch_after(
-                dispatch_time(
-                    DISPATCH_TIME_NOW,
+            let delayInSeconds = 1.0
+            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + delayInSeconds) {
+                
+                self.FirebaseFanout()
+                self.QueryUsers()
+                
+            }
+          /*  dispatch_after(
+                DispatchTime.now(
+                    dispatch_time_t(DISPATCH_TIME_NOW),
                     Int64(1.0 * Double(NSEC_PER_SEC))
                 ),
                 dispatch_get_main_queue(),
                 {
                     self.FirebaseFanout()
                     self.QueryUsers()
-            })
+            }) */
           
             
         } else {
             
-            self.comingBtn.setTitle("You Status:  YES", forState: .Normal)
+            self.comingBtn.setTitle("You Status:  YES", for: .normal)
             self.comingBtn.titleLabel!.font = UIFont(name: "Marker Felt", size: 20)
-            self.comingBtn.titleLabel?.textAlignment = NSTextAlignment.Center
-            self.comingBtn.setTitleColor(UIColor.redColor(), forState: .Normal)
+            self.comingBtn.titleLabel?.textAlignment = NSTextAlignment.center
+            self.comingBtn.setTitleColor(UIColor.red, for: .normal)
             
             ref.child("users-event-coming").child(self.eventKey).child("coming").updateChildValues([KEY_UID!: "true"])
             ref.child("users-event-coming").child(self.eventKey).child("not-coming").child(KEY_UID!).removeValue()
             
             self.isComing = true
             
-            dispatch_after(
-                dispatch_time(
-                    DISPATCH_TIME_NOW,
+         /*   dispatch_after(
+                DispatchTime.now(
+                    dispatch_time_t(DISPATCH_TIME_NOW),
                     Int64(1.0 * Double(NSEC_PER_SEC))
                 ),
-                dispatch_get_main_queue(),
+                DispatchQueue.main,
                 {
                     self.FirebaseFanout()
                     self.QueryUsers()
-            })
+            })  */
+            
+            let delayInSeconds = 1.0
+            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + delayInSeconds) {
+                
+                self.FirebaseFanout()
+                self.QueryUsers()
+                
+            }
             
             
             
@@ -301,17 +322,17 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
         
         
         
-        completion(comingRef: comingRef!)
+        completion(comingRef!)
         //self.tableView.reloadData()
     }
   
     // to check if Current User is coming
     
-    func queryFollowing( completion:(coming:Bool) -> ()) {
+    func queryFollowing( completion:@escaping (_ coming:Bool) -> ()) {
         
-        ref.child("users-event-coming").child(self.eventKey).child("coming").observeEventType(.Value, withBlock: { snapshot in
+        ref.child("users-event-coming").child(self.eventKey).child("coming").observe(.value, with: { snapshot in
             for child in snapshot.children {
-                let userID = child.key as String
+                let userID = (child as AnyObject).key as String
                 print("USER ID IIIIiiiiiiiiiiiiiiiii: \(userID)")
                 
                 if userID ==  KEY_UID {
@@ -319,8 +340,8 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
                     self.isComing = true
                 }
             }
-            completion(coming: self.isComing)
-            }, withCancelBlock: { (error) -> Void in
+            completion(self.isComing)
+        }, withCancel: { (error) -> Void in
         })
         
     }
@@ -330,8 +351,8 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
     func QueryMyEvent_Timeline(){
         print("EVentKEy: \(self.eventKey)")
         
-        ref.child("events-timeline").child(KEY_UID!).child(self.eventKey!).observeEventType(.Value , withBlock: { (snapshot) in  //observeSingleEventOfType
-           
+        ref.child("events-timeline").child(KEY_UID!).child(self.eventKey!).observe(.value , with: { (snapshot) in  //observeSingleEventOfType
+            
             
             let item = snapshot as FIRDataSnapshot
             print("SNAP-Itemxxxxxxxxxxx: \(item)")
@@ -340,26 +361,26 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
             
             if let dict = item.value as? [String : AnyObject]{
                 
-                self.eventInfo = dict
+                self.eventInfo = dict as NSDictionary?
                 
-              
-                self.titleLbl.text = " \(self.eventInfo!["title"]!.uppercaseString!)"
+                
+                self.titleLbl.text = " \((self.eventInfo!["title"]! as AnyObject).uppercased!)"
                 self.descriptionText.text = " \(self.eventInfo!["description"]!)"
                 self.dateLbl.text = " \(self.eventInfo!["date"]!)"
-               // self.hostUid = self.eventInfo!["host-uid"]! as! String
-                 // print("  host-uid--------- \(self.eventInfo!["host-uid"]!) ")
-              
-                   // self.mapBtn = self.fullAddressString
-                    self.mapBtn.setTitle("\(self.eventInfo!["fullAddressWithBreaks"]!)", forState: .Normal)
-                   // self.mapBtn.titleLabel!.font = UIFont(name: "Marker Felt", size: 14)
-                   self.mapBtn.titleLabel?.textAlignment = NSTextAlignment.Center
-               
+                // self.hostUid = self.eventInfo!["host-uid"]! as! String
+                // print("  host-uid--------- \(self.eventInfo!["host-uid"]!) ")
+                
+                // self.mapBtn = self.fullAddressString
+                self.mapBtn.setTitle("\(self.eventInfo!["fullAddressWithBreaks"]!)", for: .normal)
+                // self.mapBtn.titleLabel!.font = UIFont(name: "Marker Felt", size: 14)
+                self.mapBtn.titleLabel?.textAlignment = NSTextAlignment.center
+                
             }
             
             
             //   completation(imageStr: image!)
             
-            }, withCancelBlock: {(error) -> Void in
+        }, withCancel: {(error) -> Void in
                 
         })
        
@@ -369,22 +390,22 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
      func FirebaseFanout(){
        
         
-        ref.child("users-event-coming").child(self.eventKey).child("coming").observeEventType(.Value, withBlock:  { snapshot in
-        
+        ref.child("users-event-coming").child(self.eventKey).child("coming").observe(.value, with:  { snapshot in
+            
             print("new snapshot coming: \(snapshot.key)")
             
             self.coming_Array = []
-           
+            
             
             for child in snapshot.children {
-                let comingID = child.key as String
+                let comingID = (child as AnyObject).key as String
                 print("ComingID  Array IIIIiiiiiDelete Postiiiiiiiii: \(comingID)")
                 
                 self.coming_Array.append(comingID)
                 
                 _ = Post(followersList: self.coming_Array)
                 
-               
+                
                 
                 for comingIDx in self.coming_Array {
                     print(" Array Coming 1>>>>>>> \(comingIDx)")
@@ -393,7 +414,7 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
             }
             
             
-            }, withCancelBlock: { (error) ->  Void in
+        }, withCancel: { (error) ->  Void in
                 
                 
         })
@@ -402,7 +423,7 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
     func FirebaseFanoutPostFollowers(eventKey: String!){
       
         followersRef = DataService.ds.REF_BASE.child("event-followers").child(eventKey)
-        followersRef!.observeEventType(.Value, withBlock:  { snapshot in
+        followersRef!.observe(.value, with:  { snapshot in
             
             
             print("new snapshot array: \(snapshot.key)")
@@ -412,7 +433,7 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
             //  self.usersLists = []
             
             for child in snapshot.children {
-                let postFollowersID = child.key as String
+                let postFollowersID = (child as AnyObject).key as String
                 print("friendID  Array IIIIiiiiiiPostCelliiiiiii: \(postFollowersID)")
                 
                 self.postFollowersArray.append(postFollowersID)
@@ -438,13 +459,13 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
             
            print(" Array Coming 2>>>>>>> \(comingIDx)")
         
-            InsideQueryUsers(comingIDx)
+            InsideQueryUsers(comingIDx: comingIDx)
                       print("comingIDx if nil: \(comingIDx)")
         }
     } else {
         let comingIDXX:String = "xx"   //xx is any ramdon string to pass the for-in than doesn't accept Nil arrays
         
-        InsideQueryUsers(comingIDXX)
+        InsideQueryUsers(comingIDx: comingIDXX)
         
         }
 
@@ -452,7 +473,7 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
     func  InsideQueryUsers(comingIDx: String){
         
         
-    DataService.ds.REF_USERS.child(comingIDx).observeEventType(.Value, withBlock: { (snapshot) in
+    DataService.ds.REF_USERS.child(comingIDx).observe(.value, with: { (snapshot) in
     
     print("List Snapshot EVent Detail: \(snapshot)")
     
@@ -481,7 +502,7 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
     
     func QueryCurrentUser(){
         
-        DataService.ds.REF_USER_CURRENT.observeEventType(.Value, withBlock: { (snapshot)  in
+        DataService.ds.REF_USER_CURRENT.observe(.value, with: { (snapshot)  in
             
             let item = snapshot as FIRDataSnapshot
             print("SNAP-Itemxxxxxxxxxxx: \(item)")
@@ -492,10 +513,10 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
                 let avatar = dict["avatar"] as! String
                 // self.image = avatar
                 
-                self.activeUserInfo = dict
+                self.activeUserInfo = dict as NSDictionary?
                 
                 // self.title = "Welcome \(self.activeUserInfo!["firstName]!)"
-                self.profileName = "\(self.activeUserInfo!["fullName"]!.uppercaseString!)"
+                self.profileName = "\((self.activeUserInfo!["fullName"]! as AnyObject).uppercased!)"
                 self.profileImg = "\(self.activeUserInfo!["avatar"]!)"
                 // self.followersLabel.text = " \(self.activeUserInfo!["followers"]!) \n followers"
                 // self.followingLabel.text = " \(self.activeUserInfo!["following"]!) \n following"
@@ -508,7 +529,7 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
             
             //   completation(imageStr: image!)
             
-            }, withCancelBlock: {(error) -> Void in
+        }, withCancel: {(error) -> Void in
                 
         })
         
@@ -518,7 +539,7 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
         
         print("Event Key inside : \(self.eventKey)")
         
-        DataService.ds.REF_BASE.child("events").child(self.eventKey).observeEventType(.Value , withBlock: { (snapshot) in  //observeSingleEventOfType
+        DataService.ds.REF_BASE.child("events").child(self.eventKey).observe(.value , with: { (snapshot) in  //observeSingleEventOfType
             
             //postInfo
             
@@ -528,7 +549,7 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
             
             if let dict = item.value as? [String : AnyObject]{
                 
-                self.eventCommentInfo = dict
+                self.eventCommentInfo = dict as NSDictionary?
                 
                 
                 self.hostUid =   self.eventCommentInfo!["host-uid"]! as! String
@@ -540,43 +561,50 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
                     
                 } else {
                     
-                   
+                    
                 }
                 
                 
             }
             
-            }, withCancelBlock: {(error) -> Void in
+        }, withCancel: {(error) -> Void in
                 
         })
     }
 
     
-    
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    @IBAction func doneBtnFn(sender: AnyObject) {
+        //segue_backTo_Event
+       performSegue(withIdentifier: "segue_backTo_Event", sender: nil)
         
-        if segue.identifier == "goToGeoMapVC" {
+    }
+    
+     override func prepare(for forsegue: UIStoryboardSegue, sender: Any?) {
+        
+        if forsegue.identifier == "goToGeoMapVC" {
             
           
-            let destinationVC = segue.destinationViewController as! GeoMapVC
+            let destinationVC = forsegue.destination as! GeoMapVC
             
                 destinationVC.eventKey   = self.eventKey
             
         }
         
-             if segue.identifier == "segue_EventCommentVC" {
-                 let destinationVC = segue.destinationViewController as! EventCommentVC
+             if forsegue.identifier == "segue_EventCommentVC" {
+                 let destinationVC = forsegue.destination as! EventCommentVC
                 destinationVC.eventKey =  self.eventKey
              
              }
         
         
         
-        if segue.identifier == "segue_Edit_Event"
+        if forsegue.identifier == "segue_Edit_Event"
         {
-            let destinationVC = segue.destinationViewController as! EditEventVC
+            let destinationVC = forsegue.destination as! EditEventVC
            
                 destinationVC.eventKey   = self.eventKey
+      //  self.performSegue(withIdentifier: "segue_Edit_Event", sender: nil)
+
            
         }
         
@@ -584,24 +612,24 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
     
     @IBAction func DeleteEventBtn(sender: AnyObject) {
         
-        let optionMenu = UIAlertController(title: nil, message: "Are You Sure!", preferredStyle: .ActionSheet)
+        let optionMenu = UIAlertController(title: nil, message: "Are You Sure!", preferredStyle: .actionSheet)
         
-        let deleteAction = UIAlertAction(title: "Delete", style: .Default, handler: {
+        let deleteAction = UIAlertAction(title: "Delete", style: .default, handler: {
             (alert: UIAlertAction!) -> Void in
             print("File Deleted")
             self.deleteEvent()
         })
         
      
-        let cancelAction = UIAlertAction(title: "Cancel", style: .Cancel, handler: {
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: {
             (alert: UIAlertAction!) -> Void in
             print("Cancelled")
         })
         
         optionMenu.addAction(deleteAction)
-        optionMenu.addAction(UIAlertAction(title: "Dismiss", style: UIAlertActionStyle.Default,handler: nil))
+        optionMenu.addAction(UIAlertAction(title: "Dismiss", style: UIAlertAction.Style.default,handler: nil))
        
-        self.presentViewController(optionMenu, animated: true, completion: nil)
+        self.present(optionMenu, animated: true, completion: nil)
     }
     
     
@@ -610,12 +638,12 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
         
         // delete notification
         
-        DataService.ds.REF_BASE.child("post-commentsOnly").child(self.eventKey).observeEventType(.Value, withBlock:  { snapshot in
+        DataService.ds.REF_BASE.child("post-commentsOnly").child(self.eventKey).observe(.value, with:  { snapshot in
             
             self.postEventCommentArray = []
             
             for child in snapshot.children {
-                let postComment = child.key as String
+                let postComment = (child as AnyObject).key as String
                 
                 self.postEventCommentArray.append(postComment)
                 
@@ -684,7 +712,7 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
         
  
         
-        self.performSegueWithIdentifier("segue_Back_to_Events", sender: nil)
+        self.performSegue(withIdentifier: "segue_Back_to_Events", sender: nil)
     
        
 
@@ -694,13 +722,18 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
     
     @IBAction func editEvenBtn(sender: AnyObject) {
         
-        performSegueWithIdentifier("segue_Edit_Event", sender: nil)
+        performSegue(withIdentifier: "segue_Edit_Event", sender: nil)
         
         
     }
     
     
- 
     
+    override func willMove(toParent parent: UIViewController?) {
+        super.willMove(toParent: parent)
+        if parent == nil {
+            self.tabBarController?.tabBar.isHidden = false
+        }
+    }
    
 }

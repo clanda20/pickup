@@ -8,7 +8,7 @@
 
 import UIKit
 
-let imageCache = NSCache()
+let imageCache = NSCache<AnyObject, AnyObject>()
 
 extension UIImageView {
     
@@ -18,7 +18,7 @@ extension UIImageView {
         
         // check cache for image first
         
-        if let cacheImage = imageCache.objectForKey(urlString) as? UIImage{
+        if let cacheImage = imageCache.object(forKey: urlString as AnyObject) as? UIImage{
             self.image = cacheImage
             return
         }
@@ -26,7 +26,7 @@ extension UIImageView {
         // otherwise fire off a new download 
         
         let url = NSURL(string: urlString)
-        NSURLSession.sharedSession().dataTaskWithURL(url!,
+        URLSession.shared.dataTask(with: url! as URL,
             completionHandler:  { (data, response, error) in
             
             //download hit an error so lets return out
@@ -35,10 +35,10 @@ extension UIImageView {
                 return
             }
             
-            dispatch_async(dispatch_get_main_queue(), {
+            DispatchQueue.main.async(execute: {
                 
                 if let downloadedImage =  UIImage(data: data!) {
-                    imageCache.setObject(downloadedImage, forKey: urlString)
+                    imageCache.setObject(downloadedImage, forKey: urlString as AnyObject)
                     
                     self.image = downloadedImage
                 }

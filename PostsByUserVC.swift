@@ -11,16 +11,16 @@ import FirebaseDatabase
 import Photos
 import FirebaseAuth
 import FirebaseStorage
-import Alamofire
+//import Alamofire
 
 import FirebaseDatabaseUI
 import FirebaseAuthUI
 
-class PostsByUserVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate, PostsByUserCellDelegate {  //, PostsByUserCellDelegate
+class PostsByUserVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UINavigationControllerDelegate, PostsByUserCellDelegate {  //, PostsByUserCellDelegate
     
     @IBOutlet weak var tableView: UITableView!
-    @IBOutlet weak var postField: MaterialTextField!
-    @IBOutlet weak var imageSelectorImage: UIImageView!
+  //  @IBOutlet weak var postField: MaterialTextField!
+  //  @IBOutlet weak var imageSelectorImage: UIImageView!
     
     
     var followersRef: FIRDatabaseReference!
@@ -29,7 +29,7 @@ class PostsByUserVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
     
     var myData:String?
     
-    var userID: String?   // from Segue
+    var userID: String?   // from Segue destinationVC.userID = uid
     
    
      var friendsArray: [String] = []
@@ -39,18 +39,16 @@ class PostsByUserVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
     let kSectionPost = 0
     
     
-    //    @IBOutlet weak var commentField: MaterialTextField!
-    // @IBOutlet weak var commentBtn: UIButton!
+    
     
     var imagePicker: UIImagePickerController!
-    
-    //var dataSource: FirebaseTableViewDataSource?
+   
     var post: Post!
     
     var imageSelected = false
     
     var posts = [Post]()
-    static var imageCache = NSCache()
+    static var imageCache = NSCache<AnyObject, AnyObject>()
     
     var storageRef:FIRStorageReference!
     
@@ -63,22 +61,23 @@ class PostsByUserVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
         tableView.dataSource = self
         
         tableView.estimatedRowHeight = 358
-        imagePicker = UIImagePickerController()
-        imagePicker.delegate = self
+//        imagePicker = UIImagePickerController()
+//        imagePicker.delegate = self
         
-       NSUserDefaults.standardUserDefaults().setValue(userID, forKey: "userID")
-        NSUserDefaults.standardUserDefaults().synchronize()
+       UserDefaults.standard.setValue(userID, forKey: "userID")
+        UserDefaults.standard.synchronize()
         
         let storage = FIRStorage.storage()
-        storageRef = storage.referenceForURL("gs://pickup-9b67a.appspot.com")
+        storageRef = storage.reference(forURL: "gs://pickup-9b67a.appspot.com")
         
         print("Segue: ----------\(userID!)")
         
-        // postRef.observeEventType(FIRDataEventType.Value, withBlock: { (snapshot) in
-      //  DataService.ds.REF_USER_POSTS_USERID.observeEventType(FIRDataEventType.Value, withBlock: { (snapshot) in
-        DataService.ds.REF_USER_POST.child(userID!).observeEventType(FIRDataEventType.Value, withBlock: { (snapshot) in
-        
-        // print(snapshot.value)
+        // DataService.ds.REF_USER_POST.child(userID!).queryOrdered(byChild: "time").queryLimited(toLast: 50).observe(.value , with: { (snapshot) in  //observeSingleEventOfType
+
+     //   DataService.ds.REF_USER_POST.child(userID!).observe(FIRDataEventType.value, with: { (snapshot) in
+        DataService.ds.REF_USER_POST.child(userID!).queryOrdered(byChild: "time").queryLimited(toLast: 50).observe(.value , with: { (snapshot) in  //observeSingleEventOfType
+ 
+       
             
             self.posts = []
             
@@ -105,101 +104,71 @@ class PostsByUserVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
                     }
                 }
             }
+            self.posts = self.posts.reversed()
             self.tableView.reloadData()
             
         })
         
-        //  user-posts
         
-        
-        /*     DataService.ds.REF_USER_POST.observeEventType(FIRDataEventType.Value, withBlock: { (snapshot) in
-         
-         // print(snapshot.value)
-         
-         self.posts = []
-         
-         if let snapshots = snapshot.children.allObjects as? [FIRDataSnapshot]  {
-         
-         for snap in snapshots {
-         print("SNAP user-posts: \(snap)")
-         
-         //  if  let postDict = snapshot.value as? Dictionary <String, AnyObject> {
-         
-         if let postDict = snap.value as? [String : AnyObject]  {
-         
-         
-         let key = snap.key
-         let post = Post(postKey: key, dictionary: postDict)
-         
-         
-         
-         
-         self.posts.append(post)
-         print("SNAP user-posts: \(postDict)")
-         
-         
-         }
-         }
-         }
-         self.tableView.reloadData()
-         
-         })  */
         
     }
     
     
-    /*   override func viewWillAppear(animated: Bool) {
-     super.viewWillAppear(animated) // No need for semicolon
-     self.runAfterDelay(2) {
-     self.performSegueWithIdentifier("segue_commentVC", sender: self)
-     }
-     } */
+  
     
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
     
-    
-    
-    
-    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    
+//    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+//        return 1
+//    }
+    
+
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return posts.count
     }
     
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        return tableView.reloadData()
+    }
     
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
+    
         let post = posts[indexPath.row]  //keys are stored here
         
         
-        if let cell =  tableView.dequeueReusableCellWithIdentifier("PostsByUserCell") as? PostsByUserCell {
+        if let cell =  tableView.dequeueReusableCell(withIdentifier: "PostsByUserCell") as? PostsByUserCell {
             
             cell.delegate = self // july 7, 2016
             
             // cell.commentBtn.tag = indexPath.row
             // cell.commentBtn.addTarget(self, action: "runAfterDelay(delay):", forControlEvents: .TouchUpInside)
             
-            cell.request?.cancel()
+          //  cell.request?.cancel()
             
          
             
             var img: UIImage?
             
             if let url = post.imageUrl {
-                img = FeedVC.imageCache.objectForKey(url) as? UIImage
+                img = PostsByUserVC.imageCache.object(forKey: url as AnyObject) as? UIImage
             }
             
             
             
             
             print("PostKEY-Outside----------------------: \(post.postKey)")
-            cell.configureCell(post, img: img, userID: userID)
+            cell.configureCell(post: post, img: img, userID: userID)
             
             //let postKey =  post.postKey
             
@@ -209,13 +178,13 @@ class PostsByUserVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
             return cell
             
         }else {
-            return PostCell()
+            return  PostsByUserCell()  //PostCell()
         }
     }
     
     
     
-    func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         
         let post = posts[indexPath.row]
         
@@ -228,232 +197,206 @@ class PostsByUserVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
     
     
     
-    @IBAction func makePost(sender: AnyObject) {
-        
-        
-        
-        // if let txt = postField.text where txt != "" {
-        //  if let img = cameraSelector.image where imageSelected == true
-        //}
-        // }
-        //  let picker = UIImagePickerController()
-        self.imagePicker = UIImagePickerController()
-        //picker.delegate = self
-        imagePicker.delegate = self
-        if (UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.Camera)) {
-            //picker.sourceType = UIImagePickerControllerSourceType.Camera
-            imagePicker.sourceType = UIImagePickerControllerSourceType.Camera
-        } else {
-            //picker.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
-            imagePicker.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
-        }
-        
-        
-        
-    }
+//    @IBAction func makePost(sender: AnyObject) {
+//        
+//        
+//        
+//        // if let txt = postField.text where txt != "" {
+//        //  if let img = cameraSelector.image where imageSelected == true
+//        //}
+//        // }
+//        //  let picker = UIImagePickerController()
+//        self.imagePicker = UIImagePickerController()
+//        //picker.delegate = self
+//        imagePicker.delegate = self
+//        if (UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.camera)) {
+//            //picker.sourceType = UIImagePickerControllerSourceType.Camera
+//            imagePicker.sourceType = UIImagePickerControllerSourceType.camera
+//        } else {
+//            //picker.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
+//            imagePicker.sourceType = UIImagePickerControllerSourceType.photoLibrary
+//        }
+//        
+//        
+//        
+//    }
     
     
     
-    func imagePickerController(imagePicker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
-        
-        
-        
-        imagePicker.dismissViewControllerAnimated(true, completion:nil)
-        
-        let tempImage = info[UIImagePickerControllerOriginalImage] as! UIImage
-        
-        imageSelectorImage.image = tempImage
-        
-        imageSelected = true
-        
-        // urlTextView.text = "Beginning Upload";
-        
-        // if it's a photo from the library, not an image from the camera
-        if let txt = postField.text where txt != "" {
-            
-            if let img = imageSelectorImage.image where imageSelected == true {
-                
-                
-                if #available(iOS 8.0, *), let referenceUrl = info[UIImagePickerControllerReferenceURL] {
-                    let assets = PHAsset.fetchAssetsWithALAssetURLs([referenceUrl as! NSURL], options: nil)
-                    let asset = assets.firstObject
-                    asset?.requestContentEditingInputWithOptions(nil, completionHandler: { (contentEditingInput,info) in
-                        
-                        let imageFile = contentEditingInput?.fullSizeImageURL
-                        let filePath = FIRAuth.auth()!.currentUser!.uid + "/\(Int(NSDate.timeIntervalSinceReferenceDate() * 1000))/\(imageFile!.lastPathComponent!)"
-                        
-                        
-                        // [START uploadimage]
-                        
-                        self.storageRef.child(filePath).putFile(imageFile!, metadata: nil) { (metadata, error) in
-                            if let error = error {
-                                print("Error uploading: \(error)")
-                                return
-                            }
-                            self.uploadSuccess(metadata!, storagePath: filePath)
-                            // self.postToFirebase(filePath)
-                            print("LINK: \(filePath)")
-                            
-                            
-                            // Create a reference to the file you want to download
-                            let starsRef = self.storageRef.child(filePath)
-                            // Fetch the download URL
-                            starsRef.downloadURLWithCompletion { (URL, error) -> Void in
-                                if (error != nil) {
-                                    // Handle any errors
-                                } else {
-                                    // Get the download URL for 'images/stars.jpg'
-                                    print("LINK_URL: \(URL)")
-                                    let urlString: String = (URL?.absoluteString)!
-                                    
-                                    self.postToFirebase( urlString)
-                                    print("LINK_URLString: \(urlString)")
-                                }
-                            }
-                            
-                        }
-                        // [END uploadimage]
-                    })
-                }
-                else {
-                    let image = info[UIImagePickerControllerOriginalImage] as! UIImage
-                    let imageData = UIImageJPEGRepresentation(image, 0.02)
-                    let imagePath = FIRAuth.auth()!.currentUser!.uid + "/\(Int(NSDate.timeIntervalSinceReferenceDate() * 1000)).jpg"
-                    let metadata = FIRStorageMetadata()
-                    metadata.contentType = "image/jpeg"
-                    self.storageRef.child(imagePath).putData(imageData!, metadata: metadata) { (metadata, error) in
-                        if let error = error {
-                            print("Error uploading: \(error)")
-                            
-                            // self.urlTextView.text = "Upload Failed"
-                            return
-                        }
-                        self.uploadSuccess(metadata!, storagePath: imagePath)
-                        // print("LINK: \(imagePath)")
-                        // Create a reference to the file you want to download
-                        let starsRef = self.storageRef.child(imagePath)
-                        // Fetch the download URL
-                        starsRef.downloadURLWithCompletion { (URL, error) -> Void in
-                            if (error != nil) {
-                                // Handle any errors
-                            } else {
-                                // Get the download URL for 'images/stars.jpg'
-                                print("LINK_URL: \(URL)")
-                                let urlString: String = (URL?.absoluteString)!
-                                
-                                self.postToFirebase( urlString)
-                                print("LINK_URLString: \(urlString)")
-                            }
-                        }
-                        
-                        
-                    }
-                }
-            } else {
-                self.postToFirebase(nil)
-            }
-        }
-    }
+//    func imagePickerController(imagePicker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
+//        
+//        
+//        
+//        imagePicker.dismiss(animated: true, completion:nil)
+//        
+//        let tempImage = info[UIImagePickerControllerOriginalImage] as! UIImage
+//        
+//        imageSelectorImage.image = tempImage
+//        
+//        imageSelected = true
+//        
+//        // urlTextView.text = "Beginning Upload";
+//        
+//        // if it's a photo from the library, not an image from the camera
+//        if let txt = postField.text, txt != "" {
+//            
+//            if let img = imageSelectorImage.image, imageSelected == true {
+//                
+//                
+//                if #available(iOS 8.0, *), let referenceUrl = info[UIImagePickerControllerReferenceURL] {
+//                    let assets = PHAsset.fetchAssets(withALAssetURLs: [(referenceUrl as! NSURL) as URL], options: nil)
+//                    let asset = assets.firstObject
+//                    asset?.requestContentEditingInput(with: nil, completionHandler: { (contentEditingInput,info) in
+//                        
+//                        let imageFile = contentEditingInput?.fullSizeImageURL
+//                        let filePath = FIRAuth.auth()!.currentUser!.uid + "/\(Int(NSDate.timeIntervalSinceReferenceDate * 1000))/\(imageFile!.lastPathComponent)"
+//                        
+//                        
+//                        // [START uploadimage]
+//                        
+//                        self.storageRef.child(filePath).putFile(imageFile!, metadata: nil) { (metadata, error) in
+//                            if let error = error {
+//                                print("Error uploading: \(error)")
+//                                return
+//                            }
+//                            self.uploadSuccess(metadata: metadata!, storagePath: filePath)
+//                            // self.postToFirebase(filePath)
+//                            print("LINK: \(filePath)")
+//                            
+//                            
+//                            // Create a reference to the file you want to download
+//                            let starsRef = self.storageRef.child(filePath)
+//                            // Fetch the download URL
+//                            starsRef.downloadURL { (URL, error) -> Void in
+//                                if (error != nil) {
+//                                    // Handle any errors
+//                                } else {
+//                                    // Get the download URL for 'images/stars.jpg'
+//                                    print("LINK_URL: \(URL)")
+//                                    let urlString: String = (URL?.absoluteString)!
+//                                    
+//                                    self.postToFirebase( imgUrl: urlString)
+//                                    print("LINK_URLString: \(urlString)")
+//                                }
+//                            }
+//                            
+//                        }
+//                        // [END uploadimage]
+//                    })
+//                }
+//                else {
+//                    let image = info[UIImagePickerControllerOriginalImage] as! UIImage
+//                    let imageData = UIImageJPEGRepresentation(image, 0.02)
+//                    let imagePath = FIRAuth.auth()!.currentUser!.uid + "/\(Int(NSDate.timeIntervalSinceReferenceDate * 1000)).jpg"
+//                    let metadata = FIRStorageMetadata()
+//                    metadata.contentType = "image/jpeg"
+//                    self.storageRef.child(imagePath).put(imageData!, metadata: metadata) { (metadata, error) in
+//                        if let error = error {
+//                            print("Error uploading: \(error)")
+//                            
+//                            // self.urlTextView.text = "Upload Failed"
+//                            return
+//                        }
+//                        self.uploadSuccess(metadata: metadata!, storagePath: imagePath)
+//                        // print("LINK: \(imagePath)")
+//                        // Create a reference to the file you want to download
+//                        let starsRef = self.storageRef.child(imagePath)
+//                        // Fetch the download URL
+//                        starsRef.downloadURL { (URL, error) -> Void in
+//                            if (error != nil) {
+//                                // Handle any errors
+//                            } else {
+//                                // Get the download URL for 'images/stars.jpg'
+//                                print("LINK_URL: \(URL)")
+//                                let urlString: String = (URL?.absoluteString)!
+//                                
+//                                self.postToFirebase( imgUrl: urlString)
+//                                print("LINK_URLString: \(urlString)")
+//                            }
+//                        }
+//                        
+//                        
+//                    }
+//                }
+//            } else {
+//                self.postToFirebase(imgUrl: nil)
+//            }
+//        }
+//    }
+    
+//    
+//    @IBAction func  selectImage(sender: UITapGestureRecognizer) {
+//        present(imagePicker, animated: true, completion: nil)
+//    }
     
     
-    @IBAction func  selectImage(sender: UITapGestureRecognizer) {
-        presentViewController(imagePicker, animated: true, completion: nil)
-    }
+//    func postToFirebase(imgUrl: String?){
+//        
+//        let  activeUserId  = UserDefaults.standard.value(forKey: "uid") as! String
+//        var post: Dictionary<String, AnyObject> = [
+//            "description": postField.text! as AnyObject,
+//            "likes": 0 as AnyObject,
+//            "dislikes": 0 as AnyObject,
+//            "uid":  activeUserId as AnyObject,
+//            //  "comment": commentBtn.!
+//        ]
+//        
+//        if imgUrl != nil {
+//            post["imageUrl"] = imgUrl as AnyObject?
+//        }
+//        
+//        
+//        
+//        
+//        // To Here
+//        
+//        let key = ref.child("user-posts").childByAutoId().key
+//        
+//        let childUpadates = ["/posts/\(key)": post,
+//                             "/user-posts/\(activeUserId)/\(key)/":post]
+//        ref.updateChildValues(childUpadates)
+//        
+//        for friendID in friendsArray {
+//            
+//            let childUpadates2 =  ["/timeline/\(friendID)/\(key)/": post]
+//            ref.updateChildValues(childUpadates2)
+//            print(" Array inside \(friendID)")
+//            
+//        }
+//        
+//        //    var uuid = NSUUID().UUIDString
+//        
+//        //let AutoIdString = "\(AutoId)"
+//        
+//        // let firebasePost = postRef.child(uuid)  //important ojo
+//        
+//        // let firebasePost = postRef.childByAutoId()
+//        
+//        //  firebasePost.setValue(post)
+//        
+//        let firebasePost2 = DataService.ds.REF_USER_POSTS_USERID.childByAutoId()  //important ojo
+//        firebasePost2.setValue(post)
+//        
+//        
+//        postField.text = ""
+//        //  commentBtn.text = ""
+//        imageSelectorImage.image = UIImage(named: "camera")
+//        imageSelected = false
+//        
+//        tableView.reloadData()
+//    }
     
     
-    func postToFirebase(imgUrl: String?){
-        
-        let  activeUserId  = NSUserDefaults.standardUserDefaults().valueForKey("uid") as! String
-        var post: Dictionary<String, AnyObject> = [
-            "description": postField.text!,
-            "likes": 0,
-            "dislikes": 0,
-            "uid":  activeUserId,
-            //  "comment": commentBtn.!
-        ]
-        
-        if imgUrl != nil {
-            post["imageUrl"] = imgUrl
-        }
-        
-        
-        
-        
-        // To Here
-        
-        let key = ref.child("user-posts").childByAutoId().key
-        
-        let childUpadates = ["/posts/\(key)": post,
-                             "/user-posts/\(activeUserId)/\(key)/":post]
-        ref.updateChildValues(childUpadates)
-        
-        for friendID in friendsArray {
-            
-            let childUpadates2 =  ["/timeline/\(friendID)/\(key)/": post]
-            ref.updateChildValues(childUpadates2)
-            print(" Array inside \(friendID)")
-            
-        }
-        
-        //    var uuid = NSUUID().UUIDString
-        
-        //let AutoIdString = "\(AutoId)"
-        
-        // let firebasePost = postRef.child(uuid)  //important ojo
-        
-        // let firebasePost = postRef.childByAutoId()
-        
-        //  firebasePost.setValue(post)
-        
-        let firebasePost2 = DataService.ds.REF_USER_POSTS_USERID.childByAutoId()  //important ojo
-        firebasePost2.setValue(post)
-        
-        
-        postField.text = ""
-        //  commentBtn.text = ""
-        imageSelectorImage.image = UIImage(named: "camera")
-        imageSelected = false
-        
-        tableView.reloadData()
-    }
-    
-    /*   func postToFirebase2(imgUrl: String?){
-     
-     let  activeUserId  = NSUserDefaults.standardUserDefaults().valueForKey("uid") as! String
-     var post: Dictionary<String, AnyObject> = [
-     "description": postField.text!,
-     "likes": 0,
-     "dislikes": 0,
-     "uid":  activeUserId,
-     //  "comment": commentBtn.!
-     ]
-     
-     if imgUrl != nil {
-     post["imageUrl"] = imgUrl
-     }
-     
-     let firebasePost = DataService.ds.REF_USER_POSTS_USERID  //important ojo
-     firebasePost.setValue(post)
-     
-     
-     
-     postField.text = ""
-     //  commentBtn.text = ""
-     imageSelectorImage.image = UIImage(named: "camera")
-     imageSelected = false
-     
-     tableView.reloadData()
-     }  */
     
     
-    func uploadSuccess(metadata: FIRStorageMetadata, storagePath: String) {
-        print("Upload Succeeded!")
-        //  self.urlTextView.text = metadata.downloadURL()!.absoluteString
-        NSUserDefaults.standardUserDefaults().setObject(storagePath, forKey: "storagePath")
-        NSUserDefaults.standardUserDefaults().synchronize()
-        // self.downloadPicButton.enabled = true
-    }
-    
+//    func uploadSuccess(metadata: FIRStorageMetadata, storagePath: String) {
+//        print("Upload Succeeded!")
+//        //  self.urlTextView.text = metadata.downloadURL()!.absoluteString
+//        UserDefaults.standard.set(storagePath, forKey: "storagePath")
+//        UserDefaults.standard.synchronize()
+//        // self.downloadPicButton.enabled = true
+//    }
+//    
     
     
     //MARK: - PostCellDelegator Methods
@@ -463,18 +406,18 @@ class PostsByUserVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
         
         
         //try not to send self, just to avoid retain cycles(depends on how you handle the code on the next controller)
-        self.performSegueWithIdentifier("segue_commentVC", sender:dataobject )
+        self.performSegue(withIdentifier: "segue_commentVC2", sender:dataobject )
         
     }
     
     
     
-    override func viewWillDisappear(animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         self.navigationController?.setNavigationBarHidden(true, animated: animated);
         super.viewWillDisappear(animated)
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.navigationController?.setNavigationBarHidden(false, animated: animated)
     }
@@ -486,17 +429,17 @@ class PostsByUserVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
         // followingsRef = DataService.ds.REF_FOLLOWING_USERID
         // followingsRef.observeEventType(.Value, withBlock:  { snapshot in
         followersRef = DataService.ds.REF_FOLLOWER_USERID
-        followersRef.observeEventType(.Value, withBlock:  { snapshot in
+        followersRef.observe(.value, with:  { snapshot in
             
             
             print("new snapshot array: \(snapshot.key)")
             
             
             self.friendsArray = []
-         //   self.usersLists = []
+            //   self.usersLists = []
             
             for child in snapshot.children {
-                let friendID = child.key as String
+                let friendID = (child as AnyObject).key as String
                 print("friendID  Array IIIIiiiiiiiiiiiiiiiii: \(friendID)")
                 
                 self.friendsArray.append(friendID)
@@ -514,7 +457,7 @@ class PostsByUserVC: UIViewController, UITableViewDelegate, UITableViewDataSourc
             
             self.tableView.reloadData()
             
-            }, withCancelBlock: { (error) ->  Void in
+        }, withCancel: { (error) ->  Void in
                 
                 
         })

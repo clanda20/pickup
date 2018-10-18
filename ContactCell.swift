@@ -28,7 +28,7 @@ class ContactCell: UITableViewCell {
         // Initialization code
     }
 
-    override func setSelected(selected: Bool, animated: Bool) {
+    override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
 
         // Configure the view for the selected state
@@ -41,8 +41,8 @@ class ContactCell: UITableViewCell {
         self.firstNameLbl.text = contact.fullName
         
         
-         downloadAvatar(contact.avatar!, completion:  { (data) in
-            self.profilePicture.image = UIImage(data: data)
+         downloadAvatar(image: contact.avatar!, completion:  { (data) in
+            self.profilePicture.image = UIImage(data: data as Data)
             self.profilePicture.layer.cornerRadius = 30.0
             self.profilePicture.clipsToBounds = true
         })
@@ -56,17 +56,16 @@ class ContactCell: UITableViewCell {
 
  
  
-    func downloadAvatar(image:String, completion:(data:NSData)-> ()) {
+    func downloadAvatar(image:String, completion:@escaping (_ data:NSData)-> ()) {
         
         let urlString = NSURL(string: image)
-        let request = NSURLSession.sharedSession().dataTaskWithURL(urlString!){ (data, response, error) -> Void in
+        let request = URLSession.shared.dataTask(with: urlString! as URL){ (data, response, error) -> Void in
             
             if error == nil {
                 
                 if let dataValid = data {
-                    
-                    dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                        completion(data: dataValid)
+                    DispatchQueue.main.async(execute: { () -> Void in
+                        completion(dataValid as NSData)
                     })
                     
                 }

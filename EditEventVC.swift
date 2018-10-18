@@ -34,6 +34,7 @@ class EditEventVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, U
     @IBOutlet weak var datePicker: UIDatePicker!
     @IBOutlet weak var searchBtnText: UIButton!
     @IBOutlet weak var mapViewLarge: MKMapView!
+    @IBOutlet weak var searchBtnByTouch: UIButton!
     
     
     
@@ -73,6 +74,11 @@ class EditEventVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, U
     //var hostUid: String! // from segue
     
     var dateRaw: String!
+    
+    
+    var fullAddressStringByTouch: String!   // data received from EventMapByTouchVC
+    var fullAddressString_no_breakLineByTouch: String! // data received from EventMapByTouchVC
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -80,7 +86,7 @@ class EditEventVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, U
         self.titleTextField.delegate = self
         self.descriptionTextView.delegate = self
         
-        let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: "dismissKeyboard")
+        let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(EditEventVC.dismissKeyboard))
         view.addGestureRecognizer(tap)
         
         
@@ -99,12 +105,49 @@ class EditEventVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, U
         FirebaseFanout()
         QueryEvent()
         
+        if titleTextField.text == "" {
+        
+            let loadedStringTitleTextField = UserDefaults().string(forKey: "titleTextField") ?? ""
+            
+            titleTextField.text = loadedStringTitleTextField
+        }
+
+        if descriptionTextView.text == "" {
+        
+            let loadedStringDescriptionTextView = UserDefaults().string(forKey: "descriptionTextView") ?? ""
+            
+            descriptionTextView.text = loadedStringDescriptionTextView
+        }
         
         
+//        if self.fullAddressStringByTouch == nil {
+//            self.searchBtnByTouch.setTitle("Find a Location by Touch", forState: .Normal)
+//            self.searchBtnByTouch.titleLabel!.font = UIFont(name: "Marker Felt", size: 18)
+//            
+//            
+//            
+//        } else{
+//            // self.addressButton = self.fullAddressString
+//            self.searchBtnByTouch.setTitle("\(self.fullAddressStringByTouch)", forState: .Normal)
+//            self.searchBtnByTouch.titleLabel!.font = UIFont(name: "Marker Felt", size: 15)
+//            self.searchBtnByTouch.titleLabel!.textColor = UIColor.redColor()
+//            self.searchBtnByTouch.titleLabel?.textAlignment = NSTextAlignment.Center
+//            
+//            
+//            self.searchBtnText.setTitle("Find a Location", forState: .Normal)
+//            self.searchBtnText.titleLabel!.font = UIFont(name: "Marker Felt", size: 18)
+//            
+//            let tempFullAdressText = self.fullAddressStringByTouch
+//            
+//            self.fullAddressString = tempFullAdressText
+//            
+//            self.fullAddressString_no_breakLine = self.fullAddressString_no_breakLineByTouch
+//            
+//        }
         
     }
     
-    override func viewWillDisappear(animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         self.navigationController?.setNavigationBarHidden(true , animated: animated);
         FirebaseFanout()
@@ -113,7 +156,7 @@ class EditEventVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, U
     
     
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.navigationController?.setNavigationBarHidden(false, animated: animated)
         self.navigationItem.rightBarButtonItems = nil
@@ -129,12 +172,12 @@ class EditEventVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, U
     @IBAction func chooseDateBtn(sender: AnyObject) {
         
         
-        self.titleTextField.hidden = true
-        self.dateBtn.hidden = true
-        self.descriptionTextView.hidden = true
-        self.searchBtnText.hidden = true
-        
-        self.datePicker.hidden = false
+        self.titleTextField.isHidden = true
+        self.dateBtn.isHidden = true
+        self.descriptionTextView.isHidden = true
+        self.searchBtnText.isHidden = true
+        self.searchBtnByTouch.isHidden = true   // nov 28
+        self.datePicker.isHidden = false
     
         self.navigationItem.leftBarButtonItems  = nil
         self.navigationItem.rightBarButtonItem = self.doneBtnItem
@@ -143,56 +186,59 @@ class EditEventVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, U
         
     }
     
-    @IBAction func doneDateHidden(sender: AnyObject) {
-        
-        
-        self.titleTextField.hidden = false
-        self.dateBtn.hidden = false
-        self.descriptionTextView.hidden = false
-        self.datePicker.hidden = true
-        
-        self.navigationItem.rightBarButtonItem = self.saveBtnItem
-        
-        
-    }
+//    @IBAction func doneDateHidden(sender: AnyObject) {
+//        
+//        
+//        self.titleTextField.isHidden = false
+//        self.dateBtn.isHidden = false
+//        self.descriptionTextView.isHidden = false
+//        self.datePicker.isHidden = true
+//        
+//        self.navigationItem.rightBarButtonItem = self.saveBtnItem
+//        
+//        
+//    }
     
     @IBAction func doneItemBtn(sender: AnyObject) {
         
         
-        self.titleTextField.hidden = false
-        self.dateBtn.hidden = false
-        self.descriptionTextView.hidden = false
-        self.searchBtnText.hidden = false
-        self.datePicker.hidden = true
+        self.titleTextField.isHidden = false
+        self.dateBtn.isHidden = false
+        self.descriptionTextView.isHidden = false
+        self.searchBtnText.isHidden = false
+        self.datePicker.isHidden = true
+        self.searchBtnByTouch.isHidden = true 
         
         self.navigationItem.rightBarButtonItem = self.saveBtnItem
         
     }
     @IBAction func datePickerBtn(sender: AnyObject) {
         
-        var dateFormatter = NSDateFormatter()
+        let dateFormatter = DateFormatter()
         
         dateFormatter.dateFormat = "E, d MMM yyyy hh:mm a"
-        self.strDate = dateFormatter.stringFromDate(datePicker.date)
-        self.dateBtn.setTitle(strDate, forState: .Normal)
+        self.strDate = dateFormatter.string(from: datePicker.date)
+       // self.dateBtn.setTitle(strDate, for: .normal)
+        self.dateBtn.setTitle(strDate, for: .normal)
         
-        self.dateRaw = String(datePicker.date)
+        self.dateRaw = String(describing: datePicker.date)
     }
     
     
     @IBAction func searchBtn(sender: AnyObject) {
         
-        self.titleTextField.hidden = true
-        self.dateBtn.hidden = true
-        self.descriptionTextView.hidden = true
-        self.mapView.hidden = true
-        self.datePicker.hidden = true
-        self.datePicker.hidden = true
-        self.searchBtnText.hidden = true
+        self.titleTextField.isHidden = true
+        self.dateBtn.isHidden = true
+        self.descriptionTextView.isHidden = true
+        self.mapView.isHidden = true
+        self.datePicker.isHidden = true
+        self.searchBtnText.isHidden = true
+        self.searchBtnByTouch.isHidden = true
+
         
         
         
-        self.mapViewLarge.hidden = false
+        self.mapViewLarge.isHidden = false
         self.navigationItem.leftBarButtonItem = nil
         self.navigationItem.rightBarButtonItem = nil
         
@@ -201,7 +247,7 @@ class EditEventVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, U
         
         //added August 22
         
-        let locationSearchTable = storyboard!.instantiateViewControllerWithIdentifier("LocationSearchTable") as! LocationSearchTable
+        let locationSearchTable = storyboard!.instantiateViewController(withIdentifier: "LocationSearchTable") as! LocationSearchTable
         resultSearchController = UISearchController(searchResultsController: locationSearchTable)
         resultSearchController?.searchResultsUpdater = locationSearchTable
         
@@ -230,40 +276,67 @@ class EditEventVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, U
     @IBAction func doneLeftBtnItemAction(sender: AnyObject) {
         
         
-        self.titleTextField.hidden = false
-        self.dateBtn.hidden = false
-        self.descriptionTextView.hidden = false
-        self.mapView.hidden = false
-        self.searchBtnText.hidden = false
+        self.titleTextField.isHidden = false
+        self.dateBtn.isHidden = false
+        self.descriptionTextView.isHidden = false
+        self.mapView.isHidden = false
+        self.searchBtnText.isHidden = false
+        self.searchBtnByTouch.isHidden = false
+
         
         
-        self.mapViewLarge.hidden = true
-        self.datePicker.hidden = true
+        self.mapViewLarge.isHidden = true
+        self.datePicker.isHidden = true
         
         self.navigationItem.leftBarButtonItem = nil
         self.navigationItem.rightBarButtonItem = self.saveBtnItem
         
-        self.searchBtnText.setTitle(self.addressButton, forState: .Normal)
+        self.searchBtnText.setTitle(self.addressButton, for: .normal)
         
         //added Augost 22
         resultSearchController?.hidesNavigationBarDuringPresentation = true
-        self.searchBar?.hidden = true
+        self.searchBar?.isHidden = true
         resultSearchController?.searchResultsUpdater = nil
         
         //Setting the Search Button text
         
         if self.fullAddressString == nil {
-            self.searchBtnText.setTitle("Find a Location", forState: .Normal)
-            self.searchBtnText.titleLabel!.font = UIFont(name: "Marker Felt", size: 16)
+            self.searchBtnText.setTitle("Find a Location by Address", for: .normal)
+            self.searchBtnText.titleLabel!.font = UIFont(name: "Marker Felt", size: 18)
+            
+            //            self.searchBtnByTouch.setTitle("Find a Location by Touch", forState: .Normal)
+            //            self.searchBtnByTouch.titleLabel!.font = UIFont(name: "Marker Felt", size: 18)
             
             
         } else{
             // self.addressButton = self.fullAddressString
-            self.searchBtnText.setTitle("\(self.fullAddressString)", forState: .Normal)
+            self.searchBtnText.setTitle("\(self.fullAddressString!)", for: .normal)
             self.searchBtnText.titleLabel!.font = UIFont(name: "Marker Felt", size: 14)
-            self.searchBtnText.titleLabel?.textAlignment = NSTextAlignment.Center
+            self.searchBtnText.titleLabel?.textAlignment = NSTextAlignment.center
+            
+            //Reset SearchButtonByTouch
+            self.searchBtnByTouch.setTitle("Find a Location by Touch", for: .normal)
+            self.searchBtnByTouch.titleLabel!.font = UIFont(name: "Marker Felt", size: 18)
+            
+//            self.searchBtnText.setTitle("Find a Location by Address", forState: .Normal)
+//            self.searchBtnText.titleLabel!.font = UIFont(name: "Marker Felt", size: 18)
             
         }
+        
+        //Setting the Search Button text
+        
+//        if self.fullAddressString == nil {
+//            self.searchBtnText.setTitle("Find a Location", forState: .Normal)
+//            self.searchBtnText.titleLabel!.font = UIFont(name: "Marker Felt", size: 16)
+//            
+//            
+//        } else{
+//            // self.addressButton = self.fullAddressString
+//            self.searchBtnText.setTitle("\(self.fullAddressString)", forState: .Normal)
+//            self.searchBtnText.titleLabel!.font = UIFont(name: "Marker Felt", size: 14)
+//            self.searchBtnText.titleLabel?.textAlignment = NSTextAlignment.Center
+//            
+//        }
         
         
     }
@@ -278,31 +351,35 @@ class EditEventVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, U
         
         let key = self.eventKey
         
+      
+        
+       
+        
         let time  = String(Int(NSDate().timeIntervalSince1970))
         
         let titleChange = ("CHANGES: \(self.titleTextField.text!)")
         
         let event: Dictionary<String, AnyObject> = [
-            "title": self.titleTextField.text!,
-            "description": self.descriptionTextView.text!,
-            "fullAddress": self.fullAddressString_no_breakLine,
-            "fullAddressWithBreaks": self.fullAddressString,
-            "members": 0,
-            "date": self.strDate,
-            "dateRaw": self.dateRaw,
-            "host-uid":  KEY_UID!,
-            "geo": 0,
-            "eventComments": 0,
-            "no-eventComments": 0,
-            "no-of-members" : 2,
-            "placemark"  : self.placemark,
-            "time": time,
-            
-            
+            "title":  self.titleTextField.text! as AnyObject,
+            "description":self.descriptionTextView.text! as AnyObject,
+            "fullAddress": self.fullAddressString_no_breakLine as AnyObject,
+            "fullAddressWithBreaks": self.fullAddressString as AnyObject,
+            "members": 0 as AnyObject,
+            "date": self.strDate as AnyObject,
+            "dateRaw": self.dateRaw as AnyObject,
+            "host-uid":  KEY_UID! as AnyObject,
+            "geo": 0 as AnyObject,
+            "eventComments": 0 as AnyObject,
+            "no-eventComments": 0 as AnyObject,
+            "no-of-members" : 2 as AnyObject,
+            "placemark"  : self.placemark as AnyObject,
+            "time": time as AnyObject,
+            "eventKey":self.eventKey as AnyObject,
             
             ]
+        
         let descriptionTimeLine: String!
-        descriptionTimeLine = "\(self.fullAddressString_no_breakLine) \n\(self.strDate)\n\(self.descriptionTextView.text!)"
+        descriptionTimeLine = "\(self.fullAddressString_no_breakLine!) \n\(self.strDate!)\n\(self.descriptionTextView.text!)!"
         //let time  = String(Int(NSDate().timeIntervalSince1970))
         
        
@@ -313,17 +390,17 @@ class EditEventVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, U
         
         let eventToTimeline: Dictionary<String, AnyObject> = [
         
-            "description": descriptionTimeLine,
-            "time": time,
-            "uid":  KEY_UID!,
-            "likes": 0,
-            "dislikes": 0,
-            "fullName": self.profileName,
-            "avatar": self.profileImg,
-            "mediaType":"EVENT",
-            "eventKey":self.eventKey,
-            "eventTitle": self.titleTextField.text!,
-            "eventTitleChanges": "CHANGES",
+            "description": descriptionTimeLine!  as AnyObject,
+            "time": time as AnyObject,
+            "uid":  KEY_UID! as AnyObject,
+            "likes": 0 as AnyObject,
+            "dislikes": 0 as AnyObject,
+            "fullName": self.profileName as AnyObject,
+            "avatar": self.profileImg as AnyObject,
+            "mediaType":"EVENT" as AnyObject,
+            "eventKey":self.eventKey as AnyObject,
+            "eventTitle": self.titleTextField.text! as AnyObject,
+            "eventTitleChanges": "CHANGES" as AnyObject,
             
         ]
         
@@ -331,8 +408,8 @@ class EditEventVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, U
         
         
         
-        let childUpadates = ["/events/\(key)": event,
-                             "/user-events/\(KEY_UID!)/\(key)/":event]
+        let childUpadates = ["/events/\(key!)": event,
+                             "/user-events/\(KEY_UID!)/\(key!)/":event]
         ref.updateChildValues(childUpadates)
         
       //  ref.child("timeline")
@@ -342,10 +419,10 @@ class EditEventVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, U
         
         for friendID in friendsArray {
             
-            let childUpadates2 =  ["/events-timeline/\(friendID)/\(key)/": event]
+            let childUpadates2 =  ["/events-timeline/\(friendID)/\(key!)/": event]
             ref.updateChildValues(childUpadates2)
             
-            let updateTimeline = ["/timeline/\(friendID)/\(key)": eventToTimeline]
+            let updateTimeline = ["/timeline/\(friendID)/\(key!)": eventToTimeline]
             
             ref.updateChildValues(updateTimeline)
             
@@ -357,11 +434,11 @@ class EditEventVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, U
         }
         // Event's creator always on the Timeline, events-timeline, event-followers
         
-      let childUpadates2 =  ["/events-timeline/\(KEY_UID!)/\(key)/": event]
+      let childUpadates2 =  ["/events-timeline/\(KEY_UID!)/\(key!)/": event]
         ref.updateChildValues(childUpadates2)
         
         
-        let updateTimelineEvent = ["/timeline/\(KEY_UID!)/\(key)": eventToTimeline]
+        let updateTimelineEvent = ["/timeline/\(KEY_UID!)/\(key!)": eventToTimeline]
         ref.updateChildValues(updateTimelineEvent)
         
         
@@ -380,18 +457,18 @@ class EditEventVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, U
         
         geoFireEventRef = FIRDatabase.database().reference().child("geo-user-events").child(KEY_UID!)
         geoFire = GeoFire(firebaseRef: geoFireEventRef)
-        geoFire.setLocation(CLLocation(latitude: self.latitude, longitude: self.longitude), forKey: key)
+        geoFire.setLocation(CLLocation(latitude: self.latitude, longitude: self.longitude), forKey: key!)
         
         
         geoFireRef = FIRDatabase.database().reference().child("geo-events")
         geoFireEvent = GeoFire(firebaseRef: geoFireRef)
-        geoFireEvent.setLocation(CLLocation(latitude: self.latitude, longitude: self.longitude), forKey: key)
+        geoFireEvent.setLocation(CLLocation(latitude: self.latitude, longitude: self.longitude), forKey: key!)
         
         
        
         
         
-        performSegueWithIdentifier("segueReturntoEvent", sender: nil)  //ojo
+        performSegue(withIdentifier: "segueReturntoEvent", sender: nil)  //ojo
         
         
     }
@@ -401,7 +478,7 @@ class EditEventVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, U
     func FirebaseFanout(){
         
         followersRef = DataService.ds.REF_FOLLOWER_USERID
-        followersRef.observeEventType(.Value, withBlock:  { snapshot in
+        followersRef.observe(.value, with:  { snapshot in
             
             
             print("new snapshot array: \(snapshot.key)")
@@ -410,7 +487,7 @@ class EditEventVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, U
             self.friendsArray = []
             
             for child in snapshot.children {
-                let friendID = child.key as String
+                let friendID = (child as AnyObject).key as String
                 print("friendID  Array IIIIiiiiiiiiiiiiiiiii: \(friendID)")
                 
                 self.friendsArray.append(friendID)
@@ -426,7 +503,7 @@ class EditEventVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, U
             
             
             
-            }, withCancelBlock: { (error) ->  Void in
+        }, withCancel: { (error) ->  Void in
                 
                 
         })
@@ -439,12 +516,12 @@ class EditEventVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, U
     }
     // Dismiss keyBoard
     
-    func dismissKeyboard() {
+    @objc func dismissKeyboard() {
         //Causes the view (or one of its embedded text fields) to resign the first responder status.
         view.endEditing(true)
     }
     
-    func textFieldShouldReturn(textField: UITextField) -> Bool {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         view.endEditing(true)
         titleTextField.resignFirstResponder()
         
@@ -453,7 +530,7 @@ class EditEventVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, U
     }
     
     
-    func textView(textView: UITextView, shouldChangeTextInRange range: NSRange, replacementText text: String) -> Bool {
+    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
         if(text == "\n") {
             descriptionTextView.resignFirstResponder()
             return false
@@ -472,7 +549,7 @@ class EditEventVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, U
     
     func QueryCurrentUser(){
         
-        DataService.ds.REF_USER_CURRENT.observeEventType(.Value, withBlock: { (snapshot)  in
+        DataService.ds.REF_USER_CURRENT.observe(.value, with: { (snapshot)  in
             
             let item = snapshot as FIRDataSnapshot
             print("SNAP-Itemxxxxxxxxxxx: \(item)")
@@ -483,16 +560,16 @@ class EditEventVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, U
                 let avatar = dict["avatar"] as! String
                 // self.image = avatar
                 
-                self.activeUserInfo = dict
+                self.activeUserInfo = dict as NSDictionary?
                 
                 // self.title = "Welcome \(self.activeUserInfo!["firstName]!)"
-                self.profileName = "\(self.activeUserInfo!["fullName"]!.uppercaseString!)"
+                self.profileName = "\((self.activeUserInfo!["fullName"]! as AnyObject).uppercased!)"
                 self.profileImg = "\(self.activeUserInfo!["avatar"]!)"
                 // self.followersLabel.text = " \(self.activeUserInfo!["followers"]!) \n followers"
                 // self.followingLabel.text = " \(self.activeUserInfo!["following"]!) \n following"
             }
             
-            }, withCancelBlock: {(error) -> Void in
+        }, withCancel: {(error) -> Void in
         })
     }
     
@@ -501,41 +578,73 @@ class EditEventVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, U
     
     func QueryEvent(){
     
-            DataService.ds.REF_BASE.child("events").child(self.eventKey).observeEventType(.Value, withBlock: { (snapshot)  in
+        DataService.ds.REF_BASE.child("events").child(self.eventKey).observe(.value, with: { (snapshot)  in
             
-                let item = snapshot as FIRDataSnapshot
-                print("SNAP-Itemxxxxxxxxxxx: \(item)")
+            let item = snapshot as FIRDataSnapshot
+            print("SNAP-Itemxxxxxxxxxxx: \(item)")
+            
+            // if let dict = item.value as? NSDictionary{
+            
+            if let dict = item.value as? [String : AnyObject]{
                 
-                // if let dict = item.value as? NSDictionary{
                 
-                if let dict = item.value as? [String : AnyObject]{
-               
+                self.eventDict = dict as NSDictionary?
                 
-                self.eventDict = dict
                 
-              
-                self.titleTextField.text = " \(self.eventDict!["title"]!.uppercaseString!)"
-              //  self.dateBtn = " \(self.eventDict!["date"]!)"
+                self.titleTextField.text = " \((self.eventDict!["title"]! as AnyObject).uppercased!)"
+                //  self.dateBtn = " \(self.eventDict!["date"]!)"
+                UserDefaults().set(self.titleTextField.text!, forKey: "titleTextField")
                 
-                self.dateBtn.setTitle("\(self.eventDict!["date"]!)", forState: .Normal)
-                    
+                
+                self.dateBtn.setTitle("\(self.eventDict!["date"]!)", for: .normal)
+                
                 self.descriptionTextView.text = " \(self.eventDict!["description"]!)"
-               // self.searchBtnText.text = " \(self.eventDict!["fullAddressWithBreaks"]!)"
-                    self.searchBtnText.setTitle("\(self.eventDict!["fullAddressWithBreaks"]!)", forState: .Normal)
-                    self.strDate = "\(self.eventDict!["date"]!)"
-                    self.fullAddressString_no_breakLine = " \(self.eventDict!["fullAddress"]!)"
-                    self.fullAddressString = " \(self.eventDict!["fullAddressWithBreaks"]!)"
-                    self.dateRaw =  "\(self.eventDict!["dateRaw"]!)"
-                    self.placemark = "\(self.eventDict!["placemark"]!)"
                 
-    
+                UserDefaults().set(self.descriptionTextView.text!, forKey: "descriptionTextView")
+                
+                // self.searchBtnText.text = " \(self.eventDict!["fullAddressWithBreaks"]!)"
+                self.searchBtnText.setTitle("\(self.eventDict!["fullAddressWithBreaks"]!)", for: .normal)
+                self.strDate = "\(self.eventDict!["date"]!)"
+                self.fullAddressString_no_breakLine = " \(self.eventDict!["fullAddress"]!)"
+                self.fullAddressString = " \(self.eventDict!["fullAddressWithBreaks"]!)"
+                self.dateRaw =  "\(self.eventDict!["dateRaw"]!)"
+                self.placemark = "\(self.eventDict!["placemark"]!)"
+                
+                
+                
+                
+                //                    if self.fullAddressStringByTouch == nil {
+                //                        self.searchBtnByTouch.setTitle("Find a Location by Touch", forState: .Normal)
+                //                        self.searchBtnByTouch.titleLabel!.font = UIFont(name: "Marker Felt", size: 18)
+                //                        
+                //                        
+                //                        
+                //                    } else{
+                //                        // self.addressButton = self.fullAddressString
+                //                        self.searchBtnByTouch.setTitle("\(self.fullAddressStringByTouch)", forState: .Normal)
+                //                        self.searchBtnByTouch.titleLabel!.font = UIFont(name: "Marker Felt", size: 15)
+                //                        self.searchBtnByTouch.titleLabel!.textColor = UIColor.redColor()
+                //                        self.searchBtnByTouch.titleLabel?.textAlignment = NSTextAlignment.Center
+                //                        
+                //                        
+                //                        self.searchBtnText.setTitle("Find a Location", forState: .Normal)
+                //                        self.searchBtnText.titleLabel!.font = UIFont(name: "Marker Felt", size: 18)
+                //                        
+                //                        let tempFullAdressText = self.fullAddressStringByTouch
+                //                        
+                //                        self.fullAddressString = tempFullAdressText
+                //                        
+                //                        self.fullAddressString_no_breakLine = self.fullAddressString_no_breakLineByTouch
+                //                        
+                //                    }
+                
             }
-    
-    
-    
-                //   completation(imageStr: image!)
-    
-            }, withCancelBlock: {(error) -> Void in
+            
+            
+            
+            //   completation(imageStr: image!)
+            
+        }, withCancel: {(error) -> Void in
     
         })
     
@@ -543,19 +652,38 @@ class EditEventVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, U
     
     }
     
+    @IBAction func SearchMap_By_Touch(sender: AnyObject) {
+   
+        performSegue(withIdentifier: "segue_To_MapTouch", sender: nil)
+        
+
     
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    }
+    
+     override func prepare(for forsegue: UIStoryboardSegue, sender: Any?) {
         
        
         
-        if segue.identifier == "segueReturntoEvent"
+        if forsegue.identifier == "segueReturntoEvent"
         {
-            let destinationVC = segue.destinationViewController as! EventDetailVC
+            let destinationVC = forsegue.destination as! EventDetailVC
             
             destinationVC.eventKey   = self.eventKey
             
             
         }
+        
+        if forsegue.identifier == "segue_To_MapTouch"
+        {
+            let destinationVC = forsegue.destination as! EditEventMapByTouchVC
+            
+            destinationVC.eventKey   = self.eventKey
+             destinationVC.fullAddressStringByTouchTempData   = self.fullAddressStringByTouch
+            destinationVC.fullAddressString_no_breakLineByTouchTempData = self.fullAddressString_no_breakLineByTouch
+            
+            
+        }
+
         
     }
     
@@ -632,8 +760,8 @@ extension EditEventVC: HandleMapSearchEditEvent {
             mapViewLarge.addAnnotation(annotation)
         mapView.addAnnotation(annotation)
         
-        let span = MKCoordinateSpanMake(0.05, 0.05)
-        let region = MKCoordinateRegionMake(placemark.coordinate, span)
+        let span = MKCoordinateSpan.init(latitudeDelta: 0.05, longitudeDelta: 0.05)
+        let region = MKCoordinateRegion.init(center: placemark.coordinate, span: span)
         
         mapViewLarge.setRegion(region, animated: true)
         mapView.setRegion(region, animated: true)
@@ -646,19 +774,19 @@ extension EditEventVC: HandleMapSearchEditEvent {
     
     
     func typeInSomethingAlert(){
-        let optionMenu = UIAlertController(title: nil, message: "Can't Be Saved! Try another one! ", preferredStyle: .ActionSheet)
+        let optionMenu = UIAlertController(title: nil, message: "Can't Be Saved! Try another one! ", preferredStyle: .actionSheet)
         
         
         
         
-        let cancelAction = UIAlertAction(title: "Cancel", style: .Cancel, handler: {
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: {
             (alert: UIAlertAction!) -> Void in
             print("Cancelled")
         })
         
-        optionMenu.addAction(UIAlertAction(title: "Dismiss", style: UIAlertActionStyle.Default,handler: nil))
+        optionMenu.addAction(UIAlertAction(title: "Dismiss", style: UIAlertAction.Style.default,handler: nil))
         
-        self.presentViewController(optionMenu, animated: true, completion: nil)
+        self.present(optionMenu, animated: true, completion: nil)
     }
     
 }
@@ -666,22 +794,23 @@ extension EditEventVC: HandleMapSearchEditEvent {
 
 // EXTENSION:
 extension EditEventVC : CLLocationManagerDelegate {
-    func locationManager(manager: CLLocationManager, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
+   // func locationManager(manager: CLLocationManager, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
+    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         
-        if status == .AuthorizedWhenInUse {
+        if status == .authorizedWhenInUse {
             locationManager.requestLocation()
         }
     }
     
-    func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         if let location = locations.first {
-            let span = MKCoordinateSpanMake(0.05, 0.05)
+            let span = MKCoordinateSpan.init(latitudeDelta: 0.05, longitudeDelta: 0.05)
             let region = MKCoordinateRegion(center: location.coordinate, span: span)
             mapViewLarge.setRegion(region, animated: true)
             mapView.setRegion(region, animated: true)
             
             
-            var location:CLLocationCoordinate2D = (manager.location?.coordinate)!
+            let location:CLLocationCoordinate2D = (manager.location?.coordinate)!
             
             // self.latitude = location.latitude
             // self.longitude = location.longitude
@@ -691,7 +820,7 @@ extension EditEventVC : CLLocationManagerDelegate {
         }
     }
     
-    func locationManager(manager: CLLocationManager, didFailWithError error: NSError) {
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print("error:: (error)")
     }
     

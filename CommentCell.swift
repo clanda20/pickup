@@ -77,14 +77,14 @@ class CommentCell: UITableViewCell {
       
     }
     
-    override func drawRect(rect: CGRect) {
+    override func draw(_ rect: CGRect) {
         profileImg.layer.cornerRadius = profileImg.frame.size.width / 2
         profileImg.clipsToBounds = true
         
         
     }
 
-    override func setSelected(selected: Bool, animated: Bool) {
+    override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
 
         // Configure the view for the selected state
@@ -114,7 +114,7 @@ class CommentCell: UITableViewCell {
         
        // print(" Printing Full Name  \(comment.fullName)")
         
-         self.Username2.setTitle("\(comment.fullName)", forState: .Normal)
+         self.Username2.setTitle("\(comment.fullName)", for: .normal)
          self.Username2.titleLabel!.font = UIFont(name: "Marker Felt", size: 12)
          
         
@@ -126,15 +126,15 @@ class CommentCell: UITableViewCell {
         if let  seconds = Double(((comment.date))) {
             let timeStampDate = NSDate(timeIntervalSince1970: seconds)
             
-            let dateFormatter = NSDateFormatter()
+            let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "E, MMM d, H:mm a"
-            self.dateLbl.text = dateFormatter.stringFromDate(timeStampDate)
+            self.dateLbl.text = dateFormatter.string(from: timeStampDate as Date)
         }
         
         
         
-        downloadAvatar(comment.avatar!, completion:  { (data) in
-            self.profileImg.image = UIImage(data: data)
+        downloadAvatar(image: comment.avatar!, completion:  { (data) in
+            self.profileImg.image = UIImage(data: data as Data)
             self.profileImg.layer.cornerRadius = 20.0
             self.profileImg.clipsToBounds = true
         })
@@ -148,13 +148,13 @@ class CommentCell: UITableViewCell {
        // let uid = NSUserDefaults.standardUserDefaults().valueForKey("uid") as? String
         if KEY_UID != comment.uid {
             
-            self.deleteBtn.hidden = true
-            self.deleteBtn_friends_comment.hidden = false
+            self.deleteBtn.isHidden = true
+            self.deleteBtn_friends_comment.isHidden = false
             
         } else {
             
-            self.deleteBtn.hidden = false
-            self.deleteBtn_friends_comment.hidden = true
+            self.deleteBtn.isHidden = false
+            self.deleteBtn_friends_comment.isHidden = true
             
         }
         
@@ -162,17 +162,17 @@ class CommentCell: UITableViewCell {
         
     }
     
-    func downloadAvatar(image:String, completion:(data:NSData)-> ()) {
+    func downloadAvatar(image:String, completion:@escaping (_ data:NSData)-> ()) {
         
         let urlString = NSURL(string: image)
-        let request = NSURLSession.sharedSession().dataTaskWithURL(urlString!){ (data, response, error) -> Void in
+        let request = URLSession.shared.dataTask(with: urlString! as URL){ (data, response, error) -> Void in
             
             if error == nil {
                 
                 if let dataValid = data {
                     
-                    dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                        completion(data: dataValid)
+                    DispatchQueue.main.async(execute: { () -> Void in
+                        completion(dataValid as NSData)
                     })
                     
                 }
@@ -211,7 +211,7 @@ class CommentCell: UITableViewCell {
         
         //delete notifications
         
-         let postkeyUID = NSUserDefaults.standardUserDefaults().valueForKey("postKeyUID") as! String  // owner of the post
+         let postkeyUID = UserDefaults.standard.value(forKey: "postKeyUID") as! String  // owner of the post
      
         
         if KEY_UID != postkeyUID {
@@ -265,8 +265,8 @@ class CommentCell: UITableViewCell {
         
         //delete notifications
         
-        let postkeyUID = NSUserDefaults.standardUserDefaults().valueForKey("postKeyUID") as! String  // owner of the post
-        let postID  = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String  // might not be necesary 
+        let postkeyUID = UserDefaults.standard.value(forKey: "postKeyUID") as! String  // owner of the post
+        let postID  = UserDefaults.standard.value(forKey: "postKey") as! String  // might not be necesary 
         
           if KEY_UID == postkeyUID {
         
@@ -290,7 +290,7 @@ class CommentCell: UITableViewCell {
         
        
         userCommentsRef = DataService.ds.REF_USER_USER_POSTS_ID.child(KEY_UID!)   //("user-posts-id")
-        userCommentsRef.observeEventType(.Value, withBlock:  { snapshot in
+        userCommentsRef.observe(.value, with:  { snapshot in
             
             
             
@@ -300,7 +300,7 @@ class CommentCell: UITableViewCell {
             //  self.usersLists = []
             
             for child in snapshot.children {
-                let postID = child.key as String
+                let postID = (child as AnyObject).key as String
                 print("postID  Array IIIIiiiiiipostIDDiii: \(postID)")
                 
                 self.myPostArray.append(postID)
@@ -334,7 +334,7 @@ class CommentCell: UITableViewCell {
         print("Segue Agosto 1xxxxx: contactID_Post_Profile \(contactID_Post_Profile)")
         
         if(self.delegate2 != nil){ //Just to be safe.
-            self.delegate2!.ContactIDCommentSegueFromCell(contactID: contactID_Post_Profile!)
+            self.delegate2!.ContactIDCommentSegueFromCell(contactID: contactID_Post_Profile! as AnyObject)
             print("Segue Agosto 1xxxxx: \(contactID_Post_Profile)")
             
         }

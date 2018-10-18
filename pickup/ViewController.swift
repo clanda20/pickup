@@ -51,39 +51,40 @@ class ViewController: UIViewController, UITextFieldDelegate{
         // Dispose of any resources that can be recreated.
     }
     
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        if NSUserDefaults.standardUserDefaults().valueForKey("uid") != nil {
-            self.performSegueWithIdentifier(SEGUE_LOGGED_IN, sender: nil)
+        if UserDefaults.standard.value(forKey: "uid") != nil {
+            self.performSegue(withIdentifier: SEGUE_LOGGED_IN, sender: nil)
         }
     }
     
     
     
     @IBAction func fbBtnPressed(sender: UIButton!) {
-        let facebookLogin = FBSDKLoginManager()
-       // let facebookLogin = FBSDKLoginButton()
-       // facebookLogin.delegate = self
+       let facebookLogin = FBSDKLoginManager()
+    // let loginButton = FBSDKLoginButton()
+       //loginButton.delegate = self
         
-        facebookLogin.logInWithReadPermissions(["email"]) {(facebookResult: FBSDKLoginManagerLoginResult!, facebookError: NSError!) ->
-            Void in
-            
-            if facebookError != nil {
-                print("Facebook login failed. Error \(facebookError)")
-            } else  if facebookResult.isCancelled {
+      facebookLogin.logIn(withReadPermissions: ["email"], from: self) { (result, error) in
+             if error != nil {
+                print("Facebook login failed. Error \(error)")
+            } else  if result?.isCancelled  == true {
                   print("Facebook login was cancelled.")
             } else {
                
                 
                //  [START headless_facebook_auth]
  
-                let credential = FIRFacebookAuthProvider.credentialWithAccessToken(FBSDKAccessToken.currentAccessToken().tokenString)
+                let credential = FIRFacebookAuthProvider.credential(withAccessToken: FBSDKAccessToken.current().tokenString)
                 
                 // [END headless_facebook_auth]
               //  self.firebaseLogin(credential)
-                FIRAuth.auth()?.signInWithCredential(credential, completion: { (authData, error) in
+               // FIRAuth.auth()?.signIn(with: credential, completion: { (authData, error) in //NOV 9
                 
+                    FIRAuth.auth()?.signIn(with: credential) { (authData, error) in
+
+            
                     if error != nil {
                         print("Login Failed. \(error)")
                     } else {
@@ -105,30 +106,31 @@ class ViewController: UIViewController, UITextFieldDelegate{
                         let photoURL =  authData?.photoURL
                         
                         
-                        var myFullNameString: String = "\(fullName!.uppercaseString)";
-                        var myFullNameStringArr = myFullNameString.componentsSeparatedByString(" ")
+                        let myFullNameString: String = "\(fullName!.uppercased())";
+                    //    var myFullNameStringArr = myFullNameString.componentsSeparatedByString(" ")
+                        var myFullNameStringArr = myFullNameString.components(separatedBy: " ")
                         
-                        var firstName: String = myFullNameStringArr [0]
-                        var lastName: String = myFullNameStringArr [1]
+                        let firstName: String = myFullNameStringArr [0]
+                        let lastName: String = myFullNameStringArr [1]
                         
-                        var interval = NSDate().timeIntervalSince1970
-                        var date = NSDate(timeIntervalSince1970: interval)
+                        let interval = NSDate().timeIntervalSince1970
+                        let date = NSDate(timeIntervalSince1970: interval)
                         
                         
-                        NSUserDefaults.standardUserDefaults().setValue(authID, forKey: "uid")
-                         NSUserDefaults.standardUserDefaults().setValue(authData?.uid, forKey: "userID") /// temporal to prevent crash 
+                        UserDefaults.standard.setValue(authID, forKey: "uid")
+                         UserDefaults.standard.setValue(authData?.uid, forKey: "userID") /// temporal to prevent crash 
                       //  let location = mapView.userLocation.location
 
                         //Write DataBase
                         
-                        let user = ["provider": credential.provider,"id": "\(authID!)", "fullName": "\(fullName!.uppercaseString)", "firstName": firstName, "lastName": lastName,  "avatar": "\(photoURL!)" , "email": "\(email!)","notifications": "0","postNumber": "0", "followers": "0", "following": "0", "time": "\(date)"]
+                        let user = ["provider": credential.provider,"id": "\(authID!)", "fullName": "\(fullName!.uppercased())", "firstName": firstName, "lastName": lastName,  "avatar": "\(photoURL!)" , "email": "\(email!)","notifications": "0","postNumber": "0", "followers": "0", "following": "0", "time": "\(date)"]
                       //  DataService.ds.createFirebaseUser(authID!, user: user )
-                        self.createFirebaseUser(authID!, user: user )
+                        self.createFirebaseUser(uid: authID!, user: user )
                         
                        // NSUserDefaults.standardUserDefaults().setValue(authData?.uid, forKey: "uid")
-                        self.performSegueWithIdentifier(SEGUE_LOGGED_IN, sender: nil)
+                        self.performSegue(withIdentifier: SEGUE_LOGGED_IN, sender: nil)
                     }
-                })
+                }
             }
         
     }
@@ -174,18 +176,18 @@ class ViewController: UIViewController, UITextFieldDelegate{
             }})  */
         
         var alertController:UIAlertController?
-        alertController = UIAlertController(title: "Reset Password", message: "Enter Email", preferredStyle: .Alert)
-        var cancelAction = UIAlertAction(title: "Cancel", style: UIAlertActionStyle.Cancel) {
+        alertController = UIAlertController(title: "Reset Password", message: "Enter Email", preferredStyle: .alert)
+        let cancelAction = UIAlertAction(title: "Cancel", style: UIAlertAction.Style.cancel) {
             UIAlertAction in
             NSLog("Cancel Pressed")
         }
         alertController!.addAction(cancelAction)
-        alertController!.addTextFieldWithConfigurationHandler(
-            {(textField: UITextField!) in
+        alertController!.addTextField(
+            configurationHandler: {(textField: UITextField!) in
                 textField.placeholder = "re-enter registered email"
         })
         
-        let action = UIAlertAction(title: "Submit", style: UIAlertActionStyle.Default, handler: {[weak self]
+        let action = UIAlertAction(title: "Submit", style: UIAlertAction.Style.default, handler: {[weak self]
             (paramAction:UIAlertAction!) in
             if let textFields = alertController?.textFields{
                 let theTextFields = textFields as [UITextField]
@@ -193,16 +195,16 @@ class ViewController: UIViewController, UITextFieldDelegate{
                 let email = enteredText
                 
                 
-                FIRAuth.auth()?.sendPasswordResetWithEmail(email!, completion: { (error) in
+                FIRAuth.auth()?.sendPasswordReset(withEmail: email!, completion: { (error) in
                     
                     
-                    NSOperationQueue.mainQueue().addOperationWithBlock {
+                    OperationQueue.main.addOperation {
                         
                         if error != nil {
                             
                             // Error - Unidentified Email
                             
-                            self!.showErrorAlert("Unidentified Email Address", msg: "Please, re-enter the email you have registered with.")
+                            self!.showErrorAlert(title: "Unidentified Email Address", msg: "Please, re-enter the email you have registered with.")
                             
                             
                             
@@ -212,12 +214,12 @@ class ViewController: UIViewController, UITextFieldDelegate{
                             
                             
                             
-                            let alertController = UIAlertController(title: "Email Sent", message: "An email has been sent. Please, check your email now.", preferredStyle: .Alert)
-                            alertController.addAction(UIAlertAction(title: "OK", style: .Default, handler: { action in
+                            let alertController = UIAlertController(title: "Email Sent", message: "An email has been sent. Please, check your email now.", preferredStyle: .alert)
+                            alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: { action in
                                 
-                                self!.dismissViewControllerAnimated(true, completion: nil)
+                                self!.dismiss(animated: true, completion: nil)
                             }))
-                            self!.presentViewController(alertController, animated: true, completion: nil)
+                            self!.present(alertController, animated: true, completion: nil)
                         }
                         
                     }})
@@ -229,15 +231,15 @@ class ViewController: UIViewController, UITextFieldDelegate{
             })
         
         alertController?.addAction(action)
-        self.presentViewController(alertController!,animated: true,completion:  nil)
+        self.present(alertController!,animated: true,completion:  nil)
         
         
     }
     func showErrorAlert(title: String, msg: String){
-        let alert = UIAlertController(title: title, message: msg, preferredStyle: .Alert)
-        let action = UIAlertAction(title: "OK", style: .Default, handler: nil)
+        let alert = UIAlertController(title: title, message: msg, preferredStyle: .alert)
+        let action = UIAlertAction(title: "OK", style: .default, handler: nil)
         alert.addAction(action)
-        presentViewController(alert, animated: true, completion: nil)
+        present(alert, animated: true, completion: nil)
     }
     
     func createFirebaseUser(uid: String, user: Dictionary<String, String>){
@@ -246,13 +248,13 @@ class ViewController: UIViewController, UITextFieldDelegate{
 
     }
     
-    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         self.view.endEditing(true)
     }
     
     //dismiss keyboard
     
-    func textFieldShouldReturn(textField: UITextField!) -> Bool {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
         return true
     
@@ -269,26 +271,26 @@ class ViewController: UIViewController, UITextFieldDelegate{
    
     func AddNewUserEmail(){
         
-       if let email = emailField.text where email != "", let pwd = passwordField.text where pwd != "" {
+       if let email = emailField.text, email != "", let pwd = passwordField.text, pwd != "" {
             
             
-            FIRAuth.auth()?.signInWithEmail(email, password: pwd, completion: { authData, error in
+            FIRAuth.auth()?.signIn(withEmail: email, password: pwd, completion: { authData, error in
                 
                 
                 
                 if error != nil {
-                    print(error)
+                    print(error!)
                     
                     // if error == STATUS_ACCOUNT_NONEXIST {
                     
-                    if error!.code == 17011 { //17011
+                    if error!._code == 17011 { //17011
                         
                         
                         
-                        FIRAuth.auth()?.createUserWithEmail(email, password: pwd, completion: { authData, error in
+                        FIRAuth.auth()?.createUser(withEmail: email, password: pwd, completion: { authData, error in
                             //
                             if error != nil {
-                                self.showErrorAlert("Could not create account", msg: "Problem creating account. Try something else. This Email might be attached to Facebook")
+                                self.showErrorAlert(title: "Could not create account", msg: "Problem creating account. Try something else. This Email might be attached to Facebook")
                                 
                             } else{
                              
@@ -296,19 +298,19 @@ class ViewController: UIViewController, UITextFieldDelegate{
                                 
                                 let authID = authData?.uid
                                 print("Logged In Xxxxxxxxx!\(email)")
-                                NSUserDefaults.standardUserDefaults().setValue(authID, forKey: "uid")
-                                NSUserDefaults.standardUserDefaults().setValue(authData?.uid, forKey: "userID") /// temporal to prevent crash
+                                UserDefaults.standard.setValue(authID, forKey: "uid")
+                                UserDefaults.standard.setValue(authData?.uid, forKey: "userID") /// temporal to prevent crash
                                 
                                 
-                                FIRAuth.auth()?.signInWithEmail(email, password: pwd, completion: { authData, error in
+                                FIRAuth.auth()?.signIn(withEmail: email, password: pwd, completion: { authData, error in
                                     
-                                    var interval = NSDate().timeIntervalSince1970
+                                    let interval = NSDate().timeIntervalSince1970
                                     
-                                    var date = NSDate(timeIntervalSince1970: interval)
+                                    let date = NSDate(timeIntervalSince1970: interval)
                                     
                                   //  self.EmailAuthorization(authID, authData: authData, date: date)
                                     
-                                self.AddFullNamefromEMail(authID, authData: authData, date: date)
+                                self.AddFullNamefromEMail(authID: authID, authData: authData, date: date)
                                     
                                  })
                                 
@@ -339,23 +341,23 @@ class ViewController: UIViewController, UITextFieldDelegate{
                     }
                     else {
                         
-                        self.showErrorAlert("Could not login", msg: "Please check your username and password")
+                        self.showErrorAlert(title: "Could not login", msg: "Please check your username and password")
                         
                     }
                     
                 } else {
                     
-                    NSUserDefaults.standardUserDefaults().setValue(authData?.uid, forKey: "uid")
-                    NSUserDefaults.standardUserDefaults().setValue(authData?.uid, forKey: "userID") /// temporal to prevent crash
+                    UserDefaults.standard.setValue(authData?.uid, forKey: "uid")
+                    UserDefaults.standard.setValue(authData?.uid, forKey: "userID") /// temporal to prevent crash
                     
-                    self.performSegueWithIdentifier(SEGUE_LOGGED_IN, sender: nil)
+                    self.performSegue(withIdentifier: SEGUE_LOGGED_IN, sender: nil)
                     
                 }
                 
             })
             
         } else {
-            showErrorAlert("Email and Password Required", msg: "You must enter an email and a password")
+            showErrorAlert(title: "Email and Password Required", msg: "You must enter an email and a password")
         }
         
         
@@ -365,14 +367,14 @@ class ViewController: UIViewController, UITextFieldDelegate{
     
     func AddFullNamefromEMail(authID: String!, authData: FIRUser?, date:NSDate!){
         var alertController:UIAlertController?
-        alertController = UIAlertController(title: "Enter Text", message: "Enter your Name and LastName", preferredStyle: .Alert)
+        alertController = UIAlertController(title: "Enter Text", message: "Enter your Name and LastName", preferredStyle: .alert)
         
-        alertController!.addTextFieldWithConfigurationHandler(
-            {(textField: UITextField!) in
+        alertController!.addTextField(
+            configurationHandler: {(textField: UITextField!) in
                 textField.placeholder = "Enter Name and LastName"
         })
         
-        let action = UIAlertAction(title: "Submit", style: UIAlertActionStyle.Default, handler: {[weak self]
+        let action = UIAlertAction(title: "Submit", style: UIAlertAction.Style.default, handler: {[weak self]
             (paramAction:UIAlertAction!) in
             if let textFields = alertController?.textFields{
                 let theTextFields = textFields as [UITextField]
@@ -381,20 +383,20 @@ class ViewController: UIViewController, UITextFieldDelegate{
                 
                 
                 
-                self!.myFullNameString =  fullNameEmailEnter!.uppercaseString
-                let myFullNameStringArr = self!.myFullNameString.componentsSeparatedByString(" ")
+                self!.myFullNameString =  fullNameEmailEnter!.uppercased()
+                let myFullNameStringArr = self!.myFullNameString.components(separatedBy: " ")  // componentsSeparated(by: " ")
                 
                 self!.firstName = myFullNameStringArr[0]
                 self!.lastName  = myFullNameStringArr[1]
                 
-                self!.EmailAuthorization(authID, authData: authData, date: date)
+                self!.EmailAuthorization(authID: authID, authData: authData, date: date)
                 
                 
             }
             })
         
         alertController?.addAction(action)
-        self.presentViewController(alertController!,animated: true,completion:  nil)
+        self.present(alertController!,animated: true,completion:  nil)
         
     }
     
@@ -402,18 +404,42 @@ class ViewController: UIViewController, UITextFieldDelegate{
         
         let authID = authID
         let authData = authData
-        let  date = date
+        let  date = date!
         
         let user = ["provider": authData!.providerID,"id": "\(authID!)", "fullName":  self.myFullNameString, "firstName":  self.firstName, "lastName":  self.lastName,"notifications": "0","avatar": "avatar" ,"likes":"0", "dislikes":"0", "email": authData!.email,"postNumber":"0", "followers": "0", "following": "0", "time": "\(date)"]
-        authData!
-        self.createFirebaseUser(authID!, user: user as! Dictionary<String, String>)
+      //  authData!
+        self.createFirebaseUser(uid: authID!, user: user as! Dictionary<String, String>)
         
         //   NSUserDefaults.standardUserDefaults().setValue(authData?.uid, forKey: "uid")
         
-        self.performSegueWithIdentifier(SEGUE_LOGGED_IN, sender: nil)
+        self.performSegue(withIdentifier: SEGUE_LOGGED_IN, sender: nil)
         
         
     }
+    
+//    func loginButton(_ loginButton: FBSDKLoginButton!, didCompleteWith result: FBSDKLoginManagerLoginResult!, error: Error!) {
+//        print("User Logged In")
+//        
+//        if ((error) != nil)
+//        {
+//            // Process error
+//        }
+//        else if result.isCancelled {
+//            // Handle cancellations
+//        }
+//        else {
+//            // If you ask for multiple permissions at once, you
+//            // should check if specific permissions missing
+//            if result.grantedPermissions.contains("email")
+//            {
+//                // Do work
+//            }
+//        }
+//    }
+//    
+//    func loginButtonDidLogOut(_ loginButton: FBSDKLoginButton!) {
+//        print("User Logged Out")
+//    }
 
     
 }

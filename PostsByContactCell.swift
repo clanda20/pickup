@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import Alamofire
+//import Alamofire
 import Firebase
 
 protocol PostsByContactCellDelegate {
@@ -33,7 +33,7 @@ class PostsByContactCell: UITableViewCell {
     var delegate : PostsByContactCellDelegate?
     
     var post: Post!
-    var request: Request?
+   // var request: Request?
     var likeRef: FIRDatabaseReference!
     var dislikeRef: FIRDatabaseReference!
     var postRefKey: FIRDatabaseReference!
@@ -45,18 +45,18 @@ class PostsByContactCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
         
-        let tap = UITapGestureRecognizer(target: self, action: "likeTapped:")
-        tap.numberOfTapsRequired = 1
-        likeImage.addGestureRecognizer(tap)
-        likeImage.userInteractionEnabled = true
-        
-        
-        
-        let tap2 = UITapGestureRecognizer(target: self, action: "dislikeTapped:")
-        tap2.numberOfTapsRequired = 1
-        dislikeImage.addGestureRecognizer(tap2)
-        dislikeImage.userInteractionEnabled = true
-        
+//        let tap = UITapGestureRecognizer(target: self, action: "likeTapped:")
+//        tap.numberOfTapsRequired = 1
+//        likeImage.addGestureRecognizer(tap)
+//        likeImage.isUserInteractionEnabled = true
+//        
+//        
+//        
+//        let tap2 = UITapGestureRecognizer(target: self, action: "dislikeTapped:")
+//        tap2.numberOfTapsRequired = 1
+//        dislikeImage.addGestureRecognizer(tap2)
+//        dislikeImage.isUserInteractionEnabled = true
+//        
         
    /*     let tap3 = UITapGestureRecognizer(target: self, action: #selector(PostCell.CommentBtnTapped(_:)))
         tap3.numberOfTapsRequired = 1
@@ -68,14 +68,14 @@ class PostsByContactCell: UITableViewCell {
         
     }
     
-    override func drawRect(rect: CGRect) {
+    override func draw(_ rect: CGRect) {
         profileImg.layer.cornerRadius = profileImg.frame.size.width / 2
         profileImg.clipsToBounds = true
         
         showcaseImg.clipsToBounds = true
     }
     
-    override func setSelected(selected: Bool, animated: Bool) {
+    override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
     }
     
@@ -110,7 +110,7 @@ class PostsByContactCell: UITableViewCell {
         
      //   print(" Printing Full Name  \(post.fullName)")
         
-        self.profileName.setTitle("\(post.fullName)", forState: .Normal)
+        self.profileName.setTitle("\(post.fullName)", for: .normal)
         self.profileName.titleLabel!.font = UIFont(name: "Marker Felt", size: 16)
         
       //  self.contactId =  post.uid
@@ -123,37 +123,60 @@ class PostsByContactCell: UITableViewCell {
         self.dislikeLbl.text = "\(post.dislikes)"
         
         
-        downloadAvatar(post.avatar!, completion:  { (data) in
-            self.profileImg.image = UIImage(data: data)
+        downloadAvatar(image: post.avatar!, completion:  { (data) in
+            self.profileImg.image = UIImage(data: data as Data)
             self.profileImg.layer.cornerRadius = 21.0
             self.profileImg.clipsToBounds = true
         })
         
         
-        
-        
         if post.imageUrl != nil {
+            
             
             if img != nil {
                 self.showcaseImg.image = img
             } else {
-                request = Alamofire.request(.GET, post.imageUrl!).validate(contentType: ["image/*"]).response(completionHandler: { request, response, data, err in
-                    
-                    if err == nil {
-                        let img = UIImage(data: data!)!
-                        self.showcaseImg.image = img
-                        FeedVC.imageCache.setObject(img, forKey: self.post.imageUrl!)
+                let ref = FIRStorage.storage().reference(forURL: post.imageUrl!)
+                ref.data( withMaxSize: 2 * 1024 * 1024, completion: { (data, error) in
+                    if error != nil {
+                        print("JESS: Unable to download image from Firebase storage")
+                    } else {
+                        print("JESS: Image downloaded from Firebase storage")
+                        if let imgData = data {
+                            if let img = UIImage(data: imgData) {
+                                self.showcaseImg.image = img
+                                FeedVC.imageCache.setObject(img, forKey: post.imageUrl! as AnyObject)
+                            }
+                        }
                     }
                 })
             }
             
-            
-        } else {
-            self.showcaseImg.hidden = true
         }
         
         
-        likeRef.observeSingleEventOfType(.Value, withBlock: { snapshot in
+//        if post.imageUrl != nil {
+//            
+//            if img != nil {
+//                self.showcaseImg.image = img
+//            } else {
+//                request = Alamofire.request(.GET, post.imageUrl!).validate(contentType: ["image/*"]).response(completionHandler: { request, response, data, err in
+//                    
+//                    if err == nil {
+//                        let img = UIImage(data: data!)!
+//                        self.showcaseImg.image = img
+//                        FeedVC.imageCache.setObject(img, forKey: self.post.imageUrl!)
+//                    }
+//                })
+//            }
+//            
+//            
+//        } else {
+//            self.showcaseImg.hidden = true
+//        }
+        
+        
+        likeRef.observeSingleEvent(of: .value, with: { snapshot in
             
             if (snapshot.value as? NSNull) != nil {   //WE don't like the current post
                 self.likeImage.image = UIImage(named: "heart-empty")
@@ -165,7 +188,7 @@ class PostsByContactCell: UITableViewCell {
             
         })
         
-        dislikeRef.observeSingleEventOfType(.Value, withBlock: { snapshot in
+        dislikeRef.observeSingleEvent(of: .value, with: { snapshot in
             
             if(snapshot.value as? NSNull) != nil {
                 self.dislikeImage.image = UIImage(named: "heart2-empty")    //  "Thumbs_down_Off"
@@ -187,10 +210,11 @@ class PostsByContactCell: UITableViewCell {
         print("SNaps July 7 POstKeyxxxxxxxxxxxxxxxx  :\(postKey)")
         
         //let postKey =  post.postKey
-        NSUserDefaults.standardUserDefaults().setValue(postKey, forKey: "postKey")
-        NSUserDefaults.standardUserDefaults().synchronize()
+        UserDefaults.standard.setValue(postKey, forKey: "postKey")
+       // UserDefaults.standard.set(value: postKey, forKey: "postKey")
+        UserDefaults.standard.synchronize()
         if(self.delegate != nil){ //Just to be safe.
-            self.delegate!.callSegueFromCell(myData: postKey)
+            self.delegate!.callSegueFromCell(myData: postKey as AnyObject)
             
         }
     }
@@ -218,22 +242,22 @@ class PostsByContactCell: UITableViewCell {
     
     func likeTapped(sender: UITapGestureRecognizer){
         
-        likeRef.observeSingleEventOfType(.Value, withBlock: { snapshot in
+        likeRef.observeSingleEvent(of: .value, with: { snapshot in
             
             if (snapshot.value as? NSNull) != nil {   //WE don't like the current post
                 self.likeImage.image = UIImage(named: "heart-full")
-                self.post.adjustLikesByUser(true)
+                self.post.adjustLikesByUser(addLike: true)
                 self.likeRef.setValue(true)
                 
-                self.dislikeImage.userInteractionEnabled = false
+                self.dislikeImage.isUserInteractionEnabled = false
                 
                 
             } else {
                 self.likeImage.image = UIImage(named: "heart-empty")
-                self.post.adjustLikesByUser(false)
+                self.post.adjustLikesByUser(addLike: false)
                 self.likeRef.removeValue()
                 
-                self.dislikeImage.userInteractionEnabled = true
+                self.dislikeImage.isUserInteractionEnabled = true
                 
             }
             
@@ -244,24 +268,24 @@ class PostsByContactCell: UITableViewCell {
     
     func dislikeTapped(sender: UITapGestureRecognizer){
         
-        dislikeRef.observeSingleEventOfType(.Value, withBlock: { snapshot in
+        dislikeRef.observeSingleEvent(of: .value, with: { snapshot in
             
             if (snapshot.value as? NSNull) != nil {
                 self.dislikeImage.image = UIImage(named: "heart2-full")
-                self.post.adjustDislikesByUser(true)
+                self.post.adjustDislikesByUser(addDislikes: true)
                 self.dislikeRef.setValue(true)
                 
                 
-                self.likeImage.userInteractionEnabled = false
+                self.likeImage.isUserInteractionEnabled = false
                 
                 
                 
             }else {
                 self.dislikeImage.image = UIImage(named: "heart2-empty")
-                self.post.adjustDislikesByUser(false)
+                self.post.adjustDislikesByUser(addDislikes: false)
                 self.dislikeRef.removeValue()
                 
-                self.likeImage.userInteractionEnabled = true
+                self.likeImage.isUserInteractionEnabled = true
                 
                 
             }
@@ -271,19 +295,19 @@ class PostsByContactCell: UITableViewCell {
   
     //download profile image from Facebook
     
-    func downloadAvatar(image:String, completion:(data:NSData)-> ()) {
+    func downloadAvatar(image:String, completion:@escaping  (_ data:NSData)-> ()) {
         
         print("Image:xxxxxxxxx--------xxxxxxxx: \(image)")
         
         let urlString = NSURL(string: image)
-        let request = NSURLSession.sharedSession().dataTaskWithURL(urlString!){ (data, response, error) -> Void in
+        let request = URLSession.shared.dataTask(with: urlString! as URL){ (data, response, error) -> Void in
             
             if error == nil {
                 
                 if let dataValid = data {
                     
-                    dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                        completion(data: dataValid)
+                    DispatchQueue.main.async(execute: { () -> Void in
+                        completion(dataValid as NSData)
                     })
                     
                 }

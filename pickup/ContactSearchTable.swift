@@ -28,18 +28,23 @@ class ContactSearchTable : UITableViewController {
 
 
 extension ContactSearchTable : UISearchResultsUpdating {
-    func updateSearchResultsForSearchController(searchController: UISearchController) {
+//    @available(iOS 8.0, *)
+//    public func updateSearchResults(for searchController: UISearchController) {
+//        //code
+//    }
+
+   func updateSearchResults(for searchController: UISearchController) {
     }
 }
 
 extension ContactSearchTable {
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
        // return matchingItems.count
         return 1
     }
     
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("cell")!
+      func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "cell")!
       //  let selectedItem = matchingItems[indexPath.row].placemark
        // cell.textLabel?.text = selectedItem.name
         cell.detailTextLabel?.text = ""
@@ -74,9 +79,9 @@ extension ContactSearchTable {
     func QueryFullName(){
         
         DataService.ds.REF_BASE.child("users")
-            .queryOrderedByChild("fullName")
-            .queryEqualToValue("Christian Landa")
-            .observeSingleEventOfType(.Value, withBlock: { (snapshot) -> Void in
+            .queryOrdered(byChild: "fullName")
+            .queryEqual(toValue: "Christian Landa")
+            .observeSingleEvent(of: .value, with: { (snapshot) -> Void in
                 
                 print("Search:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \(snapshot.value)")
                 

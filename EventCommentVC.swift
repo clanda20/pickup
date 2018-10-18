@@ -13,6 +13,8 @@ import Firebase
 
 class EventCommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UITableViewDataSource, ContactIDEventCommentCellDelegate  {
     
+
+    
     
     @IBOutlet weak var tableView: UITableView!
     
@@ -44,7 +46,7 @@ class EventCommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate
     var profileName: String!
     var profileImg: String!
     
-    static var imageCache = NSCache()
+    static var imageCache = NSCache<AnyObject, AnyObject>()
     
     var eventInfo: NSDictionary?
     var eventUid: String!
@@ -66,12 +68,12 @@ class EventCommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate
         super.viewDidLoad()
         
         self.tableView.estimatedRowHeight = 80.0;
-        self.tableView.rowHeight = UITableViewAutomaticDimension;
+        self.tableView.rowHeight = UITableView.automaticDimension;
         
         
         self.tableView.setNeedsLayout()
         self.tableView.layoutIfNeeded()
-        self.tableView.contentInset = UIEdgeInsetsMake(20, 0, 0, 0)
+        self.tableView.contentInset = UIEdgeInsets.init(top: 20, left: 0, bottom: 0, right: 0)
         
         
         
@@ -83,7 +85,7 @@ class EventCommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate
         
         
         //Keyboard dismiss
-        let tapGesture = UITapGestureRecognizer(target: self, action: Selector("hideKeyboard"))
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(EventCommentVC.hideKeyboard))
         tapGesture.cancelsTouchesInView = true
         self.view.addGestureRecognizer(tapGesture)
          QueryEventPosts()
@@ -104,7 +106,7 @@ class EventCommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate
         
         
         
-        DataService.ds.REF_BASE.child("event-comments").child(eventKey).observeEventType(.Value, withBlock:  { snapshot in
+        DataService.ds.REF_BASE.child("event-comments").child(eventKey).observe(.value, with:  { snapshot in
             
             
             print(snapshot.value)
@@ -135,53 +137,60 @@ class EventCommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate
     
     
     
-    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+  //  func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
+     
         return 1
     }
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return eventcomments.count
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+
+    return eventcomments.count
     }
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+  //  func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: IndexPath-> UITableViewCell {
+    
+    func tableView(_ tableView: UITableView,
+                   cellForRowAt indexPath: IndexPath) -> UITableViewCell{
         
         let eventcomment = eventcomments[indexPath.row]
-        print(eventcomment.commentDescription)
+   //     print(eventcomment.commentDescription ?? <#default value#>)
         
         
         
-        if let cell = tableView.dequeueReusableCellWithIdentifier("EventCommentCell")  as? EventCommentCell  {
+        if let cell = tableView.dequeueReusableCell(withIdentifier: "EventCommentCell")  as? EventCommentCell  {
             var img: UIImage?
             
             cell.delegate2 = self
             if let url = eventcomment.imageUrl2 {
-                img = EventCommentVC.imageCache.objectForKey(url) as? UIImage
+                img = EventCommentVC.imageCache.object(forKey: url as AnyObject) as? UIImage
             }
             
-            cell.configureEventCommentCell(eventcomment, img: img, eventKey: self.eventKey)
+            cell.configureEventCommentCell(eventcomment: eventcomment, img: img, eventKey: self.eventKey)
             return cell
         } else {
             return EventCommentCell()
         }
         
         
-        return tableView.dequeueReusableCellWithIdentifier("EventCommentCell") as! EventCommentCell
+        return tableView.dequeueReusableCell(withIdentifier: "EventCommentCell") as! EventCommentCell
     }
     
     
     
     @IBAction func commentPost(sender: AnyObject) {
         
-        if let txt = commentField.text where txt != "" {
+        if let txt = commentField.text, txt != "" {
             
             let uid = FIRAuth.auth()?.currentUser?.uid
             //  commentsRef.observeSingleEventOfType(.Value, withBlock: { (snapshot) in
             
-            DataService.ds.REF_BASE.observeSingleEventOfType(.Value, withBlock: { (snapshot) in
+            DataService.ds.REF_BASE.observeSingleEvent(of: .value, with: { (snapshot) in
                 
                 let key = DataService.ds.REF_BASE.child("event-comments").childByAutoId().key  // creating CommentKey
                 
-                if let uid = uid, commentField = self.commentField, user = snapshot.value as? [String : AnyObject] {
+                if let uid = uid, let commentField = self.commentField, let user = snapshot.value as? [String : AnyObject] {
                     
                     print("Snapshot CommentVC--------: \(snapshot)")
                     
@@ -204,7 +213,7 @@ class EventCommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate
                     
                     
                     
-                    if let doesNotExist = snapshot.value as? NSNull {
+                    if (snapshot.value as? NSNull) != nil {
                         
                         let  EventComment_PostRef = self.ref.child("event-comments").child(self.eventKey)
                         
@@ -293,30 +302,30 @@ class EventCommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate
     
     
     func typeInSomethingAlert(){
-        let optionMenu = UIAlertController(title: nil, message: "Type in something!", preferredStyle: .ActionSheet)
+        let optionMenu = UIAlertController(title: nil, message: "Type in something!", preferredStyle: .actionSheet)
         
         
         
         
-        let cancelAction = UIAlertAction(title: "Cancel", style: .Cancel, handler: {
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: {
             (alert: UIAlertAction!) -> Void in
             print("Cancelled")
         })
         
-        optionMenu.addAction(UIAlertAction(title: "Dismiss", style: UIAlertActionStyle.Default,handler: nil))
+        optionMenu.addAction(UIAlertAction(title: "Dismiss", style: UIAlertAction.Style.default,handler: nil))
         
-        self.presentViewController(optionMenu, animated: true, completion: nil)
+        self.present(optionMenu, animated: true, completion: nil)
     }
     
     
     
     //Keyboard dismiss
-    func hideKeyboard()
+    @objc func hideKeyboard()
     {
         self.view.endEditing(true)
     }
     
-    override func viewWillDisappear(animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         
         super.viewWillDisappear(animated)
         
@@ -325,32 +334,32 @@ class EventCommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate
         //tableViewHeightConstraint.constant = tableView.contentSize.height
         
         
-        NSNotificationCenter.defaultCenter().removeObserver(self, name: UIKeyboardWillShowNotification, object: self.view.window)
-        NSNotificationCenter.defaultCenter().removeObserver(self, name: UIKeyboardWillHideNotification, object: self.view.window)
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: self.view.window)
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: self.view.window)
         
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.navigationController?.setNavigationBarHidden(false, animated: animated)
         
         //Catch notification if the keyboard is hsown or hidden
         
         
-        NSNotificationCenter.defaultCenter().addObserver(self,
-                                                         selector: Selector("keyboardWillShow:"),
-                                                         name: UIKeyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self,
+                                                         selector: Selector(("keyboardWillShow:")),
+                                                         name: UIResponder.keyboardWillShowNotification, object: nil)
         
-        NSNotificationCenter.defaultCenter().addObserver(self,
-                                                         selector: Selector("keyboardWillHide:"),
-                                                         name: UIKeyboardWillHideNotification, object: nil)
+        NotificationCenter.default.addObserver(self,
+                                                         selector: Selector(("keyboardWillHide:")),
+                                                         name: UIResponder.keyboardWillHideNotification, object: nil)
         
         
     }
     
     func QueryCurrentUser(){
         
-        DataService.ds.REF_USER_CURRENT.observeEventType(.Value, withBlock: { (snapshot)  in
+        DataService.ds.REF_USER_CURRENT.observe(.value, with: { (snapshot)  in
             
             let item = snapshot as FIRDataSnapshot
             print("SNAP-Itemxxxxxxxxxxx: \(item)")
@@ -361,15 +370,15 @@ class EventCommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate
                 let avatar = dict["avatar"] as! String
                 // self.image = avatar
                 
-                self.activeUserInfo = dict
+                self.activeUserInfo = dict as NSDictionary?
                 
-                self.profileName = "\(self.activeUserInfo!["fullName"]!.uppercaseString!)"
+                self.profileName = "\((self.activeUserInfo!["fullName"]! as AnyObject).uppercased!)"
                 self.profileImg = "\(self.activeUserInfo!["avatar"]!)"
-               
+                
             }
             
             
-            }, withCancelBlock: {(error) -> Void in
+        }, withCancel: {(error) -> Void in
                 
         })
         
@@ -379,7 +388,7 @@ class EventCommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate
         
         print("Event Key inside : \(self.eventKey)")
         
-        DataService.ds.REF_BASE.child("events").child(self.eventKey).observeEventType(.Value , withBlock: { (snapshot) in  //observeSingleEventOfType
+        DataService.ds.REF_BASE.child("events").child(self.eventKey).observe(.value , with: { (snapshot) in  //observeSingleEventOfType
             
             //postInfo
             
@@ -388,17 +397,17 @@ class EventCommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate
             
             
             if let dict = item.value as? [String : AnyObject]{
-               
-                 self.eventInfo = dict
                 
-               
-              self.eventUid =   self.eventInfo!["host-uid"]! as! String
-              self.eventKEY =   self.eventInfo!["eventKey"]! as! String
+                self.eventInfo = dict as NSDictionary?
+                
+                
+                self.eventUid =   self.eventInfo!["host-uid"]! as! String
+                self.eventKEY =   self.eventInfo!["eventKey"]! as! String
                 
                 
             }
             
-            }, withCancelBlock: {(error) -> Void in
+        }, withCancel: {(error) -> Void in
                 
         })
     }
@@ -407,7 +416,7 @@ class EventCommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate
     
     
     func keyboardWillShow(notification: NSNotification) {
-        if let keyboardSize = (notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.CGRectValue() {
+        if let keyboardSize = (notification.userInfo?[UIResponder.keyboardFrameBeginUserInfoKey] as? NSValue)?.cgRectValue {
             self.textFieldToBottomLayoutGuideConstraint?.constant += keyboardSize.height
             
             var keyboardHeight = keyboardSize.height
@@ -420,7 +429,7 @@ class EventCommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate
     }
     
     func keyboardWillHide(notification: NSNotification) {
-        if let keyboardSize = (notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.CGRectValue() {
+        if let keyboardSize = (notification.userInfo?[UIResponder.keyboardFrameBeginUserInfoKey] as? NSValue)?.cgRectValue {
             self.textFieldToBottomLayoutGuideConstraint?.constant -= keyboardSize.height
             
             //  self.keyboardHeight = keyboardSize.height
@@ -432,53 +441,53 @@ class EventCommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate
     
     
     func getKeyboardHeight( notification : NSNotification ) -> CGFloat {
-        return (notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as! NSValue).CGRectValue().height
+        return (notification.userInfo?[UIResponder.keyboardFrameBeginUserInfoKey] as! NSValue).cgRectValue.height
     }
     
     
     
     
-    func textFieldDidBeginEditing(textField: UITextField) {
+    func textFieldDidBeginEditing(_ textField: UITextField) {
         
         
-        animateViewMoving(true, moveValue: 260)   // 260
+        animateViewMoving(up: true, moveValue: 260)   // 260
     }
     
     
     
-    func textFieldDidEndEditing(textField: UITextField) {
+    func textFieldDidEndEditing(_ textField: UITextField) {
         
         
-        animateViewMoving(false, moveValue: 260)    //260
+        animateViewMoving(up: false, moveValue: 260)    //260
     }
     
     // Lifting the view up
     func animateViewMoving (up:Bool, moveValue :CGFloat){
-        let movementDuration:NSTimeInterval = 0.3
+        let movementDuration:TimeInterval = 0.3
         let movement:CGFloat = ( up ? -moveValue : moveValue)
         UIView.beginAnimations( "animateView", context: nil)
         UIView.setAnimationBeginsFromCurrentState(true)
         UIView.setAnimationDuration(movementDuration )
-        self.view.frame = CGRectOffset(self.view.frame, 0,  movement)
+        self.view.frame = self.view.frame.offsetBy(dx: 0,  dy: movement)
         UIView.commitAnimations()
     }
     
     
     func ContactIDEventCommentSegueFromCell(contactID dataobject: AnyObject) {
         
-        dispatch_async(dispatch_get_main_queue()){
+        DispatchQueue.main.async  {
             //try not to send self, just to avoid retain cycles(depends on how you handle the code on the next controller)
-            self.performSegueWithIdentifier("segue_commentVC_to_ContactProfileVC", sender:dataobject )
+            self.performSegue(withIdentifier: "segue_commentVC_to_ContactProfileVC", sender:dataobject )
             
         }
         
         // print( "Segue Agosto 1xxxxx: \(contactId)")
         //
     }
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        if segue.identifier == "segue_commentVC_to_ContactProfileVC"
+     override func prepare(for forsegue: UIStoryboardSegue, sender: Any?) {
+        if forsegue.identifier == "segue_commentVC_to_ContactProfileVC"
         {
-            let destinationVC = segue.destinationViewController as? contactProfileVC
+            let destinationVC = forsegue.destination as? contactProfileVC
             if let theString = sender as? String {
                 destinationVC!.contactId =  theString
             }
@@ -487,7 +496,7 @@ class EventCommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate
         }
     }
     
-    func textFieldShouldReturn(textField: UITextField) -> Bool {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         view.endEditing(true)
         commentField.resignFirstResponder()
         

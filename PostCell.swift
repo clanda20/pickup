@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import Alamofire
+//import Alamofire
 import Firebase
 
 protocol PostCellDelegate {
@@ -73,7 +73,7 @@ class PostCell: UITableViewCell {
     var EventDelegate5: EventSegue_CellDelegate?
     
     var post: Post!
-    var request: Request?
+  //  var request: Request?
     var likeRef: FIRDatabaseReference!
     var dislikeRef: FIRDatabaseReference!
     var postRefKey: FIRDatabaseReference!
@@ -98,7 +98,7 @@ class PostCell: UITableViewCell {
     var friendsArray: [String] = []
     var postFollowersArray: [String] = []
     
-     var followersList = []
+    var followersList: [String] = []   //Array<String>
     
     var notification: Notification!
     var notifications = [Notification]()
@@ -115,17 +115,17 @@ class PostCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
 
-        let tap = UITapGestureRecognizer(target: self, action: #selector(PostCell.likeTapped(_:)))
+        let tap = UITapGestureRecognizer(target: self, action: #selector(self.likeTapped(_:)))
         tap.numberOfTapsRequired = 1
         likeImage.addGestureRecognizer(tap)
-        likeImage.userInteractionEnabled = true
+        likeImage.isUserInteractionEnabled = true
         
         
         
-        let tap2 = UITapGestureRecognizer(target: self, action: #selector(PostCell.dislikeTapped(_:)))
+        let tap2 = UITapGestureRecognizer(target: self, action: #selector(self.dislikeTapped(_:)))
         tap2.numberOfTapsRequired = 1
         dislikeImage.addGestureRecognizer(tap2)
-        dislikeImage.userInteractionEnabled = true
+        dislikeImage.isUserInteractionEnabled = true
         
       
       QueryCurrentUser()
@@ -136,14 +136,14 @@ class PostCell: UITableViewCell {
   
 
 
-    override func drawRect(rect: CGRect) {
+    override func draw(_ rect: CGRect) {
         profileImg.layer.cornerRadius = profileImg.frame.size.width / 2
         profileImg.clipsToBounds = true
         
       
     }
     
-    override func setSelected(selected: Bool, animated: Bool) {
+    override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
     }
     
@@ -152,7 +152,7 @@ class PostCell: UITableViewCell {
         
         
         
-        FirebaseFanoutPostFollowers(post.postKey)
+        FirebaseFanoutPostFollowers(postKey: post.postKey)
         
         self.showcaseImg.image = nil
         self.post = post
@@ -166,20 +166,20 @@ class PostCell: UITableViewCell {
             
            
         
-        let tapImage = UITapGestureRecognizer(target: self, action: #selector(PostCell.tappedImage(_:)))
+        let tapImage = UITapGestureRecognizer(target: self, action: #selector(self.tappedImage(_:)))
         tapImage.numberOfTapsRequired = 1
         showcaseImg.addGestureRecognizer(tapImage)
-        showcaseImg.userInteractionEnabled = true
+        showcaseImg.isUserInteractionEnabled = true
         
         }
         
         if buttonVideo2  == "VIDEO" {
             
-            let tapImage = UITapGestureRecognizer(target: self, action: #selector(PostCell.tappedVideoImage(_:)))
+            let tapImage = UITapGestureRecognizer(target: self, action: #selector(self.tappedVideoImage(_:)))
             tapImage.numberOfTapsRequired = 1
             showcaseImg.addGestureRecognizer(tapImage)
-           showcaseImg.userInteractionEnabled = true
-            //self.showcaseImg.hidden = true
+           showcaseImg.isUserInteractionEnabled = true
+            //self.showcaseImg.isHidden = true
             
         }
         
@@ -200,50 +200,50 @@ class PostCell: UITableViewCell {
         
          print("PostKey PostCell July 6: \(post.postKey)")
       //start Sep 14
-        if let desc = post.postDescription where post.postDescription != "" {
+        if let desc = post.postDescription, post.postDescription != "" {
             self.descriptionText.text = desc
         } else {
-            self.descriptionText.hidden = true
+            self.descriptionText.isHidden = true
         }
         
-        var buttonVideo =  post.mediaType
+        let buttonVideo =  post.mediaType
         
         if buttonVideo  == "VIDEO" {
-            self.playBtn.hidden = false
+            self.playBtn.isHidden = false
  
         } else {
-            self.playBtn.hidden = true
+            self.playBtn.isHidden = true
  
          
         }
         
         if buttonVideo == "EVENT" {
-            self.newEventBtn.hidden = false
-            self.titleLbl.hidden = false
-            self.changesLbl.hidden = false
-            self.likeLbl.hidden = true
-            self.dislikeLbl.hidden = true
-            self.likeImage.hidden = true
-            self.dislikeImage.hidden = true
-            self.commentBtn.hidden = true
-            self.timeLabel.hidden = true
+            self.newEventBtn.isHidden = false
+            self.titleLbl.isHidden = false
+            self.changesLbl.isHidden = false
+            self.likeLbl.isHidden = true
+            self.dislikeLbl.isHidden = true
+            self.likeImage.isHidden = true
+            self.dislikeImage.isHidden = true
+            self.commentBtn.isHidden = true
+            self.timeLabel.isHidden = true
             
             
             //var capitaliteTitleLbl = post.eventTitle
             
-            self.titleLbl.text = (post.eventTitle).uppercaseString
+            self.titleLbl.text = (post.eventTitle).uppercased()
             
 
         } else{
            
-            self.newEventBtn.hidden = true
-            self.titleLbl.hidden = true
-            self.likeLbl.hidden = false
-            self.dislikeLbl.hidden = false
-            self.likeImage.hidden = false
-            self.dislikeImage.hidden = false
-            self.commentBtn.hidden = false
-            self.timeLabel.hidden = false
+            self.newEventBtn.isHidden = true
+            self.titleLbl.isHidden = true
+            self.likeLbl.isHidden = false
+            self.dislikeLbl.isHidden = false
+            self.likeImage.isHidden = false
+            self.dislikeImage.isHidden = false
+            self.commentBtn.isHidden = false
+            self.timeLabel.isHidden = false
             
 
 
@@ -253,10 +253,10 @@ class PostCell: UITableViewCell {
         
         if tittleLabelChanges == "CHANGES" {
             
-            self.changesLbl.hidden = false
+            self.changesLbl.isHidden = false
             
         } else {
-            self.changesLbl.hidden = true
+            self.changesLbl.isHidden = true
         }
         
         
@@ -270,24 +270,24 @@ class PostCell: UITableViewCell {
 
        print(" Printing Full Name  \(post.fullName)")
         
-        self.profileName.setTitle("\(post.fullName)", forState: .Normal)
+        self.profileName.setTitle("\(post.fullName)", for: .normal)
         self.profileName.titleLabel!.font = UIFont(name: "Marker Felt", size: 12)
        
         
         self.contactId =  post.uid
     
-        // Delete your own post only to hidden Delete button if the post is not yours
+        // Delete your own post only to isHidden Delete button if the post is not yours
         
-        let uid = NSUserDefaults.standardUserDefaults().valueForKey("uid") as? String
+        let uid = UserDefaults.standard.value(forKey: "uid") as? String
         if uid != post.uid {
            
-            self.deleteBtn.hidden = true
-            self.deleteBtn_friends_post.hidden = false
+            self.deleteBtn.isHidden = true
+            self.deleteBtn_friends_post.isHidden = false
             
         } else {
             
-            self.deleteBtn.hidden = false
-            self.deleteBtn_friends_post.hidden = true
+            self.deleteBtn.isHidden = false
+            self.deleteBtn_friends_post.isHidden = true
 
         }
         
@@ -304,18 +304,18 @@ class PostCell: UITableViewCell {
         if let  seconds = Double(((post.time))) {
             let timeStampDate = NSDate(timeIntervalSince1970: seconds)
             
-            let dateFormatter = NSDateFormatter()
+            let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "E, d MMM yyyy hh:mm a"
-            self.timeLabel.text = dateFormatter.stringFromDate(timeStampDate)
+            self.timeLabel.text = dateFormatter.string(from: timeStampDate as Date)
         }
         
         
         
-        downloadAvatar(post.avatar!, completion:  { (data) in
-            self.profileImg.image = UIImage(data: data)
+        downloadAvatar(image: post.avatar!, completion:  { (data) in
+            self.profileImg.image = UIImage(data: data as Data)
             self.profileImg.layer.cornerRadius = 20.0
             self.profileImg.clipsToBounds = true
-            self.showcaseImg.hidden = false
+            self.showcaseImg.isHidden = false
         })
         
        
@@ -329,8 +329,8 @@ class PostCell: UITableViewCell {
             if img != nil {
                 self.showcaseImg.image = img
             } else {
-                let ref = FIRStorage.storage().referenceForURL(post.imageUrl!)
-                ref.dataWithMaxSize( 2 * 1024 * 1024, completion: { (data, error) in
+                let ref = FIRStorage.storage().reference(forURL: post.imageUrl!)
+                ref.data( withMaxSize: 2 * 1024 * 1024, completion: { (data, error) in
                     if error != nil {
                         print("JESS: Unable to download image from Firebase storage")
                     } else {
@@ -338,20 +338,17 @@ class PostCell: UITableViewCell {
                         if let imgData = data {
                             if let img = UIImage(data: imgData) {
                                 self.showcaseImg.image = img
-                                FeedVC.imageCache.setObject(img, forKey: post.imageUrl!)
+                                FeedVC.imageCache.setObject(img, forKey: post.imageUrl! as AnyObject)
                             }
                         }
                     }
                 })
-}
-            
-            
-      
-
             }
+       
+        }
         
         
-        likeRef.observeSingleEventOfType(.Value, withBlock: { snapshot in
+        likeRef.observeSingleEvent(of: .value, with: { snapshot in
             
             if (snapshot.value as? NSNull) != nil {   //WE don't like the current post
                 self.likeImage.image = UIImage(named: "heart-empty")
@@ -363,7 +360,7 @@ class PostCell: UITableViewCell {
         
         })
         
-        dislikeRef.observeSingleEventOfType(.Value, withBlock: { snapshot in
+        dislikeRef.observeSingleEvent(of: .value, with: { snapshot in
             
             if(snapshot.value as? NSNull) != nil {
                 self.dislikeImage.image = UIImage(named: "heart2-empty")    //  "Thumbs_down_Off"
@@ -390,15 +387,15 @@ class PostCell: UITableViewCell {
     print("SNaps oct 4 POstKeyxxxxxxxxxxxxxxxx  :\(postKey)")
     
     //let postKey =  post.postKey
-    NSUserDefaults.standardUserDefaults().setValue(postKey, forKey: "postKey")   ///   postKey
-    NSUserDefaults.standardUserDefaults().synchronize()
+    UserDefaults.standard.setValue(postKey, forKey: "postKey")   ///   postKey
+    UserDefaults.standard.synchronize()
     
-    NSUserDefaults.standardUserDefaults().setValue(postKeyUID, forKey: "postKeyUID")   ///   postKey
-    NSUserDefaults.standardUserDefaults().synchronize()
+    UserDefaults.standard.setValue(postKeyUID, forKey: "postKeyUID")   ///   postKey
+    UserDefaults.standard.synchronize()
     
     
     if(self.delegate != nil){ //Just to be safe.
-        self.delegate!.callSegueFromCell(myData: postKey)
+        self.delegate!.callSegueFromCell(myData: postKey as AnyObject)
         
        }
     }
@@ -406,24 +403,24 @@ class PostCell: UITableViewCell {
  
     
     
-    func likeTapped(sender: UITapGestureRecognizer){
+    @objc func likeTapped(_ sender: UITapGestureRecognizer){
         
         
         let postUserID = post.uid
         print("SNaps July 24  postUserIDxxxxxxxxxxxxxxxx  :\(postUserID)")
         
         //let postKey =  post.postKey
-         NSUserDefaults.standardUserDefaults().setValue(postUserID, forKey: "postUserID")   // is it needed?
+         UserDefaults.standard.setValue(postUserID, forKey: "postUserID")   // is it needed?
         
         
-        likeRef.observeSingleEventOfType(.Value, withBlock: { snapshot in
+        likeRef.observeSingleEvent(of: .value, with: { snapshot in
             
             if (snapshot.value as? NSNull) != nil {   //WE don't like the current post
                 self.likeImage.image = UIImage(named: "heart-full")
-                self.post.adjustLikes(true, followersList: self.postFollowersArray)
+                self.post.adjustLikes(addLike: true, followersList: self.postFollowersArray)
                 self.likeRef.setValue(true)
                 
-               self.dislikeImage.userInteractionEnabled = false
+               self.dislikeImage.isUserInteractionEnabled = false
                 
                 //adding notification
                  let time  = String(Int(NSDate().timeIntervalSince1970))
@@ -433,15 +430,15 @@ class PostCell: UITableViewCell {
                 self.notificationKey = "N\(key)"  /// notificationKey is the same number of the commentKey but with and N before the number
                 
                 let notificationLike : [String : AnyObject] = [
-                    "uid": KEY_UID!,
-                    "fullName": self.profileUserName,
-                    "avatar": self.profileUserImg,
-                    "date" : time,
-                    "postKey" : self.post.postKey,
-                    "commentID": key,
-                    "type": "LIKES YOUR POST",
-                    "notificationKey": self.notificationKey,
-                    "checked": "no",
+                    "uid": KEY_UID! as AnyObject,
+                    "fullName": self.profileUserName as AnyObject,
+                    "avatar": self.profileUserImg as AnyObject,
+                    "date" : time as AnyObject,
+                    "postKey" : self.post.postKey as AnyObject,
+                    "commentID": key as AnyObject,
+                    "type": "LIKES YOUR POST" as AnyObject,
+                    "notificationKey": self.notificationKey as AnyObject,
+                    "checked": "no" as AnyObject,
                 ]
                 
                 if self.post.uid != KEY_UID {
@@ -457,10 +454,10 @@ class PostCell: UITableViewCell {
   
             } else {
                 self.likeImage.image = UIImage(named: "heart-empty")
-                self.post.adjustLikes(false, followersList: self.postFollowersArray)
+                self.post.adjustLikes(addLike: false, followersList: self.postFollowersArray)
                 self.likeRef.removeValue()
                 
-               self.dislikeImage.userInteractionEnabled = true
+               self.dislikeImage.isUserInteractionEnabled = true
                 
                 //notification 
                 
@@ -483,26 +480,26 @@ class PostCell: UITableViewCell {
         
     }
     
-    func dislikeTapped(sender: UITapGestureRecognizer){
+    @objc func dislikeTapped(_ sender: UITapGestureRecognizer){
         
         let postUserID = post.uid
         
    
-        print("SNaps July 24  postUserIDxxxxxxxxxxxxxxxx  :\(postUserID)")
+        print("SNaps July 24  postUserIDxxxxxxxxxxxxxxxx_dis  :\(postUserID)")
         
         //let postKey =  post.postKey
-        NSUserDefaults.standardUserDefaults().setValue(postUserID, forKey: "postUserID")
+        UserDefaults.standard.setValue(postUserID, forKey: "postUserID")
         
-         dislikeRef.observeSingleEventOfType(.Value, withBlock: { snapshot in
+         dislikeRef.observeSingleEvent(of: .value, with: { snapshot in
             
             if (snapshot.value as? NSNull) != nil {
                 self.dislikeImage.image = UIImage(named: "heart2-full")
              //   self.post.adjustDislikes(true, followersList: self.post.followersList)
-                self.post.adjustDislikes(true, followersList: self.postFollowersArray)
+                self.post.adjustDislikes(addDislikes: true, followersList: self.postFollowersArray)
                 self.dislikeRef.setValue(true)
                 
                 
-           self.likeImage.userInteractionEnabled = false
+           self.likeImage.isUserInteractionEnabled = false
                 
                 //adding notification
                 let time  = String(Int(NSDate().timeIntervalSince1970))
@@ -512,15 +509,15 @@ class PostCell: UITableViewCell {
                 self.notificationKey = "N\(key)"  /// notificationKey is the same number of the commentKey but with and N before the number
                 
                 let notificationDislike : [String : AnyObject] = [
-                    "uid": KEY_UID!,
-                    "fullName": self.profileUserName,
-                    "avatar": self.profileUserImg,
-                    "date" : time,
-                    "postKey" : self.post.postKey,
-                    "commentID": key,
-                    "type": "DISLIKES YOUR POST",
-                    "notificationKey": self.notificationKey,
-                    "checked": "no",
+                    "uid": KEY_UID! as AnyObject,
+                    "fullName": self.profileUserName as AnyObject,
+                    "avatar": self.profileUserImg as AnyObject,
+                    "date" : time as AnyObject,
+                    "postKey" : self.post.postKey as AnyObject,
+                    "commentID": key as AnyObject,
+                    "type": "DISLIKES YOUR POST" as AnyObject,
+                    "notificationKey": self.notificationKey as AnyObject,
+                    "checked": "no" as AnyObject,
                 ]
                 
                 if self.post.uid != KEY_UID {
@@ -536,10 +533,10 @@ class PostCell: UITableViewCell {
                 
             }else {
                 self.dislikeImage.image = UIImage(named: "heart2-empty")
-               self.post.adjustDislikes(false, followersList: self.postFollowersArray)
+               self.post.adjustDislikes(addDislikes: false, followersList: self.postFollowersArray)
                 self.dislikeRef.removeValue()
                 
-                self.likeImage.userInteractionEnabled = true
+                self.likeImage.isUserInteractionEnabled = true
                 
                 //notification
                 
@@ -561,19 +558,19 @@ class PostCell: UITableViewCell {
     
     //download profile image from Facebook
     
-    func downloadAvatar(image:String, completion:(data:NSData)-> ()) {
+    func downloadAvatar(image:String, completion:@escaping (_ data:NSData)-> ()) {
         
         print("Image:xxxxxxxxx--------xxxxxxxx: \(image)")
         
         let urlString = NSURL(string: image)
-        let request = NSURLSession.sharedSession().dataTaskWithURL(urlString!){ (data, response, error) -> Void in
+        let request = URLSession.shared.dataTask(with: urlString! as URL){ (data, response, error) -> Void in
             
             if error == nil {
                 
                 if let dataValid = data {
                     
-                    dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                        completion(data: dataValid)
+                    DispatchQueue.main.async(execute: { () -> Void in
+                        completion(dataValid as NSData)
                     })
                     
                 }
@@ -596,7 +593,7 @@ class PostCell: UITableViewCell {
     
         if(self.delegate2 != nil){ //Just to be safe.
             
-             self.delegate2!.ContactIDSegueFromCell(contactID: self.contactId)
+             self.delegate2!.ContactIDSegueFromCell(contactID: self.contactId as AnyObject)
             print("Segue Agosto 1xxxxx: \(self.contactId)")
 
         }
@@ -610,12 +607,12 @@ class PostCell: UITableViewCell {
         
         // delete notification
         
-        DataService.ds.REF_BASE.child("post-commentsOnly").child(postID).observeEventType(.Value, withBlock:  { snapshot in
+        DataService.ds.REF_BASE.child("post-commentsOnly").child(postID).observe(.value, with:  { snapshot in
             
             self.postCommentArray = []
             
             for child in snapshot.children {
-                let postComment = child.key as String
+                let postComment = (child as AnyObject).key as String
                 
                 self.postCommentArray.append(postComment)
                 
@@ -673,7 +670,7 @@ class PostCell: UITableViewCell {
         }
     
             // Create a reference to the file to delete
-             var  imageToDelete = post.mediaType
+             let  imageToDelete = post.mediaType
            // if imageToDelete = "VIDEO" || "PHOTO" {  //"VIDEO" || "PHOTO"
             switch imageToDelete {
                 case "VIDEO":
@@ -696,11 +693,11 @@ class PostCell: UITableViewCell {
     }
     
     func DeletePhoto(){
-        let photoPostRef = storage.referenceForURL((post.imageUrl)!)  // url
+        let photoPostRef = storage.reference(forURL: (post.imageUrl)!)  // url
         
         //  let desertRef = storageRef.child(post.imageUrl!)
         // Delete the file
-        photoPostRef.deleteWithCompletion { (error) -> Void in
+        photoPostRef.delete { (error) -> Void in
             if (error != nil) {
                 // Uh-oh, an error occurred!
                 print("error deleting photo")
@@ -714,10 +711,10 @@ class PostCell: UITableViewCell {
     }
     
     func DeleteVideo_Photo(){
-        let photoPostRef = storage.referenceForURL((post.imageUrl)!)  // url
-         let videoPostRef = storage.referenceForURL((post.videoUrl)!)
+        let photoPostRef = storage.reference(forURL: (post.imageUrl)!)  // url
+         let videoPostRef = storage.reference(forURL: (post.videoUrl)!)
         
-        photoPostRef.deleteWithCompletion { (error) -> Void in
+        photoPostRef.delete { (error) -> Void in
             if (error != nil) {
                 // Uh-oh, an error occurred!
                 print("error deleting photo")
@@ -726,7 +723,7 @@ class PostCell: UITableViewCell {
                 print("Photo File deleted successfully")
             }
         }
-        videoPostRef.deleteWithCompletion { (error) -> Void in
+        videoPostRef.delete { (error) -> Void in
             if (error != nil) {
                 // Uh-oh, an error Deleting Video occurred!
                 print("error deleting photo")
@@ -751,7 +748,7 @@ class PostCell: UITableViewCell {
     }
     
    
-    func tappedImage(sender: UITapGestureRecognizer)
+    @objc func tappedImage(_ sender: UITapGestureRecognizer)
     {
         print("Tapped on Image")
         
@@ -761,12 +758,12 @@ class PostCell: UITableViewCell {
         
         if(self.delegate3 != nil){ //Just to be safe.
             
-            self.delegate3!.ImageURLSegue_Cell(postKey_Segue: postKey_Segue)
+            self.delegate3!.ImageURLSegue_Cell(postKey_Segue: postKey_Segue as AnyObject)
     }
 }
     
     
-    func tappedVideoImage(sender: UITapGestureRecognizer)
+    @objc func tappedVideoImage(_ sender: UITapGestureRecognizer)
     {
         
         
@@ -776,7 +773,7 @@ class PostCell: UITableViewCell {
         print("videoURL: \(videoUrl_segue)")
         
         if(self.videoDelegate4 != nil){ //Just to be safe.
-            self.videoDelegate4!.VideoURLSegue_Cell(videoUrl_segue: videoUrl_segue!)
+            self.videoDelegate4!.VideoURLSegue_Cell(videoUrl_segue: videoUrl_segue! as AnyObject)
             
         }
       
@@ -790,7 +787,7 @@ class PostCell: UITableViewCell {
         print("videoURL: \(videoUrl_segue)")
         
         if(self.videoDelegate4 != nil){ //Just to be safe.
-            self.videoDelegate4!.VideoURLSegue_Cell(videoUrl_segue: videoUrl_segue!)
+            self.videoDelegate4!.VideoURLSegue_Cell(videoUrl_segue: videoUrl_segue! as AnyObject)
             
         }
 
@@ -803,7 +800,7 @@ class PostCell: UITableViewCell {
        print("linkToEventBTn pressed:  \(eventKey_segue)")
         
         if(self.EventDelegate5 != nil){ //Just to be safe.
-            self.EventDelegate5!.EventSegue_Cell(eventKey_segue: eventKey_segue!)
+            self.EventDelegate5!.EventSegue_Cell(eventKey_segue: eventKey_segue! as AnyObject)
             
         }
     }
@@ -812,7 +809,7 @@ class PostCell: UITableViewCell {
     func FirebaseFanoutPostFollowers(postKey: String!){
         
         followersRef = DataService.ds.REF_BASE.child("posts-followers").child(postKey)
-        followersRef.observeEventType(.Value, withBlock:  { snapshot in
+        followersRef.observe(.value, with:  { snapshot in
             
             
             print("new snapshot array: \(snapshot.key)")
@@ -822,7 +819,7 @@ class PostCell: UITableViewCell {
             //  self.usersLists = []
             
             for child in snapshot.children {
-                let postFollowersID = child.key as String
+                let postFollowersID = (child as AnyObject).key as String
                 print("friendID  Array IIIIiiiiiiPostCelliiiiiii: \(postFollowersID)")
                 
                 self.postFollowersArray.append(postFollowersID)
@@ -838,14 +835,14 @@ class PostCell: UITableViewCell {
     
     func FirebaseFanout(){
         
-        followersRef.observeEventType(.Value, withBlock:  { snapshot in
+        followersRef.observe(.value, with:  { snapshot in
            
             print("new snapshot array: \(snapshot.key)")
             
             self.friendsArray = []
             
             for child in snapshot.children {
-                let friendID = child.key as String
+                let friendID = (child as AnyObject).key as String
                 print("friendID  Array IIIIiiiiiiPostCelliiiiiii: \(friendID)")
                 
                 self.friendsArray.append(friendID)
@@ -861,7 +858,7 @@ class PostCell: UITableViewCell {
     
     func QuerryNotifications(){
         
-        DataService.ds.REF_BASE.child("notifications").child(KEY_UID!).observeEventType(.Value, withBlock:{ snapshot in
+        DataService.ds.REF_BASE.child("notifications").child(KEY_UID!).observe(.value, with:{ snapshot in
             
             // print("new way: \(snapshot)")
             // self.contacts = []
@@ -885,21 +882,21 @@ class PostCell: UITableViewCell {
                         
                         self.notifications.append(notification)
                         
-
-                      
+                        
+                        
                         
                     }
                 }
-   
+                
                 
             }
             
             
-           
-           // self.tableView.reloadData()
+            
+            // self.tableView.reloadData()
             
             
-            }, withCancelBlock: nil)
+        }, withCancel: nil)
         
         // }, withCancelBlock: nil)
         
@@ -907,7 +904,7 @@ class PostCell: UITableViewCell {
     
     func QueryCurrentUser(){
         
-        DataService.ds.REF_USER_CURRENT.observeEventType(.Value, withBlock: { (snapshot)  in
+        DataService.ds.REF_USER_CURRENT.observe(.value, with: { (snapshot)  in
             
             let item = snapshot as FIRDataSnapshot
             print("SNAP-Itemxxxxxxxxxxx: \(item)")
@@ -918,16 +915,16 @@ class PostCell: UITableViewCell {
                 let avatar = dict["avatar"] as! String
                 // self.image = avatar
                 
-                self.activeUserInfo = dict
+                self.activeUserInfo = dict as NSDictionary?
                 
                 // self.title = "Welcome \(self.activeUserInfo!["firstName]!)"
-                self.profileUserName = "\(self.activeUserInfo!["fullName"]!.uppercaseString!)"
+                self.profileUserName = "\((self.activeUserInfo!["fullName"]! as AnyObject).uppercased!)"
                 self.profileUserImg = "\(self.activeUserInfo!["avatar"]!)"
                 // self.followersLabel.text = " \(self.activeUserInfo!["followers"]!) \n followers"
                 // self.followingLabel.text = " \(self.activeUserInfo!["following"]!) \n following"
             }
             
-            }, withCancelBlock: {(error) -> Void in
+        }, withCancel: {(error) -> Void in
         })
     }
     

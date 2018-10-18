@@ -10,6 +10,11 @@ import UIKit
 import Firebase
 
 class SearchVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchResultsUpdating, UISearchBarDelegate, CustomSearchControllerDelegate {
+//    @available(iOS 8.0, *)
+//    public func updateSearchResults(for searchController: UISearchController) {
+//        //<#code#>
+//    }
+
     
     @IBOutlet weak var tblSearchResults: UITableView!
     
@@ -66,12 +71,12 @@ class SearchVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UI
     
     // MARK: UITableView Delegate and Datasource functions
     
-    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    func numberOfSections( in tableView: UITableView) -> Int {
         return 1
     }
     
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if shouldShowSearchResults {
             return filteredContacts.count
         }
@@ -81,22 +86,22 @@ class SearchVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UI
     }
     
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
        // let cell = tableView.dequeueReusableCellWithIdentifier("idCell", forIndexPath: indexPath)
         
        // let contact = contacts[indexPath.row]
         
-       let cell =  tableView.dequeueReusableCellWithIdentifier("idCell", forIndexPath: indexPath) as? SearchCell
+       let cell =  tableView.dequeueReusableCell(withIdentifier: "idCell", for: indexPath as IndexPath) as? SearchCell
         if shouldShowSearchResults {
            // cell!.textLabel?.text = filteredArray[indexPath.row]
              let filtercontact = filteredContacts[indexPath.row]
-            cell!.configureCell(filtercontact)
+            cell!.configureCell(contact: filtercontact)
             return cell!
         }
         else {
            // cell.textLabel?.text = dataArray[indexPath.row]
            let contact = contacts[indexPath.row]
-             cell!.configureCell(contact)
+             cell!.configureCell(contact: contact)
             return cell!
         }
         return ContactCell()
@@ -105,7 +110,7 @@ class SearchVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UI
 
     
     
-    func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 70.0
     }
     
@@ -143,9 +148,9 @@ class SearchVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UI
     
     
     func configureCustomSearchController() {
-        customSearchController = CustomSearchController(searchResultsController: self, searchBarFrame: CGRectMake(0.0, 0.0, tblSearchResults.frame.size.width, 50.0), searchBarFont: UIFont(name: "Futura", size: 16.0)!, searchBarTextColor: UIColor.orangeColor(), searchBarTintColor: UIColor.blackColor())
-        
-        customSearchController.customSearchBar.placeholder = "Search by Name only..."
+       // customSearchController = CustomSearchController(searchResultsController: self, searchBarFrame: CGRectMake(0.0, 0.0, tblSearchResults.frame.size.width, 50.0), searchBarFont: UIFont(name: "Futura", size: 16.0)!, searchBarTextColor: UIColor.orangeColor(), searchBarTintColor: UIColor.blackColor())
+        customSearchController = CustomSearchController(searchResultsController: self, searchBarFrame: CGRect(x: 0.0, y: 0.0, width: tblSearchResults.frame.size.width, height: 50.0 ), searchBarFont: UIFont(name: "Futura", size: 16.0)!, searchBarTextColor: UIColor.orange, searchBarTintColor: UIColor.black)
+         customSearchController.customSearchBar.placeholder = "Search by Name only..."
         tblSearchResults.tableHeaderView = customSearchController.customSearchBar
         
         customSearchController.customDelegate = self
@@ -154,19 +159,19 @@ class SearchVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UI
     
     // MARK: UISearchBarDelegate functions
     
-    func searchBarTextDidBeginEditing(searchBar: UISearchBar) {
+    func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
         shouldShowSearchResults = true
         tblSearchResults.reloadData()
     }
     
     
-    func searchBarCancelButtonClicked(searchBar: UISearchBar) {
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         shouldShowSearchResults = false
         tblSearchResults.reloadData()
     }
     
     
-    func searchBarSearchButtonClicked(searchBar: UISearchBar) {
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         if !shouldShowSearchResults {
             shouldShowSearchResults = true
             tblSearchResults.reloadData()
@@ -178,7 +183,7 @@ class SearchVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UI
     
     // MARK: UISearchResultsUpdating delegate function
     
-    func updateSearchResultsForSearchController(searchController: UISearchController) {
+   func updateSearchResults(for searchController: UISearchController) {
         guard let searchString = searchController.searchBar.text else {
             return
         }
@@ -189,9 +194,10 @@ class SearchVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UI
        self.filteredContacts = contacts.filter({ (contacts) -> Bool in
       //  QuerySearchUser()
         
-            let fullNameText:NSString = self.fullName
+            let fullNameText:NSString = self.fullName as NSString
             
-            return (fullNameText.rangeOfString(searchString, options: NSStringCompareOptions.CaseInsensitiveSearch).location) != NSNotFound
+            return (fullNameText.range(of: searchString, options: NSString.CompareOptions.caseInsensitive).location) != NSNotFound //  .CaseInsensitiveSearch).location) != NSNotFound
+        
         })
         
         // Reload the tableview.
@@ -226,7 +232,7 @@ class SearchVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UI
     func didChangeSearchText(searchText: String) {
         // Filter the data array and get only those countries that match the search text.
         // self.filteredContacts = contacts.filter({ (fullName) -> Bool in
-              QuerySearchUser(searchText)
+              QuerySearchUser(searchText: searchText)
             
 //let fullNameText:NSString = self.fullName
             
@@ -241,7 +247,7 @@ class SearchVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UI
     
     func QueryUsers(){
     
-    DataService.ds.REF_USERS.queryLimitedToLast(8).observeEventType(FIRDataEventType.Value, withBlock: { (snapshot) in
+    DataService.ds.REF_USERS.queryLimited(toLast: 8).observe(FIRDataEventType.value, with: { (snapshot) in
     
     print(snapshot.value)
     
@@ -281,14 +287,14 @@ class SearchVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UI
     
     func QuerySearchUser(searchText: String){
         
-        let searchStringOut2 = searchText.uppercaseString
+        let searchStringOut2 = searchText.uppercased()
         
-        print("Upper CASe:  \(searchStringOut2)")
+        print("Upper CASE:  \(searchStringOut2)")
         
         DataService.ds.REF_BASE.child("users")
-            .queryOrderedByChild("firstName")
-            .queryEqualToValue(searchStringOut2)
-            .observeSingleEventOfType(.Value, withBlock: {
+            .queryOrdered(byChild: "firstName")
+            .queryEqual(toValue: searchStringOut2)
+            .observeSingleEvent(of: .value, with: {
               //  snapshot in
              
      /*   DataService.ds.REF_BASE.child("users").queryOrderedByChild("fullName").queryStartingAtValue(searchStringOut2).queryEndingAtValue("b\u{f8ff}")
@@ -329,15 +335,15 @@ class SearchVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UI
         
     }
     
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+     override func prepare(for forsegue: UIStoryboardSegue, sender: Any?) {
         
-        if segue.identifier == "goToContactProfile" &&  shouldShowSearchResults  != false{
+        if forsegue.identifier == "goToContactProfile" &&  shouldShowSearchResults  != false{
             
             let index = tblSearchResults.indexPathForSelectedRow
             let contactSelected = filteredContacts[index!.row]
             
             print("ContactKEY-Outside-----xxxxx-----------------: \(contactSelected.contactKey)")
-            let destinationVC = segue.destinationViewController as! contactProfileVC
+            let destinationVC = forsegue.destination as! contactProfileVC
             
             destinationVC.contactId   = contactSelected.contactKey
             
@@ -348,7 +354,7 @@ class SearchVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UI
             let contactSelected = contacts[index!.row]
             
             print("ContactKEY-Outside-----xxxxx-----------------: \(contactSelected.contactKey)")
-            let destinationVC = segue.destinationViewController as! contactProfileVC
+            let destinationVC = forsegue.destination as! contactProfileVC
             
             destinationVC.contactId   = contactSelected.contactKey
             

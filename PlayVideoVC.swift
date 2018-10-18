@@ -27,7 +27,7 @@ class PlayVideoVC: UIViewController {
 
         if let url = movieUrl {
             
-            self.avPlayer = AVPlayer(URL: url)
+            self.avPlayer = AVPlayer(url: url as URL)
             self.avPlayerViewController.player = self.avPlayer
         }
     
@@ -39,12 +39,12 @@ class PlayVideoVC: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    override func viewWillDisappear(animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         self.navigationController?.setNavigationBarHidden(true, animated: animated);
         super.viewWillDisappear(animated)
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.navigationController?.setNavigationBarHidden(false, animated: animated)
        
@@ -53,7 +53,7 @@ class PlayVideoVC: UIViewController {
 
     @IBAction func playButtonTapped(sender: AnyObject) {
         
-        self.presentViewController(self.avPlayerViewController, animated: true) { 
+        self.present(self.avPlayerViewController, animated: true) { 
             self.avPlayerViewController.player?.play()
         }
     }

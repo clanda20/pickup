@@ -63,7 +63,7 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
         var _locationManager = CLLocationManager()
         _locationManager.delegate = self
         _locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters    // kCLLocationAccuracyNearestTenMeters
-        _locationManager.activityType = .AutomotiveNavigation
+        _locationManager.activityType = .automotiveNavigation
       //  _locationManager.requestAlwaysAuthorization()
         
         // Movement threshold for new events
@@ -72,7 +72,7 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
     }()
     
     lazy var locations = [CLLocation]()
-    lazy var timer = NSTimer()
+    lazy var timer = Timer()
     
     
     //var activeUserInfo: NSDictionary?
@@ -111,18 +111,18 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.tabBarController?.tabBar.hidden = true
+        self.tabBarController?.tabBar.isHidden = true
         
         QueryGeoEvent()
         QueryUsers()
        // QueryMyEvent_Details()
         
         mapView.delegate = self
-        mapView.userTrackingMode = MKUserTrackingMode.None
+        mapView.userTrackingMode = MKUserTrackingMode.none
         mapView.showsTraffic = true
         mapView.showsScale = true
-        mapView.zoomEnabled = true
-        mapView.scrollEnabled = true
+        mapView.isZoomEnabled = true
+        mapView.isScrollEnabled = true
     
        
         mapView.showsUserLocation = true
@@ -132,7 +132,7 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
         
         let initialLocation = CLLocation(latitude: self.latitudeEvent, longitude: self.longitudeEvent)
         
-        centerMapOnLocation(initialLocation)
+        centerMapOnLocation(location: initialLocation)
         
         
        
@@ -140,7 +140,7 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
     
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
          locationManager.requestAlwaysAuthorization()
         mapView.showsUserLocation = true
         QueryGeoEvent()
@@ -148,7 +148,7 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
        
     }
     
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         QueryUsers()
         
     }
@@ -173,47 +173,48 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
         }
     }
     
-    func QueryLocation(completion:(location: CLLocation) -> ()) {
+    func QueryLocation(completion:@escaping (_ location: CLLocation) -> ()) {
         
         geoFire.getLocationForKey(self.eventKey, withCallback: {(location, error) in
             
             if (error != nil) {
-                print("An error occurred getting the location for \(self.eventKey): \(error.localizedDescription)")
+                print("An error occurred getting the location for \(self.eventKey): \(error?.localizedDescription)")
             } else if (location != nil) {
-                print("Location for \(self.eventKey) is [\(location.coordinate.latitude), \(location.coordinate.longitude)]")
+                print("Location for \(self.eventKey) is [\(location?.coordinate.latitude), \(location?.coordinate.longitude)]")
             } else {
                 print("GeoFire does not contain a location for \(self.eventKey)")
             }
             
-            self.addRadiusCircle(location.coordinate)  // very important   created the blue circle
-            self.locationCoordinate = location.coordinate
+             // very important   created the blue circle
+            self.addRadiusCircle(location: (location?.coordinate)!)
+            self.locationCoordinate = location?.coordinate
             self.geoFireUserLocationRef = FIRDatabase.database().reference().child("geo-user-location")
             self.geoFireUserLocation  = GeoFire(firebaseRef: self.geoFireUserLocationRef)
             
-            let center = CLLocation(latitude:  location.coordinate.latitude, longitude:  location.coordinate.longitude)
+            let center = CLLocation(latitude:  (location?.coordinate.latitude)!, longitude:  (location?.coordinate.longitude)!)
             
-            self.latitudeEvent = location.coordinate.latitude
-            self.longitudeEvent = location.coordinate.longitude
+            self.latitudeEvent = (location?.coordinate.latitude)!
+            self.longitudeEvent = (location?.coordinate.longitude)!
             
           
             let initialLocation = CLLocation(latitude: self.latitudeEvent, longitude: self.longitudeEvent)
             
-            self.centerMapOnLocation(initialLocation)
+            self.centerMapOnLocation(location: initialLocation)
             
              self.eventLocationMap = EventAnnot(title: "Today's Event",
                                                 locationName: "CheckLocation",
-                                                coordinate: CLLocationCoordinate2D(latitude: self.latitudeEvent, longitude: self.longitudeEvent))
+                                                coordinate: CLLocationCoordinate2D(latitude: self.latitudeEvent, longitude: self.longitudeEvent))  //ojo
             
             self.mapView.addAnnotation(self.eventLocationMap)
             
-            var radiousEventDoubleToKM = (self.radiousEventDouble / 1000)
+            let radiousEventDoubleToKM = (self.radiousEventDouble / 1000)
             
-            var circleQuery =  self.geoFireUserLocation.queryAtLocation(center, withRadius: radiousEventDoubleToKM)  // radius of the events location
+            var circleQuery =  self.geoFireUserLocation.query(at: center, withRadius: radiousEventDoubleToKM)  // radius of the events location
             
             // Query location by region
-            let span = MKCoordinateSpanMake(0.005, 0.005)
-            let region = MKCoordinateRegionMake(center.coordinate, span)
-            _ = self.geoFire.queryWithRegion(region)
+            let span = MKCoordinateSpan.init(latitudeDelta: 0.005, longitudeDelta: 0.005)
+            let region = MKCoordinateRegion.init(center: center.coordinate, span: span)
+            _ = self.geoFire.query(with: region)
             
         
             
@@ -243,35 +244,35 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
              self.startLocationUpdates()
              
              })  */
-            circleQuery!.observeEventType(.KeyMoved, withBlock: { (key, location) in
+            circleQuery!.observe(.keyMoved, with: { (key, location) in
                 
                 self.keyUsers = key
                 self.usersLocations = location
                 
-                self.latitude = location.coordinate.latitude
-                self.longitude = location.coordinate.longitude
+                self.latitude = (location?.coordinate.latitude)!
+                self.longitude = (location?.coordinate.longitude)!
                 
-                var lat = location.coordinate.latitude
-                var log = location.coordinate.longitude
+                var lat = location?.coordinate.latitude
+                var log = location?.coordinate.longitude
                 
              
-                self.showSightingsOnMap(key, location: location)
+                self.showSightingsOnMap(key: key!, location: location!)
                 
                 
             })
             
-            circleQuery!.observeEventType(.KeyEntered, withBlock: { (key, location) in
+            circleQuery!.observe(.keyEntered, with: { (key, location) in
                 
                 
                 
                 self.keyUsers = key
                 self.usersLocations = location
                 
-                self.latitude = location.coordinate.latitude
-                self.longitude = location.coordinate.longitude
+                self.latitude = (location?.coordinate.latitude)!
+                self.longitude = (location?.coordinate.longitude)!
                 
                 print("location from GeoFire KeyEntered = \(self.latitude) \(self.longitude)")
-                self.showSightingsOnMap(key, location: location)
+                self.showSightingsOnMap(key: key!, location: location!)
                 
                 
             })
@@ -297,8 +298,8 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
                self.showSightingsOnMap(key, location: location)
             })   */
             
-            dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                completion(location: location )
+            DispatchQueue.main.async(execute: { () -> Void in
+                completion(location! )
             })
            // }
         })
@@ -309,7 +310,7 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
     
     
     func centerMapOnLocation(location: CLLocation) {
-        let coordinateRegion = MKCoordinateRegionMakeWithDistance(location.coordinate, regionRadius * 2.0, regionRadius * 2.0)
+        let coordinateRegion = MKCoordinateRegion.init(center: location.coordinate, latitudinalMeters: regionRadius * 2.0, longitudinalMeters: regionRadius * 2.0)
         
         mapView.setRegion(coordinateRegion, animated: true)
     }
@@ -322,7 +323,7 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
     // MARK: showSightingsOnMap----------
     func showSightingsOnMap(key:String, location: CLLocation){
         
-      self.querryUserID(key){ (fullName, array) -> () in
+      self.querryUserID(key: key){ (fullName, array) -> () in
             
             print("From ARRAy Agosto: \(fullName)")
             
@@ -348,7 +349,7 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
         
        
         
-          let myTimer : NSTimer = NSTimer.scheduledTimerWithTimeInterval(0.5, target: self, selector: Selector("myPerformeCode:"), userInfo: nil, repeats: false)
+          let myTimer : Timer = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(GeoMapVC.myPerformeCode(_:)), userInfo: nil, repeats: false)
         /*  var coordinate: CLLocationCoordinate2D = location.coordinate
          let anno = MapUserAnnotation(coordinate: coordinate, key: key)
          
@@ -357,7 +358,7 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
     
     }
     
-    func myPerformeCode(timer : NSTimer) {
+    @objc func myPerformeCode(_ timer : Timer) {
         
          self.mapView.annotations.forEach {
             if !($0 is MKUserLocation) {
@@ -374,11 +375,11 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
     //  MARK: - LOCATION MANAGER
     
     
-    func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         
         //from here to here fomr Persy
         
-        var location:CLLocationCoordinate2D = (manager.location?.coordinate)!
+        let location:CLLocationCoordinate2D = (manager.location?.coordinate)!
         
         self.latitude = location.latitude
         self.longitude = location.longitude
@@ -389,14 +390,14 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
             if abs(howRecent) < 10 && location.horizontalAccuracy < 20 {
                 //update distance
                 if self.locations.count > 0 {
-                    distance += location.distanceFromLocation(self.locations.last!)
+                    distance += location.distance(from: self.locations.last!)
                     
                     var coords = [CLLocationCoordinate2D]()
                   //  coords.append(self.locations.last!.coordinate)
                     coords.append(location.coordinate)
                     
-                   var geoFireUserLocationSetLocationRef = FIRDatabase.database().reference().child("geo-user-location")
-                   var  geoFireUserLocationSetLocation  = GeoFire(firebaseRef: geoFireUserLocationSetLocationRef)
+                   let geoFireUserLocationSetLocationRef = FIRDatabase.database().reference().child("geo-user-location")
+                   let  geoFireUserLocationSetLocation  = GeoFire(firebaseRef: geoFireUserLocationSetLocationRef)
 
                     for comingIDx in self.coming_Array {
                         
@@ -472,12 +473,12 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
     var image: String?
     // guardado Sat agosto 28
     
-    func querryUserID(key: String, completion:(fullName: String, array:NSArray) -> ()){
+    func querryUserID(key: String, completion:@escaping (_ fullName: String, _ array:NSArray) -> ()){
         
-        var activeUserInfo = [NSDictionary]()
+        let activeUserInfo = [NSDictionary]()
         var fullName: String!
         
-        DataService.ds.REF_USERS.child(key).observeEventType(.Value, withBlock: { (snapshot) in
+        DataService.ds.REF_USERS.child(key).observe(.value, with: { (snapshot) in
             
             let item = snapshot as FIRDataSnapshot
             print("SNAP-Itemxxxxxxagodstttttooooxxxxx: \(item)")
@@ -493,7 +494,7 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
                 
                 //contact's information
                 
-                fullName =   (activeUserInfo["fullName"]!.uppercaseString!)
+                fullName =   (activeUserInfo["fullName"]!.uppercased!)
                 
                 print("FullName Agosto 17: \(fullName)")
                 //  self.postsLabel.text = " \(self.activeUserInfo!["postNumber"]!) \n posts"
@@ -506,7 +507,7 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
                 
                 
                 
-                self.downloadAvatar(avatar, completion: { (data) in
+                self.downloadAvatar(image: avatar, completion: { (data) in
                     
                     //   self.avatarImageView.image = UIImage(data: data)
                     
@@ -516,29 +517,29 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
                 
             }
             
-            dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                 completion(fullName: fullName, array: activeUserInfo)
+            DispatchQueue.main.async(execute: { () -> Void in
+                 completion(fullName, activeUserInfo as NSArray)
             })
-            }, withCancelBlock: {(error) -> Void in
+            }){(error)  in
                 
-                print(error.description)
+                print(error.localizedDescription)
                 
-        })
+        }
         
     }
     
     
-    func downloadAvatar(image:String, completion:(data:NSData)-> ()) {
+    func downloadAvatar(image:String, completion:@escaping (_ data:NSData)-> ()) {
         
         let urlString = NSURL(string: image)
-        let request = NSURLSession.sharedSession().dataTaskWithURL(urlString!){ (data, response, error) -> Void in
+        let request = URLSession.shared.dataTask(with: urlString! as URL){ (data, response, error) -> Void in
             
             if error == nil {
                 
                 if let dataValid = data {
                     
-                    dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                        completion(data: dataValid)
+                    DispatchQueue.main.async(execute: { () -> Void in
+                        completion(dataValid as NSData)
                     })
                     
                 }
@@ -604,13 +605,13 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
                 
                 print(" Array Coming 2>>>>>>> \(comingIDx)")
                 
-                InsideQueryUsers(comingIDx)
+                InsideQueryUsers(comingIDx: comingIDx)
                 print("comingIDx if nil: \(comingIDx)")
             }
         } else {
             let comingIDXX:String = "xx"   //xx is any ramdon string to pass the for-in than doesn't accept Nil arrays
             
-            InsideQueryUsers(comingIDXX)
+            InsideQueryUsers(comingIDx: comingIDXX)
             
         }
         
@@ -618,7 +619,7 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
     func  InsideQueryUsers(comingIDx: String){
         
         
-        DataService.ds.REF_USERS.child(comingIDx).observeEventType(.Value, withBlock: { (snapshot) in
+        DataService.ds.REF_USERS.child(comingIDx).observe(.value, with: { (snapshot) in
             
             print("List Snapshot EVent Detail: \(snapshot)")
             
@@ -641,13 +642,13 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
     func FirebaseFanout(){
         
         
-        ref.child("users-event-coming").child(self.eventKey).child("coming").observeEventType(.Value, withBlock:  { snapshot in
-           
+        ref.child("users-event-coming").child(self.eventKey).child("coming").observe(.value, with:  { snapshot in
+            
             self.coming_Array = []
             
             
             for child in snapshot.children {
-                let comingID = child.key as String
+                let comingID = (child as AnyObject).key as String
                 print("ComingID  Array IIIIiiiiiDelete Postiiiiiiiii: \(comingID)")
                 
                 self.coming_Array.append(comingID)
@@ -661,7 +662,7 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
             }
             
             
-            }, withCancelBlock: { (error) ->  Void in
+        }, withCancel: { (error) ->  Void in
                 
                 
         })
@@ -670,15 +671,15 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
     func addRadiusCircle(location: CLLocationCoordinate2D){
         
         self.mapView.delegate = self
-        var circle = MKCircle(centerCoordinate: location, radius: self.radiousEventDouble)    // radious 2090
+        let circle = MKCircle(center: location, radius: self.radiousEventDouble)    // radious 2090
         self.mapView.addOverlay(circle)
     }
     
-    func mapView(mapView: MKMapView, rendererForOverlay overlay: MKOverlay) -> MKOverlayRenderer {
+    func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
         let overlay = overlay as? MKCircle //{
         self.circleRenderer = MKCircleRenderer(circle: overlay!)
 
-        circleRenderer.fillColor = UIColor.blueColor().colorWithAlphaComponent(0.1)
+        circleRenderer.fillColor = UIColor.blue.withAlphaComponent(0.1)
         return circleRenderer
     }
     
@@ -687,11 +688,11 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
         let mapType = MapType(rawValue: mapTypeSegmentedControl.selectedSegmentIndex)
         switch (mapType!) {
         case .Standard:
-            mapView.mapType = MKMapType.Standard
+            mapView.mapType = MKMapType.standard
         case .SatelliteFlyover:
-            mapView.mapType = MKMapType.SatelliteFlyover
+            mapView.mapType = MKMapType.satelliteFlyover
         case .HybridFlyover:
-            mapView.mapType = MKMapType.HybridFlyover
+            mapView.mapType = MKMapType.hybridFlyover
         }
     }
     
@@ -702,7 +703,7 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
         
        // geoFireUserLocation.removeKey(KEY_UID)
         radiusLbl.text = ""
-        sliderOutlet.continuous = false
+        sliderOutlet.isContinuous = false
         radiusLbl.text = "\(NSString(format: "%.2f", sliderOutlet.value / 1609)) mi."  // in miles
         
         self.radiusEvent = String(sliderOutlet.value)     //  in km                     //self.radiusLbl.text
@@ -710,16 +711,16 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
         self.mapView.removeOverlays(self.mapView.overlays)  // remove all overlays including the circle
 
         QueryGeoEvent()
-        circleRenderer.fillColor = UIColor.blueColor().colorWithAlphaComponent(0.1)
+        circleRenderer.fillColor = UIColor.blue.withAlphaComponent(0.1)
         
         }
     
     // To Active Apple's Navigation GPS
     
-    func getDirections(){
+    @objc func getDirections(){
         
         let geocoder:CLGeocoder = CLGeocoder()
-         var theLocation: CLLocation = CLLocation(latitude: self.latitudeEvent, longitude: self.longitudeEvent)
+         let theLocation: CLLocation = CLLocation(latitude: self.latitudeEvent, longitude: self.longitudeEvent)
          geocoder.reverseGeocodeLocation(theLocation,
              completionHandler: { ( placemarks, error) -> Void in
         
@@ -738,7 +739,7 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
                     // if let selectedPinCoor = selectedPinCoor {
                     let mapItem = MKMapItem(placemark: selectedPinCoor)   //CLLocationCoordinate2D
                     let launchOptions = [MKLaunchOptionsDirectionsModeKey : MKLaunchOptionsDirectionsModeDriving]
-                    mapItem.openInMapsWithLaunchOptions(launchOptions)
+                    mapItem.openInMaps(launchOptions: launchOptions)
                 
                 }
                 else {
@@ -769,7 +770,7 @@ extension GeoMapVC {
         if let annotation = annotation as? EventAnnot {
             let identifier = "pin"
             var view: MKPinAnnotationView
-            if let dequeuedView = mapView.dequeueReusableAnnotationViewWithIdentifier(identifier)
+            if let dequeuedView = mapView.dequeueReusableAnnotationView(withIdentifier: identifier)
                 as? MKPinAnnotationView { // 2
                 dequeuedView.annotation = annotation
                 view = dequeuedView
@@ -781,13 +782,13 @@ extension GeoMapVC {
                 view.calloutOffset = CGPoint(x: -5, y: 5)
                 //adding
                  let smallSquare = CGSize(width: 30, height: 30)
-                let button = UIButton(frame: CGRect(origin: CGPointZero, size: smallSquare))
-                button.setBackgroundImage(UIImage(named: "car"), forState: .Normal)
-                button.addTarget(self, action: "getDirections", forControlEvents: .TouchUpInside)
+                let button = UIButton(frame: CGRect(origin: CGPoint.zero, size: smallSquare))
+                button.setBackgroundImage(UIImage(named: "car"), for: .normal)
+                button.addTarget(self, action: #selector(GeoMapVC.getDirections), for: .touchUpInside)
                 view.leftCalloutAccessoryView = button
                 
                 //end adding
-                view.rightCalloutAccessoryView = UIButton(type: UIButtonType.Custom) as UIView
+                view.rightCalloutAccessoryView = UIButton(type: UIButton.ButtonType.custom) as UIView
                 view.pinTintColor = MKPinAnnotationView.purplePinColor()
                 return view
             }

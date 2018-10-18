@@ -12,7 +12,7 @@ import FirebaseDatabase
 import Photos
 import FirebaseAuth
 import FirebaseStorage
-import Alamofire
+//import Alamofire
 
 import FirebaseDatabaseUI
 import FirebaseAuthUI
@@ -28,8 +28,8 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
     @IBOutlet weak var postField: MaterialTextField!
    @IBOutlet weak var imageSelectorImage: UIImageView!
     
-    @IBOutlet weak var progressView: UIProgressView!
-    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
+//    @IBOutlet weak var progressView: UIProgressView!
+//    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     
     var imageData = NSData()
     var imageSaved: String?
@@ -79,7 +79,7 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
     
    // var friendsArray: [String]
     
-    static var imageCache = NSCache()
+    static var imageCache = NSCache<AnyObject, AnyObject>()
    // var image: UIImage!  // commented out sep 14
     let imagePC = UIImagePickerController()
     var popover:UIPopoverController? = nil
@@ -107,11 +107,13 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
         tableView.dataSource = self
         
         tableView.estimatedRowHeight = 680//358
+        
         imagePicker = UIImagePickerController()
+        imagePicker.allowsEditing = true
         imagePicker.delegate = self
         
         let storage = FIRStorage.storage()
-        storageRef = storage.referenceForURL("gs://pickup-9b67a.appspot.com")
+        storageRef = storage.reference(forURL: "gs://pickup-9b67a.appspot.com")
         
         //Enable offline capabilities 
         
@@ -119,7 +121,7 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
         
         //Dismiss Keyboard
         
-        let tapGesture = UITapGestureRecognizer(target: self, action: Selector("hideKeyboard"))
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(FeedVC.hideKeyboard))
         tapGesture.cancelsTouchesInView = true
         self.view.addGestureRecognizer(tapGesture)
       
@@ -133,20 +135,22 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
         
     }
 
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
     super.viewWillAppear(animated)
       //  FirebaseFanout({ (friendID) -> () in })
        self.navigationController?.setNavigationBarHidden(true, animated: animated)
        FirebaseFanout()
      //self.tableView.reloadData()
+        self.tabBarController?.tabBar.isHidden = false  // jan 11, 2017 might not be needed
     }
 
     
 
 
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-  self.navigationItem.setLeftBarButtonItem(nil, animated: true)
+        self.navigationItem.setLeftBarButton(nil, animated: true)
+        
         // FirebaseFanout()
        // QueryMyTimeline()
         
@@ -161,35 +165,35 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
        // followingsRef = DataService.ds.REF_FOLLOWING_USERID
        // followingsRef.observeEventType(.Value, withBlock:  { snapshot in
         followersRef = DataService.ds.REF_FOLLOWER_USERID
-        followersRef.observeEventType(.Value, withBlock:  { snapshot in
+        followersRef.observe(.value, with:  { snapshot in
             
-        
+            
             print("new snapshot array: \(snapshot.key)")
             
-          
+            
             self.friendsArray = []
             //self.usersLists = []
             
             for child in snapshot.children {
-                let friendID = child.key as String
+                let friendID = (child as AnyObject).key as String
                 print("friendID  Array IIIIiiiiiiiiiiiiiiiii: \(friendID)")
                 
                 self.friendsArray.append(friendID)
                 
                 _ = Post(followersList: self.friendsArray)
                 
-               // self.usersLists.append(usersList)
+                // self.usersLists.append(usersList)
                 
                 for friendID in self.friendsArray {
                     print(" Array friendID tonight \(friendID)")
                 }
-
+                
             }
             
-          
+            
             self.tableView.reloadData()
             
-            }, withCancelBlock: { (error) ->  Void in
+        }, withCancel: { (error) ->  Void in
         
     
         })
@@ -198,7 +202,7 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
     
     func QueryCurrentUser(){
         
-        DataService.ds.REF_USER_CURRENT.observeEventType(.Value, withBlock: { (snapshot)  in
+        DataService.ds.REF_USER_CURRENT.observe(.value, with: { (snapshot)  in
             
             let item = snapshot as FIRDataSnapshot
             print("SNAP-Itemxxxxxxxxxxx: \(item)")
@@ -209,31 +213,31 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
                 let avatar = dict["avatar"] as! String
                 // self.image = avatar
                 
-                self.activeUserInfo = dict
+                self.activeUserInfo = dict as NSDictionary?
                 
                 // self.title = "Welcome \(self.activeUserInfo!["firstName]!)"
-                self.profileName = "\(self.activeUserInfo!["fullName"]!.uppercaseString!)"
+                self.profileName = "\((self.activeUserInfo!["fullName"]! as AnyObject).uppercased!)"
                 self.profileImg = "\(self.activeUserInfo!["avatar"]!)"
                 // self.followersLabel.text = " \(self.activeUserInfo!["followers"]!) \n followers"
                 // self.followingLabel.text = " \(self.activeUserInfo!["following"]!) \n following"
             }
             
-            }, withCancelBlock: {(error) -> Void in
+        }, withCancel: {(error) -> Void in
         })
     }
     
     func QueryMyTimeline(){
         
-        DataService.ds.REF_TIMELINE_POST_USERID.queryOrderedByChild("time").queryLimitedToLast(50).observeEventType(.Value , withBlock: { (snapshot) in  //observeSingleEventOfType
+        DataService.ds.REF_TIMELINE_POST_USERID.queryOrdered(byChild: "time").queryLimited(toLast: 50).observe(.value , with: { (snapshot) in  //observeSingleEventOfType
             
             print(snapshot.value)
             
             self.posts = []
             
             if let snapshots = snapshot.children.allObjects as? [FIRDataSnapshot]  {
- 
+                
                 for snap in snapshots {
-                   
+                    
                     if let postDict = snap.value as? [String : AnyObject]  {
                         
                         let key = snap.key
@@ -241,14 +245,14 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
                         
                         self.posts.append(post)
                         
-                       
-                     }
-                 }
+                        
+                    }
+                }
             }
-            self.posts = self.posts.reverse()
+            self.posts = self.posts.reversed()
             self.tableView.reloadData()
             
-            }, withCancelBlock: nil)
+        }, withCancel: nil)
         
     }
     
@@ -260,27 +264,29 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
     
     
     
-    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+  //  func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    func numberOfSections(in tableView: UITableView) -> Int {
+      
         return 1
     }
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return posts.count
     }
     
-    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         return tableView.reloadData()
     }
    
     
     
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let post = posts[indexPath.row]  //keys are stored here
         
         
-        if let cell =  tableView.dequeueReusableCellWithIdentifier("PostCell") as? PostCell {
+        if let cell =  tableView.dequeueReusableCell(withIdentifier: "PostCell") as? PostCell {
             
             cell.delegate = self // july 7, 2016
             cell.delegate2 = self
@@ -289,15 +295,15 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
             cell.EventDelegate5 = self
         
           
-            cell.request?.cancel()
+          ///  cell.request?.cancel()
             
             var img:  UIImage?
             
             if let url = post.imageUrl {
-              img = FeedVC.imageCache.objectForKey(url) as? UIImage
+              img = FeedVC.imageCache.object(forKey: url as AnyObject) as? UIImage
             }
             
-            cell.configureCell(post, img: img, urlVideo: nil)
+            cell.configureCell(post: post, img: img, urlVideo: nil)
             
             return cell
             
@@ -308,7 +314,7 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
     
   
 
-    func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         
         let post = posts[indexPath.row]
         
@@ -322,27 +328,31 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
     }
     
     
-    func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]){
+  //  func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]){
         
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+// Local variable inserted by Swift 4.2 migrator.
+let info = convertFromUIImagePickerControllerInfoKeyDictionary(info)
+
         
-        referenceUrl = info[UIImagePickerControllerReferenceURL]
+        referenceUrl = info[convertFromUIImagePickerControllerInfoKey(UIImagePickerController.InfoKey.referenceURL)] as AnyObject!
         
-        if let  image = info[UIImagePickerControllerOriginalImage] as? UIImage {
+        if let  image = info[convertFromUIImagePickerControllerInfoKey(UIImagePickerController.InfoKey.originalImage)] as? UIImage {
             self.imageDownload = image
             imageSelectorImage.image = image
             imageSelected = true
            //makePost( image, video: nil)
         }
         
-        else if let video = info[UIImagePickerControllerMediaURL] as? NSURL {
+        else if let video = info[convertFromUIImagePickerControllerInfoKey(UIImagePickerController.InfoKey.mediaURL)] as? NSURL {
          // let moviePlayer = MPMoviePlayerViewController(contentURL: info[UIImagePickerControllerMediaURL] as! NSURL)
             
             self.videoPicker = video as NSURL
             
            
-          let  imageVideo = thumbnailForVideoAtURL(video)
+          let  imageVideo = thumbnailForVideoAtURL(url: video)
            
-          let  fixOrientationImage = UIImage(CGImage: imageVideo!.CGImage!, scale: imageVideo!.scale, orientation:.Up)
+          let  fixOrientationImage = UIImage(cgImage: imageVideo!.cgImage!, scale: imageVideo!.scale, orientation:.up)
 
            
            // let fixOrientationImage = imageVideo
@@ -357,7 +367,7 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
             //makePost(nil, video: video)
             
         }
-        self.dismissViewControllerAnimated(true, completion: nil)
+        self.dismiss(animated: true, completion: nil)
         tableView.reloadData()
        
     }
@@ -367,22 +377,22 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
        // sep 14 imageSelected = true
         
         
-        if let txt = postField.text where txt != "" {
+        if let txt = postField.text, txt != "" {
         
-            if let img = imageSelectorImage.image   where imageSelected == true {
+            if let img = imageSelectorImage.image, imageSelected == true {
                 
                 
                 
                 if ( self.imageDownload != nil &&  self.videoPicker == nil){   /////***********************  photo ONly
                     
-                    self.dismissViewControllerAnimated(true, completion: nil)
+                    self.dismiss(animated: true, completion: nil)
                     self.tableView.reloadData()
                     
-                    let imageData = UIImageJPEGRepresentation(img, 0.00)
-                    let filePath = FIRAuth.auth()!.currentUser!.uid + "/\(Int(NSDate.timeIntervalSinceReferenceDate() * 1000))"
+                    let imageData = img.jpegData(compressionQuality: 0.00)
+                    let filePath = FIRAuth.auth()!.currentUser!.uid + "/\(Int(NSDate.timeIntervalSinceReferenceDate * 1000))"
                     let metaData = FIRStorageMetadata()
                     metaData.contentType = "image/jpg"
-                    storageRef.child(filePath).putData(imageData!, metadata: metaData){(metaData,error) in
+                    storageRef.child(filePath).put(imageData!, metadata: metaData){(metaData,error) in
                         if let error = error {
                             print(error.localizedDescription)
                             
@@ -394,7 +404,7 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
                             
                             //store downloadURL at database
                             // DataService.ds.REF_USER_POSTS_USERID .updateChildValues(["avatar": downloadURL])
-                            self.postToFirebase( downloadURL,vidUrl: nil, mediaType: "PHOTO")
+                            self.postToFirebase( imgUrl: downloadURL,vidUrl: nil, mediaType: "PHOTO")
                             self.tableView.reloadData()
                             print("LINK_URLString: \(downloadURL)")
                             
@@ -410,14 +420,14 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
               
                 var downloadURL: String!
         
-        self.dismissViewControllerAnimated(true, completion: nil)
+        self.dismiss(animated: true, completion: nil)
             self.tableView.reloadData()
         
-        let imageData = UIImageJPEGRepresentation(img, 0.00)
-        let filePath = FIRAuth.auth()!.currentUser!.uid + "/\(Int(NSDate.timeIntervalSinceReferenceDate() * 1000))"
+        let imageData = img.jpegData(compressionQuality: 0.00)
+        let filePath = FIRAuth.auth()!.currentUser!.uid + "/\(Int(NSDate.timeIntervalSinceReferenceDate * 1000))"
         let metaData = FIRStorageMetadata()
         metaData.contentType = "image/jpg"
-        storageRef.child(filePath).putData(imageData!, metadata: metaData){(metaData,error) in
+        storageRef.child(filePath).put(imageData!, metadata: metaData){(metaData,error) in
             if let error = error {
                 print(error.localizedDescription)
                 
@@ -440,11 +450,11 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
                     
                 let video  = self.videoPicker
                     
-                let videoData2 = NSData(contentsOfURL: video)
-                let filePath2 = FIRAuth.auth()!.currentUser!.uid + "/\(Int(NSDate.timeIntervalSinceReferenceDate() * 1000))"
+                let videoData2 = NSData(contentsOf: video as! URL)
+                let filePath2 = FIRAuth.auth()!.currentUser!.uid + "/\(Int(NSDate.timeIntervalSinceReferenceDate * 1000))"
                 let metaData2 = FIRStorageMetadata()
                 metaData2.contentType = "video/mp4"
-                let uploadTask = storageRef.child(filePath2).putData(videoData2!, metadata: metaData2){(metaData2,error) in
+                _ = storageRef.child(filePath2).put(videoData2! as Data, metadata: metaData2){(metaData2,error) in
                     if let error = error {
                         print(error.localizedDescription)
                         
@@ -456,7 +466,7 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
                         
                         //store downloadURL at database
                         // DataService.ds.REF_USER_POSTS_USERID .updateChildValues(["avatar": downloadURL])
-                        self.postToFirebase( downloadURL, vidUrl: downloadVideoURL, mediaType: "VIDEO")
+                        self.postToFirebase( imgUrl: downloadURL, vidUrl: downloadVideoURL, mediaType: "VIDEO")
                         self.tableView.reloadData()
                         print("LINK_URLString: \(downloadVideoURL)")
                         
@@ -466,81 +476,80 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
                 
         }
             } else {
-                    self.postToFirebase(nil,vidUrl: nil, mediaType: "TEXT")
+                    self.postToFirebase(imgUrl: nil,vidUrl: nil, mediaType: "TEXT")
             
             }
-        }
+        } else {
        typeInSomethingAlert()
+        }
     }
    
+    
     func typeInSomethingAlert(){
-        let optionMenu = UIAlertController(title: nil, message: "Type in something!", preferredStyle: .ActionSheet)
+        let optionMenu = UIAlertController(title: nil, message: "Type in something!", preferredStyle: .actionSheet)
         
-        
-        
-        
-        let cancelAction = UIAlertAction(title: "Cancel", style: .Cancel, handler: {
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: {
             (alert: UIAlertAction!) -> Void in
             print("Cancelled")
         })
         
-        optionMenu.addAction(UIAlertAction(title: "Dismiss", style: UIAlertActionStyle.Default,handler: nil))
+        optionMenu.addAction(UIAlertAction(title: "Dismiss", style: UIAlertAction.Style.default,handler: nil))
         
-        self.presentViewController(optionMenu, animated: true, completion: nil)
+        self.present(optionMenu, animated: true, completion: nil)
     }
    
     
-    @IBAction func  selectImage(sender: UITapGestureRecognizer) {
+    @IBAction func  selectImage(_ sender: UITapGestureRecognizer) {
        // presentViewController(imagePicker, animated: true, completion: nil)
         
-        let alert:UIAlertController=UIAlertController(title: "Choose Media", message: nil, preferredStyle: UIAlertControllerStyle.ActionSheet)
-        let cameraAction = UIAlertAction(title: "Camera", style: UIAlertActionStyle.Default)
+        let alert:UIAlertController=UIAlertController(title: "Choose Media", message: nil, preferredStyle: UIAlertController.Style.actionSheet)
+        let cameraAction = UIAlertAction(title: "Camera", style: UIAlertAction.Style.default)
         {
             UIAlertAction in
             self.openCamera()
         }
-        let gallaryAction = UIAlertAction(title: "Gallery", style: UIAlertActionStyle.Default)
+        let galleryAction = UIAlertAction(title: "Gallery", style: UIAlertAction.Style.default)
         {
             UIAlertAction in
             self.openGallery()
         }
         
-        let galleryVideoAction = UIAlertAction(title: "Video", style: UIAlertActionStyle.Default)
+        let galleryVideoAction = UIAlertAction(title: "Video", style: UIAlertAction.Style.default)
         {
             UIAlertAction in
             self.openVideo()
         }
         
         
-        let cancelAction = UIAlertAction(title: "Cancel", style: UIAlertActionStyle.Cancel)
+        let cancelAction = UIAlertAction(title: "Cancel", style: UIAlertAction.Style.cancel)
         {
             UIAlertAction in
         }
         // Add the actions
         self.imagePC.delegate = self
         alert.addAction(cameraAction)
-        alert.addAction(gallaryAction)
+        alert.addAction(galleryAction)
         alert.addAction(galleryVideoAction)
         alert.addAction(cancelAction)
         // Present the controller
-        if UIDevice.currentDevice().userInterfaceIdiom == .Phone
+        if UIDevice.current.userInterfaceIdiom == .phone
         {
-            self.presentViewController(alert, animated: true, completion: nil)
+            self.present(alert, animated: true, completion: nil)
         }
         else
         {
             popover = UIPopoverController(contentViewController: alert)
-            popover!.presentPopoverFromRect(imageSelectorImage.frame, inView: self.view, permittedArrowDirections: UIPopoverArrowDirection.Any, animated: true)
+            popover!.present(from: imageSelectorImage.frame, in: self.view, permittedArrowDirections: UIPopoverArrowDirection.any, animated: true)
         }
         
     }
 
     func openCamera()
     {
-        if(UIImagePickerController .isSourceTypeAvailable(UIImagePickerControllerSourceType.Camera))
+        if(UIImagePickerController .isSourceTypeAvailable(UIImagePickerController.SourceType.camera))
         {
-            self.imagePC.sourceType = UIImagePickerControllerSourceType.Camera
-            self .presentViewController(self.imagePC, animated: true, completion: nil)
+            self.imagePC.sourceType = UIImagePickerController.SourceType.camera
+            self .present(self.imagePC, animated: true, completion: nil)
         }
         else
         {
@@ -552,36 +561,67 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
     
     func openGallery()
     {
-        self.imagePC.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
-        if UIDevice.currentDevice().userInterfaceIdiom == .Phone
-        {
-            self.presentViewController(self.imagePC, animated: true, completion: nil)
+      if UIImagePickerController.isSourceTypeAvailable(.camera) {
+        self.imagePC.allowsEditing = false
+        self.imagePC.sourceType = .photoLibrary
+        imagePC.mediaTypes = ["public.image"]
+        // self.imagePC.modalPresentationStyle = .popover
+        present(self.imagePC, animated: true, completion: nil)
+      //  self.imagePC.popoverPresentationController?.barButtonItem = self.imagePC
+      } else {
+        noCamera()
         }
         
-        else
-        {
-            popover = UIPopoverController(contentViewController: self.imagePC)
-            popover!.presentPopoverFromRect(imageSelectorImage.frame, inView: self.view, permittedArrowDirections: UIPopoverArrowDirection.Any, animated: true)
-        }
+//        self.imagePC.sourceType = UIImagePickerControllerSourceType.photoLibrary
+//        self.imagePC.delegate = self
+//        if UIDevice.current.userInterfaceIdiom == .phone
+//        {
+//            
+//            self.present(self.imagePC, animated: true, completion: nil)
+//        }
+//        
+//        else
+//        {
+//            popover = UIPopoverController(contentViewController: self.imagePC)
+//            popover!.present(from: imageSelectorImage.frame, in: self.view, permittedArrowDirections: UIPopoverArrowDirection.any, animated: true)
+//        }
     }
     
     func openVideo()
     {
-        self.imagePC.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
-        if UIDevice.currentDevice().userInterfaceIdiom == .Phone
+        self.imagePC.sourceType = UIImagePickerController.SourceType.photoLibrary
+        if UIDevice.current.userInterfaceIdiom == .phone
             
         {
-            imagePC.mediaTypes = ["public.movie"]
-            self.presentViewController(self.imagePC, animated: true, completion: nil)
+           imagePC.mediaTypes = ["public.movie"]
+         // imagePC.mediaTypes = ["public.image"]
+            self.present(self.imagePC, animated: true, completion: nil)
         }
             
         else
         {
             popover = UIPopoverController(contentViewController: self.imagePC)
-            popover!.presentPopoverFromRect(imageSelectorImage.frame, inView: self.view, permittedArrowDirections: UIPopoverArrowDirection.Any, animated: true)
-        }
+         //   popover!.presentfrom;:   inPopoverFromRect(imageSelectorImage.frame, inView: self.view, permittedArrowDirections: UIPopoverArrowDirection.Any, animated: true)
+            popover!.present(from: imageSelectorImage.frame, in: self.view, permittedArrowDirections: UIPopoverArrowDirection.any, animated: true)
     }
     
+    }
+    
+    func noCamera(){
+        let alertVC = UIAlertController(
+            title: "No Camera",
+            message: "Sorry, this device has no camera",
+            preferredStyle: .alert)
+        let okAction = UIAlertAction(
+            title: "OK",
+            style:.default,
+            handler: nil)
+        alertVC.addAction(okAction)
+        present(
+            alertVC,
+            animated: true,
+            completion: nil)
+    }
     
     func postToFirebase(imgUrl: String?, vidUrl: String?, mediaType: String?){
         
@@ -589,25 +629,25 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
 
         let time  = String(Int(NSDate().timeIntervalSince1970))
         
-         let  activeUserId  = NSUserDefaults.standardUserDefaults().valueForKey("uid") as! String
+         let  activeUserId  = UserDefaults.standard.value(forKey: "uid") as! String
         var post: Dictionary<String, AnyObject> = [
-            "description": postField.text!,
-            "likes": 0,
-            "dislikes": 0,
-            "uid":  activeUserId,
-            "fullName": self.profileName,
-            "avatar": self.profileImg,
-            "time" : time,
-            "mediaType": mediaType!
+            "description": postField.text! as AnyObject,
+            "likes": 0 as AnyObject,
+            "dislikes": 0 as AnyObject,
+            "uid":  activeUserId as AnyObject,
+            "fullName": self.profileName as AnyObject,
+            "avatar": self.profileImg as AnyObject,
+            "time" : time as AnyObject,
+            "mediaType": mediaType! as AnyObject
             //  "comment": commentBtn.!
         ]
         
         if imgUrl != nil {
-            post["imageUrl"] = imgUrl!
+            post["imageUrl"] = imgUrl! as AnyObject?
         }
         
         if vidUrl != nil {
-            post["videoUrl"] = vidUrl!
+            post["videoUrl"] = vidUrl! as AnyObject?
         }
         
    
@@ -658,7 +698,7 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
         
 
         //try not to send self, just to avoid retain cycles(depends on how you handle the code on the next controller)
-        self.performSegueWithIdentifier("segue_commentVC", sender:dataobject )
+        self.performSegue(withIdentifier: "segue_commentVC", sender:dataobject )
         
     }
     
@@ -666,9 +706,9 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
     
    func ContactIDSegueFromCell(contactID dataobject: AnyObject) {
     
-        dispatch_async(dispatch_get_main_queue()){
+        DispatchQueue.main.async(){
         //try not to send self, just to avoid retain cycles(depends on how you handle the code on the next controller)
-       self.performSegueWithIdentifier("segue_Profile_Name", sender:dataobject )
+       self.performSegue(withIdentifier: "segue_Profile_Name", sender:dataobject )
       
     }
     }
@@ -677,7 +717,7 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
         
       
             //try not to send self, just to avoid retain cycles(depends on how you handle the code on the next controller)
-            self.performSegueWithIdentifier("segue_showVideo", sender:dataobject )
+            self.performSegue(withIdentifier: "segue_showVideo", sender:dataobject )
        
        // print( "Segue Agosto 1xxxxx: \(contactId)")
     //
@@ -687,35 +727,35 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
         
         
         //try not to send self, just to avoid retain cycles(depends on how you handle the code on the next controller)
-        self.performSegueWithIdentifier("segueTimeLineToEvent", sender:dataobject )
+        self.performSegue(withIdentifier: "segueTimeLineToEvent", sender:dataobject )
         
         // print( "Segue Agosto 1xxxxx: \(contactId)")
         //
     }
    
     
-  override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        if segue.identifier == "segue_Profile_Name"
+  override func prepare(for forsegue: UIStoryboardSegue, sender: Any?) {
+        if forsegue.identifier == "segue_Profile_Name"
         {
-             let destinationVC = segue.destinationViewController as? contactProfileVC
+             let destinationVC = forsegue.destination as? contactProfileVC
             if let theString = sender as? String {
                 destinationVC!.contactId =  theString
             }
             
             
         }
-    if segue.identifier == "segue_Postimage_to_showVC"
+    if forsegue.identifier == "segue_Postimage_to_showVC"
     {
-        let destinationVC = segue.destinationViewController as? ImageShowVC
+        let destinationVC = forsegue.destination as? ImageShowVC
         if let theString = sender as? String {
             destinationVC!.postKey_Segue =  theString
         }
         
     }
     
-    if segue.identifier == "segue_showVideo"  //segue_showVideo
+    if forsegue.identifier == "segue_showVideo"  //segue_showVideo
     {
-        let destinationVC = segue.destinationViewController as? PlayVideoVC
+        let destinationVC = forsegue.destination as? PlayVideoVC
         if let theString = sender as? String {
             destinationVC!.videoUrl_segue =  theString
         }
@@ -724,9 +764,9 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
     }
     
     //segueTimeLineToEvent
-    if segue.identifier == "segueTimeLineToEvent"  //segue_showVideo
+    if forsegue.identifier == "segueTimeLineToEvent"  //
     {
-        let destinationVC = segue.destinationViewController as? EventDetailVC
+        let destinationVC = forsegue.destination as? EventDetailVC
         if let theString = sender as? String {
             destinationVC!.eventKey =  theString
         }
@@ -746,7 +786,7 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
         
         
         //try not to send self, just to avoid retain cycles(depends on how you handle the code on the next controller)
-        self.performSegueWithIdentifier("segue_Postimage_to_showVC", sender:dataobject )
+        self.performSegue(withIdentifier: "segue_Postimage_to_showVC", sender:dataobject )
         
     }
     
@@ -758,12 +798,12 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
     
     // Dismiss keyBoard
     
-    func hideKeyboard()
+    @objc func hideKeyboard()
     {
         self.view.endEditing(true)
     }
     
-    func textFieldShouldReturn(textField: UITextField!) -> Bool {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
         return true
         
@@ -798,17 +838,17 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
         }
     }  */
 
-    private func thumbnailForVideoAtURL(url: NSURL) -> UIImage? {
+     func thumbnailForVideoAtURL(url: NSURL) -> UIImage? {
         
-        let asset = AVAsset(URL: url)
+        let asset = AVAsset(url: url as URL)
         let assetImageGenerator = AVAssetImageGenerator(asset: asset)
         
         var time = asset.duration
         time.value = min(time.value, 2)
         
         do {
-            let imageRef = try assetImageGenerator.copyCGImageAtTime(time, actualTime: nil)
-            return UIImage(CGImage: imageRef)
+            let imageRef = try assetImageGenerator.copyCGImage(at: time, actualTime: nil)
+            return UIImage(cgImage: imageRef)
 
         } catch {
             print("error")
@@ -847,3 +887,13 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
 
 
 
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertFromUIImagePickerControllerInfoKeyDictionary(_ input: [UIImagePickerController.InfoKey: Any]) -> [String: Any] {
+	return Dictionary(uniqueKeysWithValues: input.map {key, value in (key.rawValue, value)})
+}
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertFromUIImagePickerControllerInfoKey(_ input: UIImagePickerController.InfoKey) -> String {
+	return input.rawValue
+}

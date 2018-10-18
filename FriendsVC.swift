@@ -31,15 +31,15 @@ class FriendsVC: UIViewController, UITableViewDataSource {
     
     func QuerryUserFollowing(){
         
-        DataService.ds.REF_USER_CURRENT.child("followings").observeEventType(.ChildAdded, withBlock:{ snapshot in
+        DataService.ds.REF_USER_CURRENT.child("followings").observe(.childAdded, with:{ snapshot in
             
-           
+            
             
             self.contacts = []
             let friendID = snapshot.key
             let friendReference = DataService.ds.REF_USERS.child(friendID)
             
-            friendReference.observeSingleEventOfType(.Value, withBlock: { (snapshot) in
+            friendReference.observeSingleEvent(of: .value, with: { (snapshot) in
                 
                 print("new way: \(snapshot)")
                 
@@ -61,7 +61,7 @@ class FriendsVC: UIViewController, UITableViewDataSource {
                 
             })
             
-            }, withCancelBlock: nil)
+        }, withCancel: nil)
         
     }
 
@@ -70,21 +70,21 @@ class FriendsVC: UIViewController, UITableViewDataSource {
    
     
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
         return contacts.count
     }
     
     
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell{
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell{
         
         let contact = contacts[indexPath.row]
         print("testing Full Name: \(contact.fullName)")
         
-        if let cell =  tableView.dequeueReusableCellWithIdentifier("friendsCell") as? FriendsCell {
+        if let cell =  tableView.dequeueReusableCell(withIdentifier: "friendsCell") as? FriendsCell {
             
-            cell.configureCell(contact)
+            cell.configureCell(contact: contact)
             
             
             return cell
@@ -96,15 +96,15 @@ class FriendsVC: UIViewController, UITableViewDataSource {
         
     }
     
-   override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+  override func prepare(for forsegue: UIStoryboardSegue, sender: Any?) {
         
-        if segue.identifier == "goFromFriendstoUserProfile" {
+        if forsegue.identifier == "goFromFriendstoUserProfile" {
             
             let index = friendsTableView.indexPathForSelectedRow
             let contactSelected = contacts[index!.row]
             
             print("ContactKEY-Outside-----xxxxx-----------------: \(contactSelected.contactKey)")
-            let destinationVC = segue.destinationViewController as! contactProfileVC
+            let destinationVC = forsegue.destination as! contactProfileVC
             
             destinationVC.contactId   = contactSelected.contactKey
             
@@ -116,13 +116,13 @@ class FriendsVC: UIViewController, UITableViewDataSource {
     }
     
     
-    override func viewWillDisappear(animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         self.navigationController?.setNavigationBarHidden(true, animated: animated);
         super.viewWillDisappear(animated)
         //self.friendsTableView.reloadData()
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.navigationController?.setNavigationBarHidden(false, animated: animated)
         friendsTableView.reloadData()

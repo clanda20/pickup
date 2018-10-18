@@ -8,9 +8,11 @@
 
 import UIKit
 import Firebase
-import Alamofire
+//import Alamofire
 
 class ContactsVC: UIViewController, UITableViewDataSource, UISearchBarDelegate {
+    
+
 
     @IBOutlet weak var contactsTableView: UITableView!
     
@@ -59,7 +61,7 @@ class ContactsVC: UIViewController, UITableViewDataSource, UISearchBarDelegate {
         self.automaticallyAdjustsScrollViewInsets = false
         
         
-        let contactSearchTable = storyboard!.instantiateViewControllerWithIdentifier("ContactSearchTable") as! ContactSearchTable
+        let contactSearchTable = storyboard!.instantiateViewController(withIdentifier: "ContactSearchTable") as! ContactSearchTable
         resultSearchController = UISearchController(searchResultsController: contactSearchTable)
         resultSearchController?.searchResultsUpdater = contactSearchTable
         
@@ -78,7 +80,7 @@ class ContactsVC: UIViewController, UITableViewDataSource, UISearchBarDelegate {
         contactsTableView.dataSource = self
         
         
-       DataService.ds.REF_USERS.observeEventType(FIRDataEventType.Value, withBlock: { (snapshot) in
+       DataService.ds.REF_USERS.observe(FIRDataEventType.value, with: { (snapshot) in
             
          print(snapshot.value)
             
@@ -117,17 +119,17 @@ class ContactsVC: UIViewController, UITableViewDataSource, UISearchBarDelegate {
     }
     
     
-    override func viewWillDisappear(animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         self.navigationController?.setNavigationBarHidden(true, animated: animated);
         super.viewWillDisappear(animated)
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.navigationController?.setNavigationBarHidden(false, animated: animated)
     }
 
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
        if shouldShowSearchResults {
          return  0
         }
@@ -137,13 +139,13 @@ class ContactsVC: UIViewController, UITableViewDataSource, UISearchBarDelegate {
     }
     
 
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell{
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell{
         
         let contact = contacts[indexPath.row]
         
-        if let cell =  tableView.dequeueReusableCellWithIdentifier("cell") as? ContactCell {
+        if let cell =  tableView.dequeueReusableCell(withIdentifier: "cell") as? ContactCell {
             
-        cell.configureCell(contact)
+        cell.configureCell(contact: contact)
             
         
         return cell
@@ -155,15 +157,15 @@ class ContactsVC: UIViewController, UITableViewDataSource, UISearchBarDelegate {
         
     }
     
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+      override func prepare(for forsegue: UIStoryboardSegue, sender: Any?) {
         
-        if segue.identifier == "goToContactProfile" {
+        if forsegue.identifier == "goToContactProfile" {
             
              let index = contactsTableView.indexPathForSelectedRow
              let contactSelected = contacts[index!.row]
             
              print("ContactKEY-Outside-----xxxxx-----------------: \(contactSelected.contactKey)")
-            let destinationVC = segue.destinationViewController as! contactProfileVC
+            let destinationVC = forsegue.destination as! contactProfileVC
             
                  destinationVC.contactId   = contactSelected.contactKey
            

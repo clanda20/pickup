@@ -24,6 +24,9 @@ class EventVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        self.tabBarController?.tabBar.isHidden = false
+        
+        
         tableView.delegate = self
         tableView.dataSource = self
         
@@ -33,45 +36,50 @@ class EventVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         
     }
     
-    override func viewWillDisappear(animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
        // self.navigationController?.setNavigationBarHidden(true , animated: animated);
-        
+        self.tabBarController?.tabBar.isHidden = false
+
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        
-       // self.navigationController?.toolbarHidden = false
+      
         
         self.navigationController?.setNavigationBarHidden(false, animated: animated)
-       // self.navigationItem.leftBarButtonItem = nil
-        self.navigationItem.setHidesBackButton(true, animated: false)
+        
+      
+     //   self.navigationItem.setHidesBackButton(true, animated: false)
        
-
+        self.tabBarController?.tabBar.isHidden = false
+        //jan 11, 2017  
+        self.tabBarController?.tabBar.isTranslucent = false
         
     }
     
     
-    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+   // func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    func numberOfSections(in tableView: UITableView) -> Int {
+     
         return 1
     }
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return events.count
         
     }
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         
         let event = events[indexPath.row]
         
         
-        if let cell =  tableView.dequeueReusableCellWithIdentifier("EventCell") as? EventCell {
+        if let cell =  tableView.dequeueReusableCell(withIdentifier: "EventCell") as? EventCell {
             
-            cell.configureCell(event)
+            cell.configureCell(event: event)
             
             
             return cell
@@ -93,7 +101,7 @@ class EventVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     func QueryMyEvent_Timeline(){
         
         //DataService.ds.REF_TIMELINE_POST_USERID.queryOrderedByChild("time").queryLimitedToLast(50).observeEventType(.Value
-        ref.child("events-timeline").child(KEY_UID!).queryOrderedByChild("dateRaw").queryLimitedToLast(100).observeEventType(.Value , withBlock: { (snapshot) in  //observeSingleEventOfType
+        ref.child("events-timeline").child(KEY_UID!).queryOrdered(byChild: "dateRaw").queryLimited(toLast: 100).observe(.value , with: { (snapshot) in  //observeSingleEventOfType
             //  self.posts = []
             
             print(snapshot.value)
@@ -103,7 +111,7 @@ class EventVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
             self.events = []
             
             if let snapshots = snapshot.children.allObjects as? [FIRDataSnapshot]  {
-                  print("snapshot Events: \(snapshot)")
+                print("snapshot Events: \(snapshot)")
                 for snap in snapshots {
                     //   print("SNAP: july 26 \(snap)")
                     
@@ -115,7 +123,7 @@ class EventVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
                         let key = snap.key
                         let event = Event(eventKey: key, dictionary: eventDict)
                         
-                         self.hostUid = eventDict["host-uid"]! as! String
+                        self.hostUid = eventDict["host-uid"]! as! String
                         
                         print("HOstUID:  \(self.hostUid)")
                         
@@ -131,22 +139,22 @@ class EventVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
             
             
             
-            }, withCancelBlock: nil)
+        }, withCancel: nil)
         
         
         
         
     }
     
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+      override func prepare(for forsegue: UIStoryboardSegue, sender: Any?) {
         
-        if segue.identifier == "goToEventDetail" {
+        if forsegue.identifier == "goToEventDetail" {
             
             let index = tableView.indexPathForSelectedRow
             let eventSelected = events[index!.row]
             
             print("Event Key -xxxxx-----xxxxx-----------------: \(eventSelected.eventKey)")
-            let destinationVC = segue.destinationViewController as! EventDetailVC
+            let destinationVC = forsegue.destination as! EventDetailVC
             
             destinationVC.eventKey   = eventSelected.eventKey
            // destinationVC.hostUid = eventSelected.hostUid
@@ -157,6 +165,14 @@ class EventVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         }
         
     }
+    //  parece no funciona.
+    override func willMove(toParent parent: UIViewController?) {
+        super.willMove(toParent: parent)
+        if parent == nil {
+            self.tabBarController?.tabBar.isHidden = false
+        }
+    }
+
 
     
 }

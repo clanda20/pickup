@@ -96,7 +96,7 @@ class DataService {
     
     var REF_POSTCOMMENTS_ID: FIRDatabaseReference{
         
-        let postID = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
+        let postID = UserDefaults.standard.value(forKey: "postKey") as! String
         
         let REF_POSTCOMMENTS_ID = URL_BASE.child("post-comments").child(postID)
         
@@ -105,7 +105,7 @@ class DataService {
     
     var REF_POSTCOMMENTS_USER_ID: FIRDatabaseReference{
         
-        let postID = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
+        let postID = UserDefaults.standard.value(forKey: "postKey") as! String
         
         let REF_POSTCOMMENTS_USER_ID = URL_BASE.child("post-comments-userID").child(postID)
         
@@ -113,7 +113,7 @@ class DataService {
     }
     
     var REF_FOLLOWING_USERID: FIRDatabaseReference{
-        let uid = NSUserDefaults.standardUserDefaults().valueForKey("uid") as? String
+        let uid = UserDefaults.standard.value(forKey: "uid") as? String
         // let postID = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
         
         let REF_FOLLOWING_USERID = URL_BASE.child("following").child(uid!)
@@ -123,7 +123,7 @@ class DataService {
     }
     
     var REF_FOLLOWER_USERID: FIRDatabaseReference{
-        let uid = NSUserDefaults.standardUserDefaults().valueForKey("uid") as? String
+        let uid = UserDefaults.standard.value(forKey: "uid") as? String
         // let postID = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
         
         let REF_FOLLOWER_USERID = URL_BASE.child("followers").child(uid!)
@@ -136,7 +136,7 @@ class DataService {
     
     
     var REF_TIMELINE_POST_USERID: FIRDatabaseReference{
-        let uid = NSUserDefaults.standardUserDefaults().valueForKey("uid") as? String
+        let uid = UserDefaults.standard.value(forKey: "uid") as? String
         // let postID = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
         
         let REF_TIMELINE_POST_USERID = URL_BASE.child("timeline").child(uid!)
@@ -146,7 +146,7 @@ class DataService {
     }
     
     var REF_TIMELINE_POST_ARRAY_USERID: FIRDatabaseReference{
-        let uid = NSUserDefaults.standardUserDefaults().valueForKey("uid") as? String
+        let uid = UserDefaults.standard.value(forKey: "uid") as? String
         // let postID = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
         
         let REF_TIMELINE_POST_ARRAY_USERID = URL_BASE.child("timeline").child(uid!)
@@ -157,7 +157,7 @@ class DataService {
     
     
     var REF_USER_POSTS_USERID: FIRDatabaseReference{
-        let uid = NSUserDefaults.standardUserDefaults().valueForKey("uid") as? String
+        let uid = UserDefaults.standard.value(forKey: "uid") as? String
        // let postID = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
         
         let USER_POSTS_USERID = URL_BASE.child("user-posts").child(uid!)
@@ -178,8 +178,8 @@ class DataService {
     
     
     var REF_USER_POSTS: FIRDatabaseReference{
-        let uid = NSUserDefaults.standardUserDefaults().valueForKey("uid") as? String
-       let postID = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
+        let uid = UserDefaults.standard.value(forKey: "uid") as? String
+       let postID = UserDefaults.standard.value(forKey: "postKey") as! String
 
         let USER_POSTS_ID = URL_BASE.child("user-posts").child(uid!).child(postID)
         
@@ -188,7 +188,7 @@ class DataService {
     }
     
     var REF_USER_POSTS_BY_USER: FIRDatabaseReference{
-        let userID = NSUserDefaults.standardUserDefaults().valueForKey("userID") as? String
+        let userID = UserDefaults.standard.value(forKey: "userID") as? String
        // let postID = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
         
         let USER_POSTS_BY_USER = URL_BASE.child("user-posts").child((userID)!) //.child(postID)
@@ -199,7 +199,7 @@ class DataService {
     
     
     var REF_USER_POSTS_BY_USER2: FIRDatabaseReference{
-        let postUserID = NSUserDefaults.standardUserDefaults().valueForKey("postUserID") as? String   //july 24 postUserID
+        let postUserID = UserDefaults.standard.value(forKey: "postUserID") as? String   //july 24 postUserID
         // let postID = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
         
         let USER_POSTS_BY_USER2 = URL_BASE.child("user-posts").child(postUserID!) //.child(postID)
@@ -212,13 +212,13 @@ class DataService {
     
     
     var REF_USER_CURRENT: FIRDatabaseReference{
-        let uid = NSUserDefaults.standardUserDefaults().valueForKey("uid") as? String
+        let uid = UserDefaults.standard.value(forKey: "uid") as? String
         let user = URL_BASE.child("users").child(uid!)
         return user
         
     }
    var REF_POST_KEY: FIRDatabaseReference{
-         let postID = NSUserDefaults.standardUserDefaults().valueForKey("postKey") as! String
+         let postID = UserDefaults.standard.value(forKey: "postKey") as! String
          let postKey = URL_BASE.child("post-comments").child(postID)
      return postKey
     }

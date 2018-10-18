@@ -70,14 +70,14 @@ class EventCommentCell: UITableViewCell {
         //QueryEventPosts()
     }
     
-    override func drawRect(rect: CGRect) {
+    override func draw(_ rect: CGRect) {
         profileImg.layer.cornerRadius = profileImg.frame.size.width / 2
         profileImg.clipsToBounds = true
         
         
     }
     
-    override func setSelected(selected: Bool, animated: Bool) {
+    override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
         
         // Configure the view for the selected state
@@ -91,7 +91,7 @@ class EventCommentCell: UITableViewCell {
         self.eventcommentKeyID = eventcomment.uid
         
         self.eventkey = eventKey
-        QueryEventPosts(eventKey)
+        QueryEventPosts(eventKey: eventKey)
         self.eventcomment = eventcomment
         
         
@@ -100,7 +100,7 @@ class EventCommentCell: UITableViewCell {
         
         // print(" Printing Full Name  \(comment.fullName)")
         
-        self.Username2.setTitle("\(eventcomment.fullName)", forState: .Normal)
+        self.Username2.setTitle("\(eventcomment.fullName)", for: .normal)
         self.Username2.titleLabel!.font = UIFont(name: "Marker Felt", size: 12)
         
         
@@ -112,15 +112,15 @@ class EventCommentCell: UITableViewCell {
         if let  seconds = Double(((eventcomment.date))) {
             let timeStampDate = NSDate(timeIntervalSince1970: seconds)
             
-            let dateFormatter = NSDateFormatter()
+            let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "E, MMM d, H:mm a"
-            self.dateLbl.text = dateFormatter.stringFromDate(timeStampDate)
+            self.dateLbl.text = dateFormatter.string(from: timeStampDate as Date)
         }
         
         
         
-        downloadAvatar(eventcomment.avatar!, completion:  { (data) in
-            self.profileImg.image = UIImage(data: data)
+        downloadAvatar(image: eventcomment.avatar!, completion:  { (data) in
+            self.profileImg.image = UIImage(data: data as Data)
             self.profileImg.layer.cornerRadius = 20.0
             self.profileImg.clipsToBounds = true
         })
@@ -134,13 +134,13 @@ class EventCommentCell: UITableViewCell {
         // let uid = NSUserDefaults.standardUserDefaults().valueForKey("uid") as? String
         if KEY_UID != eventcomment.uid {
             
-            self.deleteBtn.hidden = true
-            self.deleteBtn_friends_comment.hidden = false
+            self.deleteBtn.isHidden = true
+            self.deleteBtn_friends_comment.isHidden = false
             
         } else {
             
-            self.deleteBtn.hidden = false
-            self.deleteBtn_friends_comment.hidden = true
+            self.deleteBtn.isHidden = false
+            self.deleteBtn_friends_comment.isHidden = true
             
         }
         
@@ -148,21 +148,22 @@ class EventCommentCell: UITableViewCell {
         
     }
     
-    func downloadAvatar(image:String, completion:(data:NSData)-> ()) {
+    func downloadAvatar(image:String, completion:@escaping (_ data:NSData)-> ()) {
         
         let urlString = NSURL(string: image)
-        let request = NSURLSession.sharedSession().dataTaskWithURL(urlString!){ (data, response, error) -> Void in
+        let request = URLSession.shared.dataTask(with: urlString! as URL){ (data, response, error) -> Void in
             
             if error == nil {
                 
                 if let dataValid = data {
                     
-                    dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                        completion(data: dataValid)
+                    DispatchQueue.main.async(execute: { () -> Void in
+                        completion(dataValid as NSData)
                     })
                     
                 }
             }
+            
             
             
         }
@@ -268,8 +269,8 @@ class EventCommentCell: UITableViewCell {
         
         if KEY_UID == eventKeyUID {
             
-            DataService.ds.REF_BASE.child("notifications").child(eventKeyUID).child("N\(eventcommentID)").removeValue()
-            DataService.ds.REF_BASE.child("notifications-postUID").child(eventKeyUID).child("N\(eventcommentID)").removeValue()
+            DataService.ds.REF_BASE.child("notifications").child(eventKeyUID!).child("N\(eventcommentID)").removeValue()
+            DataService.ds.REF_BASE.child("notifications-postUID").child(eventKeyUID!).child("N\(eventcommentID)").removeValue()
             DataService.ds.REF_BASE.child("post-commentsOnly").child(eventkey!).child(eventcommentID).removeValue()
             
         }  else {
@@ -284,7 +285,7 @@ class EventCommentCell: UITableViewCell {
         
         userCommentsRef = DataService.ds.REF_BASE.child("host-events-id").child(KEY_UID!)   //("user-posts-id")
         
-        userCommentsRef.observeEventType(.Value, withBlock:  { snapshot in
+        userCommentsRef.observe(.value, with:  { snapshot in
             
             
             print("new snapshot array: \(snapshot.key)")
@@ -294,7 +295,7 @@ class EventCommentCell: UITableViewCell {
             //  self.usersLists = []
             
             for child in snapshot.children {
-                let eventID = child.key as String
+                let eventID = (child as AnyObject).key as String
                 print("postID  Array IIIIiiiiiipostIDDiii: \(eventID)")
                 
                 self.myEventCommentArray.append(eventID)
@@ -315,7 +316,7 @@ class EventCommentCell: UITableViewCell {
         
         print("Event Key inside : \(eventKey)")
         
-        DataService.ds.REF_BASE.child("events").child(eventKey!).observeEventType(.Value , withBlock: { (snapshot) in  //observeSingleEventOfType
+        DataService.ds.REF_BASE.child("events").child(eventKey!).observe(.value , with: { (snapshot) in  //observeSingleEventOfType
             
             //postInfo
             
@@ -325,7 +326,7 @@ class EventCommentCell: UITableViewCell {
             
             if let dict = item.value as? [String : AnyObject]{
                 
-                self.eventInfo = dict
+                self.eventInfo = dict as NSDictionary?
                 
                 
                 self.eventUid =   self.eventInfo!["host-uid"]! as! String
@@ -333,7 +334,7 @@ class EventCommentCell: UITableViewCell {
                 
             }
             
-            }, withCancelBlock: {(error) -> Void in
+        }, withCancel: {(error) -> Void in
                 
         })
     }
@@ -379,7 +380,7 @@ class EventCommentCell: UITableViewCell {
         print("Segue Agosto 1xxxxx: contactID_Post_Profile \(contactID_Post_Profile)")
         
         if(self.delegate2 != nil){ //Just to be safe.
-            self.delegate2!.ContactIDEventCommentSegueFromCell(contactID: contactID_Post_Profile!)
+            self.delegate2!.ContactIDEventCommentSegueFromCell(contactID: contactID_Post_Profile! as AnyObject)
             print("Segue Agosto 1xxxxx: \(contactID_Post_Profile)")
             
         }

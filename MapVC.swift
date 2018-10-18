@@ -18,7 +18,7 @@ class MapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UIA
     
     @IBOutlet weak var mapView: MKMapView!
 
-    @IBOutlet weak var searchBtn: UIButton!
+  //  @IBOutlet weak var searchBtn: UIButton!
     
    // let locationManager = CLLocationManager()
     var mapHasCenteredOnce = false
@@ -47,7 +47,7 @@ class MapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UIA
         var _locationManager = CLLocationManager()
         _locationManager.delegate = self
         _locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters    // kCLLocationAccuracyNearestTenMeters
-        _locationManager.activityType = .Fitness
+        _locationManager.activityType = .fitness
         
         // Movement threshold for new events
         _locationManager.distanceFilter = 10.0
@@ -55,7 +55,7 @@ class MapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UIA
     }()
     
     lazy var locations = [CLLocation]()
-    lazy var timer = NSTimer()
+    lazy var timer = Timer()
     
     
     //var activeUserInfo: NSDictionary?
@@ -67,7 +67,7 @@ class MapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UIA
         super.viewDidLoad()
         
         mapView.delegate = self
-        mapView.userTrackingMode = MKUserTrackingMode.FollowWithHeading
+        mapView.userTrackingMode = MKUserTrackingMode.followWithHeading
         
         geoFireRef = FIRDatabase.database().reference().child("geo")
         geoFire = GeoFire(firebaseRef: geoFireRef)
@@ -84,13 +84,13 @@ class MapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UIA
     
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
            // locationManager.requestAlwaysAuthorization()
             mapView.showsUserLocation = false   // true or fall doesn't make a difference
 
     }
     
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         locationAuthStatus()
         
       
@@ -115,37 +115,37 @@ class MapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UIA
   // From YouTube
    
     
-    override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
+     func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutableRawPointer) {
         if(self.mapView.showsUserLocation && self.mapView.userLocation.location != nil) {
             
-            let span = MKCoordinateSpanMake(0.07, 0.07)  //(0.0125, 0.0125)
+            let span = MKCoordinateSpan.init(latitudeDelta: 0.07, longitudeDelta: 0.07)  //(0.0125, 0.0125)
             let region = MKCoordinateRegion(center: (self.mapView.userLocation.location?.coordinate)!, span: span)
             self.mapView.setRegion(region, animated: true)
             
             if regionQuery == nil {
-                regionQuery = geoFire?.queryWithRegion(region)
+                regionQuery = geoFire?.query(with: region)
                 
-                regionQuery!.observeEventType(GFEventType.KeyEntered, withBlock: { (key, location) in
+                regionQuery!.observe(GFEventType.keyEntered, with: { (key, location) in
                  
                 })
                 
                 
                 
-                regionQuery!.observeEventType(GFEventType.KeyMoved, withBlock: { (key, location) in
+                regionQuery!.observe(GFEventType.keyMoved, with: { (key, location) in
                  
-                    self.latitude = location.coordinate.latitude
-                    self.longitude = location.coordinate.longitude
+                    self.latitude = (location?.coordinate.latitude)!
+                    self.longitude = (location?.coordinate.longitude)!
                    
                     print("location from GeoFire KeyMove = \(self.latitude) \(self.longitude)")
                     
                   //  if let key = key, let location = location {
                    
-                      self.showSightingsOnMap( location)
+                      self.showSightingsOnMap( location: location!)
                    // }
  
                 })
                 
-                regionQuery!.observeEventType(GFEventType.KeyExited, withBlock: { (key, location) in
+                regionQuery!.observe(GFEventType.keyExited, with: { (key, location) in
                     
                
                     
@@ -153,12 +153,12 @@ class MapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UIA
             }
             
             if foundQuery == nil {   //\(authData?.uid)
-                foundQuery = geoFire?.queryAtLocation(self.mapView.userLocation.location, withRadius: 3.5) //0.05
+                foundQuery = geoFire?.query(at: self.mapView.userLocation.location, withRadius: 3.5) //0.05
               //  foundQuery?.displayLayer(CALayer)
                 
-                foundQuery!.observeEventType(GFEventType.KeyEntered, withBlock:{ (key, location) in
+                foundQuery!.observe(GFEventType.keyEntered, with:{ (key, location) in
                     
-                    self.querryUserID(key){ (fullName, array) -> () in
+                    self.querryUserID(key: key!){ (fullName, array) -> () in
                         
                         print("From ARRAy Agosto: \(fullName)")
                         
@@ -183,11 +183,11 @@ class MapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UIA
             })
                 
                 
-                foundQuery!.observeEventType(GFEventType.KeyExited, withBlock:{ (key, location) in
+                foundQuery!.observe(GFEventType.keyExited, with:{ (key, location) in
                     self.lastExchangeKeyFound = key
                     self.lastExchangeLocationFound = location
                     
-                    self.querryUserID(key){ (fullName, array) -> () in
+                    self.querryUserID(key: key!){ (fullName, array) -> () in
                         
                         print("From ARRAy Agosto: \(fullName)")
                         
@@ -208,17 +208,17 @@ class MapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UIA
     func showSightingsOnMap(/*key:String,*/ location: CLLocation){
         
       //  annotationSetup(key, location: location)
-        var lat = location.coordinate.latitude
-        var log = location.coordinate.longitude
+        let lat = location.coordinate.latitude
+        let log = location.coordinate.longitude
         
-        var pinLocation = CLLocationCoordinate2DMake(lat, log)
-        var objectAnnotation = MKPointAnnotation()
+        let pinLocation = CLLocationCoordinate2DMake(lat, log)
+        let objectAnnotation = MKPointAnnotation()
         objectAnnotation.coordinate = pinLocation
         objectAnnotation.title = "\(self.fullName)"
         objectAnnotation.subtitle = "Subtitle"
          self.mapView.addAnnotation(objectAnnotation)
 
-        let myTimer : NSTimer = NSTimer.scheduledTimerWithTimeInterval(2, target: self, selector: Selector("myPerformeCode:"), userInfo: nil, repeats: false)
+        let myTimer : Timer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(MapVC.myPerformeCode(_:)), userInfo: nil, repeats: false)
           /*  var coordinate: CLLocationCoordinate2D = location.coordinate
             let anno = MapUserAnnotation(coordinate: coordinate, key: key)
     
@@ -228,7 +228,7 @@ class MapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UIA
     }
     
    
-    func myPerformeCode(timer : NSTimer) {
+    @objc func myPerformeCode(_ timer : Timer) {
         
         self.mapView.annotations.forEach {
             if !($0 is MKUserLocation) {
@@ -237,7 +237,7 @@ class MapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UIA
         }
     }
     func locationAuthStatus(){
-        if CLLocationManager.authorizationStatus() == .AuthorizedWhenInUse {
+        if CLLocationManager.authorizationStatus() == .authorizedWhenInUse {
             mapView.showsUserLocation = true
             
         } else {
@@ -252,11 +252,13 @@ class MapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UIA
  //  MARK: - LOCATION MANAGER
     
     
-    func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+  //  func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+      
         
         //from here to here fomr Persy 
         
-        var location:CLLocationCoordinate2D = (manager.location?.coordinate)!
+        let location:CLLocationCoordinate2D = (manager.location?.coordinate)!
         
         self.latitude = location.latitude
         self.longitude = location.longitude
@@ -264,7 +266,7 @@ class MapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UIA
      
         
        // self.mapView.addOverlay(MKCircle(centerCoordinate: location, radius: 3500))
-       addRadiusCircle(location)
+       addRadiusCircle(location: location)
        // self.mapView.removeOverlays(mapView.overlays)
         
         
@@ -281,13 +283,13 @@ class MapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UIA
             if abs(howRecent) < 10 && location.horizontalAccuracy < 20 {
                 //update distance
                 if self.locations.count > 0 {
-                    distance += location.distanceFromLocation(self.locations.last!)
+                    distance += location.distance(from: self.locations.last!)
                     
                     var coords = [CLLocationCoordinate2D]()
                     coords.append(self.locations.last!.coordinate)
                     coords.append(location.coordinate)
                     
-                    let region = MKCoordinateRegionMakeWithDistance(location.coordinate, 500, 500)
+                    let region = MKCoordinateRegion.init(center: location.coordinate, latitudinalMeters: 500, longitudinalMeters: 500)
                     mapView.setRegion(region, animated: true)
                 
                     geoFire!.setLocation(location, forKey: KEY_UID)
@@ -298,17 +300,24 @@ class MapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UIA
                 self.locations.append(location)
                 
                 
-                dispatch_after(
-                    dispatch_time(
-                        DISPATCH_TIME_NOW,
+         /*       dispatch_after(
+                    DispatchTime.now(
+                        dispatch_time_t(DispatchTime.now()),
                         Int64(3.0 * Double(NSEC_PER_SEC))
                     ),
-                    dispatch_get_main_queue(),
+                    DispatchQueue.main,
                     {
                     self.mapView.removeOverlays(self.mapView.overlays)
                     }
-                )
+                )   */
                // self.mapView.removeOverlays(mapView.overlays)
+                
+               let delayInSeconds = 3.0
+                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + delayInSeconds){
+                    
+                    self.mapView.removeOverlays(self.mapView.overlays)
+                }
+                
             }
         }
     }
@@ -317,7 +326,7 @@ class MapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UIA
         
       //
         self.mapView.delegate = self
-        var circle = MKCircle(centerCoordinate: location, radius: 3500)
+        var circle = MKCircle(center: location, radius: 3500)
         self.mapView.addOverlay(circle)
         
     }
@@ -360,26 +369,26 @@ class MapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UIA
     
   
     
-    @IBAction func searchBtnAction(sender: AnyObject) {  // I don't think it is necessary for my project 
-        
-       // let loc = CLLocation(latitude: mapView.centerCoordinate.latitude, longitude: mapView.centerCoordinate.longitude)
-        
-      //  let rand = arc4random_uniform(151)
-      //  createSighting(loc, withUser: rand)
-        // adding location to firebase database
-        let key = KEY_UID
-        let location = mapView.userLocation.location
-        
-        geoFire!.setLocation(mapView.userLocation.location, forKey: key)
-        
-        startLocationUpdates()
-     }
-    
+//    @IBAction func searchBtnAction(sender: AnyObject) {  // I don't think it is necessary for my project 
+//        
+//       // let loc = CLLocation(latitude: mapView.centerCoordinate.latitude, longitude: mapView.centerCoordinate.longitude)
+//        
+//      //  let rand = arc4random_uniform(151)
+//      //  createSighting(loc, withUser: rand)
+//        // adding location to firebase database
+//        let key = KEY_UID
+//        let location = mapView.userLocation.location
+//        
+//        geoFire!.setLocation(mapView.userLocation.location, forKey: key)
+//        
+//        startLocationUpdates()
+//     }
+//    
  
  
     func querryUser(){
         
-        DataService.ds.REF_USERS.observeEventType(FIRDataEventType.Value, withBlock: { (snapshot) in
+        DataService.ds.REF_USERS.observe(FIRDataEventType.value, with: { (snapshot) in
             
             print(snapshot.value)
             
@@ -418,12 +427,12 @@ class MapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UIA
     
      var image: String?
     
-    func querryUserID(key: String, completion:(fullName: String, array:NSArray) -> ()){
+    func querryUserID(key: String, completion:@escaping (_ fullName: String, _ array:NSArray) -> ()){
         
         var activeUserInfo = [NSDictionary]()
         var fullName: String!
         
-        DataService.ds.REF_USERS.child(key).observeEventType(.Value, withBlock: { (snapshot) in
+        DataService.ds.REF_USERS.child(key).observe(.value, with: { (snapshot) in
             
             let item = snapshot as FIRDataSnapshot
             print("SNAP-Itemxxxxxxagodstttttooooxxxxx: \(item)")
@@ -432,59 +441,59 @@ class MapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UIA
             
             if let activeUserInfo = item.value as? [String : AnyObject]{
                 let avatar = activeUserInfo["avatar"] as! String
-              //  image = avatar
+                //  image = avatar
                 
-            //  activeUserInfo = dict
+                //  activeUserInfo = dict
                 
                 
                 //contact's information
                 
-                 fullName =   (activeUserInfo["fullName"]!.uppercaseString!)
+                fullName =   (activeUserInfo["fullName"]!.uppercased!)
                 
                 print("FullName Agosto 17: \(fullName)")
-              //  self.postsLabel.text = " \(self.activeUserInfo!["postNumber"]!) \n posts"
-              //  self.followersLabel.text = " \(self.activeUserInfo!["followers"]!) \n followers"
-              //  self.followingLabel.text = " \(self.activeUserInfo!["following"]!) \n following"
+                //  self.postsLabel.text = " \(self.activeUserInfo!["postNumber"]!) \n posts"
+                //  self.followersLabel.text = " \(self.activeUserInfo!["followers"]!) \n followers"
+                //  self.followingLabel.text = " \(self.activeUserInfo!["following"]!) \n following"
                 
-              //  let  activeUserInfoID = self.activeUserInfo!["id"] as! String
+                //  let  activeUserInfoID = self.activeUserInfo!["id"] as! String
                 
-            //    print("activeUserInfoID----xxxx-------:\(activeUserInfoID)")
+                //    print("activeUserInfoID----xxxx-------:\(activeUserInfoID)")
                 
                 
                 
-                self.downloadAvatar(avatar, completion: { (data) in
+                self.downloadAvatar(image: avatar, completion: { (data) in
                     
-                 //   self.avatarImageView.image = UIImage(data: data)
+                    //   self.avatarImageView.image = UIImage(data: data)
                     
-                   // self.avatarImageView.layer.cornerRadius = 50.0
-                   // self.avatarImageView.clipsToBounds = true
+                    // self.avatarImageView.layer.cornerRadius = 50.0
+                    // self.avatarImageView.clipsToBounds = true
                 })
                 
             }
             
-            dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                completion(fullName: fullName, array: activeUserInfo)
+            DispatchQueue.main.async(execute: { () -> Void in
+                completion(fullName, activeUserInfo as NSArray)
             })
-            }, withCancelBlock: {(error) -> Void in
+        }, withCancel: {(error) -> Void in
                 
-                print(error.description)
+                print(error.localizedDescription)
                 
             })
         
     }
             
             
-    func downloadAvatar(image:String, completion:(data:NSData)-> ()) {
+    func downloadAvatar(image:String, completion:@escaping (_ data:NSData)-> ()) {
         
         let urlString = NSURL(string: image)
-        let request = NSURLSession.sharedSession().dataTaskWithURL(urlString!){ (data, response, error) -> Void in
+        let request = URLSession.shared.dataTask(with: urlString! as URL){ (data, response, error) -> Void in
             
             if error == nil {
                 
                 if let dataValid = data {
                     
-                    dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                        completion(data: dataValid)
+                    DispatchQueue.main.async(execute: { () -> Void in
+                        completion(dataValid as NSData)
                     })
                     
                 }
@@ -568,7 +577,7 @@ class MapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UIA
     
     
    func centerMapOnLocation(location: CLLocation) {
-        let coordinateRegion  = MKCoordinateRegionMakeWithDistance(location.coordinate, 5000, 5000)
+        let coordinateRegion  = MKCoordinateRegion.init(center: location.coordinate, latitudinalMeters: 5000, longitudinalMeters: 5000)
         
         mapView.setRegion(coordinateRegion, animated: true)
         
@@ -579,7 +588,7 @@ class MapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UIA
         if let loc = userLocation.location{
             
             if !mapHasCenteredOnce {
-                centerMapOnLocation(loc)
+                centerMapOnLocation(location: loc)
                 mapHasCenteredOnce = true
                           }
             
@@ -597,10 +606,10 @@ class MapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UIA
         
 
         
-      if annotation.isKindOfClass(MKUserLocation.self) {
+      if annotation.isKind(of: MKUserLocation.self) {
             annotationView = MKAnnotationView(annotation: annotation, reuseIdentifier: "\(self.fullName)")
             annotationView?.image = UIImage(named: "car")
-        }   else if let deqAnno = mapView.dequeueReusableAnnotationViewWithIdentifier(annoIdentifier) {
+        }   else if let deqAnno = mapView.dequeueReusableAnnotationView(withIdentifier: annoIdentifier) {
             annotationView = deqAnno
             annotationView?.annotation = annotation
          }    /* else {
@@ -616,7 +625,7 @@ class MapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UIA
             annotationView.image = UIImage(contentsOfFile: "car.png")
             let btn = UIButton()
             btn.frame = CGRect(x: 0, y: 0, width: 30, height: 30)
-            btn.setImage(UIImage(named: "car"), forState: .Normal)
+            btn.setImage(UIImage(named: "car"), for: .normal)
             annotationView.rightCalloutAccessoryView = btn
             
         }
@@ -639,7 +648,7 @@ class MapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UIA
     func mapView(mapView: MKMapView, rendererForOverlay overlay: MKOverlay) -> MKOverlayRenderer {
           let overlay = overlay as? MKCircle //{
             let circleRenderer = MKCircleRenderer(circle: overlay!)
-            circleRenderer.fillColor = UIColor.blueColor().colorWithAlphaComponent(0.05)
+            circleRenderer.fillColor = UIColor.blue.withAlphaComponent(0.05)
             return circleRenderer
        // }
     
