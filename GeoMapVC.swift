@@ -339,7 +339,15 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
        self.objectAnnotation = MKPointAnnotation()  //MKPinAnnotationView
 
         self.objectAnnotation.coordinate = pinLocation
-        self.objectAnnotation.title = "\(fullName)"
+        
+        if fullName != nil {
+            self.objectAnnotation.title = "\(String(describing: fullName!))"
+            
+        } else {
+             self.objectAnnotation.title = "Unknown"
+            
+        }
+       // self.objectAnnotation.title = "\(String(describing: fullName))"  // oct 2018
        //self.objectAnnotation. = MKPinAnnotationView.greenPinColor()
         
        // self.objectAnnotation.subtitle = "Subtitle"
@@ -496,7 +504,7 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
                 
                 fullName =   (activeUserInfo["fullName"]!.uppercased!)
                 
-                print("FullName Agosto 17: \(fullName)")
+                print("FullName Agosto 17: \(String(describing: fullName))")  // oct 24, 2018     print("FullName Agosto 17: \(fullName)")
                 //  self.postsLabel.text = " \(self.activeUserInfo!["postNumber"]!) \n posts"
                 //  self.followersLabel.text = " \(self.activeUserInfo!["followers"]!) \n followers"
                 //  self.followingLabel.text = " \(self.activeUserInfo!["following"]!) \n following"

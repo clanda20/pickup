@@ -34,7 +34,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
        
     }
 
-    func application( application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
+    @nonobjc func application( application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         
         // [START register_for_notifications] nov 9
         if #available(iOS 10.0, *) {
@@ -89,7 +89,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     
     // [START receive_message]
-    func application(application: UIApplication, didReceiveRemoteNotification userInfo: [NSObject : AnyObject],
+    @nonobjc func application(application: UIApplication, didReceiveRemoteNotification userInfo: [NSObject : AnyObject],
                      fetchCompletionHandler completionHandler: (UIBackgroundFetchResult) -> Void) {
         
         
@@ -147,7 +147,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func connectToFcm() {
         FIRMessaging.messaging().connect { (error) in
             if (error != nil) {
-                print("Unable to connect with FCM. \(error)")
+                print("Unable to connect with FCM. \(String(describing: error))")
             } else {
                 print("Connected to FCM.")
             }

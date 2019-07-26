@@ -66,9 +66,16 @@ class ProfileVC: UIViewController {
             //counting posts
             var countingFollowers = (snapshot.value as AnyObject).count
             
-            var followers = ["followers":  (countingFollowers!) ]
+            if countingFollowers == nil {
+                print("0")
+            } else {
+                var followers = ["followers":  (countingFollowers!) ]
+                DataService.ds.REF_BASE.child("users").child(KEY_UID!).updateChildValues(followers)
+            }
             
-            DataService.ds.REF_BASE.child("users").child(KEY_UID!).updateChildValues(followers)
+           // var followers = ["followers":  (countingFollowers!) ]
+            
+          //  DataService.ds.REF_BASE.child("users").child(KEY_UID!).updateChildValues(followers)
             
         }, withCancel: {(error) -> Void in
                 
