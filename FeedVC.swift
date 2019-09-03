@@ -335,7 +335,7 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
 let info = convertFromUIImagePickerControllerInfoKeyDictionary(info)
 
         
-        referenceUrl = info[convertFromUIImagePickerControllerInfoKey(UIImagePickerController.InfoKey.referenceURL)] as AnyObject!
+        referenceUrl = info[convertFromUIImagePickerControllerInfoKey(UIImagePickerController.InfoKey.referenceURL)] as AnyObject?
         
         if let  image = info[convertFromUIImagePickerControllerInfoKey(UIImagePickerController.InfoKey.originalImage)] as? UIImage {
             self.imageDownload = image

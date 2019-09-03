@@ -104,7 +104,7 @@ class Event {
         }
         
         
-        if let placemark = dictionary["placemark"] as?  MKPlacemark! {
+        if let placemark = dictionary["placemark"] as?  MKPlacemark? {
             self._placemark = placemark
         }
         

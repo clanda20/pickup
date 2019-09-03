@@ -534,7 +534,7 @@
 					AA60F5561CEFFEC8007B215D = {
 						CreatedOnToolsVersion = 7.3;
 						DevelopmentTeam = ZFRU6SA44A;
-						LastSwiftMigration = 1000;
+						LastSwiftMigration = 1030;
 						ProvisioningStyle = Manual;
 						SystemCapabilities = {
 							com.apple.BackgroundModes = {
@@ -552,10 +552,9 @@
 			};
 			buildConfigurationList = AA60F5521CEFFEC8007B215D /* Build configuration list for PBXProject "pickup" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
-				English,
 				en,
 				Base,
 			);
@@ -881,8 +880,7 @@
 				PROVISIONING_PROFILE_SPECIFIER = "Dev com.poquito.pickup";
 				SWIFT_OBJC_BRIDGING_HEADER = "pickup/pickup-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_SWIFT3_OBJC_INFERENCE = On;
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -910,8 +908,7 @@
 				PROVISIONING_PROFILE = "fb15758d-96a0-4fa1-b955-34771155cba1";
 				PROVISIONING_PROFILE_SPECIFIER = "XC: com.poquito.pickup";
 				SWIFT_OBJC_BRIDGING_HEADER = "pickup/pickup-Bridging-Header.h";
-				SWIFT_SWIFT3_OBJC_INFERENCE = On;
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
