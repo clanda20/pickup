@@ -1,12 +1,12 @@
-source 'https://github.com/CocoaPods/Specs.git'
-platform :ios, '10.0'
+source 'https://cdn.cocoapods.org/'
+platform :ios, '12.0'
 use_frameworks!
 
 #Uncomment this line if you're using Swift
 
 def common_pods
         pod 'Firebase'
-        pod 'Firebase/Auth’
+        pod 'Firebase/Auth'
         pod 'Firebase/Database'
         pod 'Firebase/Storage'
         pod 'FirebaseUI'
@@ -17,7 +17,7 @@ def common_pods
 end
 
 target 'pickup' do
-    platform :ios, '10.0'
+    platform :ios, '12.0'
     common_pods
 end
 
@@ -26,12 +26,11 @@ end
     post_install do |installer|
         installer.pods_project.targets.each do |target|
             target.build_configurations.each do |config|
-                config.build_settings['SWIFT_VERSION'] = '3.2'
+                config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '12.0'
+                config.build_settings['SWIFT_VERSION'] = '5.0'
                 config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
 
             end
         end
     end
-
-
 
