@@ -66,3 +66,14 @@ fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
+
+# Secrets / local app credentials
+pickup/GoogleService-Info.plist
+**/GoogleService-Info.plist
+*.pem
+*.key
+*.p8
+*.p12
+*.mobileprovision
+.env
+.env.*
