@@ -7,15 +7,17 @@
 //
 
 import UIKit
-import Firebase
+import FirebaseAuth
+import FirebaseCore
+import FirebaseDatabase
+import FirebaseMessaging
+import FirebaseStorage
 import FirebaseDatabase
 import Photos
 import FirebaseAuth
 import FirebaseStorage
 //import Alamofire
 
-import FirebaseDatabaseUI
-import FirebaseAuthUI
 import MediaPlayer
 import MobileCoreServices
 import AVKit
@@ -35,10 +37,10 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
     var imageSaved: String?
 
 
-    var followingsRef: FIRDatabaseReference!
-   var followingsSnap: FIRDataSnapshot!
+    var followingsRef: DatabaseReference!
+   var followingsSnap: DataSnapshot!
     
-    var followersRef: FIRDatabaseReference!
+    var followersRef: DatabaseReference!
  
     
     var postKey: String!
@@ -85,7 +87,7 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
     var popover:UIPopoverController? = nil
     var referenceUrl: AnyObject!
     
-    var storageRef:FIRStorageReference!
+    var storageRef:StorageReference!
     
   var friendID: String!
     
@@ -112,12 +114,12 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
         imagePicker.allowsEditing = true
         imagePicker.delegate = self
         
-        let storage = FIRStorage.storage()
+        let storage = Storage.storage()
         storageRef = storage.reference(forURL: "gs://pickup-9b67a.appspot.com")
         
         //Enable offline capabilities 
         
-      //  FIRDatabase.database().persistenceEnabled = true
+      //  Database.database().persistenceEnabled = true
         
         //Dismiss Keyboard
         
@@ -204,7 +206,7 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
         
         DataService.ds.REF_USER_CURRENT.observe(.value, with: { (snapshot)  in
             
-            let item = snapshot as FIRDataSnapshot
+            let item = snapshot as DataSnapshot
             print("SNAP-Itemxxxxxxxxxxx: \(item)")
             
             // if let dict = item.value as? NSDictionary{
@@ -234,7 +236,7 @@ class FeedVC: UIViewController, UITableViewDelegate,UITextFieldDelegate, UITable
             
             self.posts = []
             
-            if let snapshots = snapshot.children.allObjects as? [FIRDataSnapshot]  {
+            if let snapshots = snapshot.children.allObjects as? [DataSnapshot]  {
                 
                 for snap in snapshots {
                     
@@ -388,28 +390,36 @@ let info = convertFromUIImagePickerControllerInfoKeyDictionary(info)
                     self.dismiss(animated: true, completion: nil)
                     self.tableView.reloadData()
                     
-                    let imageData = img.jpegData(compressionQuality: 0.00)
-                    let filePath = FIRAuth.auth()!.currentUser!.uid + "/\(Int(NSDate.timeIntervalSinceReferenceDate * 1000))"
-                    let metaData = FIRStorageMetadata()
+                    guard let currentUser = Auth.auth().currentUser,
+                          let imageData = img.jpegData(compressionQuality: 0.00) else {
+                        return
+                    }
+
+                    let filePath = currentUser.uid + "/\(Int(NSDate.timeIntervalSinceReferenceDate * 1000))"
+                    let metaData = StorageMetadata()
                     metaData.contentType = "image/jpg"
-                    storageRef.child(filePath).put(imageData!, metadata: metaData){(metaData,error) in
+                    let imageRef = storageRef.child(filePath)
+                    imageRef.putData(imageData, metadata: metaData){ (_, error) in
                         if let error = error {
                             print(error.localizedDescription)
                             
                             return
-                        }else{
-                            //store downloadURL
-                            let downloadURL = metaData!.downloadURL()!.absoluteString
-                            
-                            
-                            //store downloadURL at database
-                            // DataService.ds.REF_USER_POSTS_USERID .updateChildValues(["avatar": downloadURL])
-                            self.postToFirebase( imgUrl: downloadURL,vidUrl: nil, mediaType: "PHOTO")
+                        }
+
+                        imageRef.downloadURL { url, error in
+                            if let error = error {
+                                print(error.localizedDescription)
+                                return
+                            }
+
+                            guard let downloadURL = url?.absoluteString else {
+                                return
+                            }
+
+                            self.postToFirebase(imgUrl: downloadURL, vidUrl: nil, mediaType: "PHOTO")
                             self.tableView.reloadData()
                             print("LINK_URLString: \(downloadURL)")
-                            
                         }
-                        
                     }
                     // } //  en picture = picture
                    
@@ -418,60 +428,68 @@ let info = convertFromUIImagePickerControllerInfoKeyDictionary(info)
             else  if ( self.imageDownload != nil &&  self.videoPicker != nil){   /////*********************** picture and video
                 
               
-                var downloadURL: String!
+                var downloadURL: String?
         
         self.dismiss(animated: true, completion: nil)
             self.tableView.reloadData()
-        
-        let imageData = img.jpegData(compressionQuality: 0.00)
-        let filePath = FIRAuth.auth()!.currentUser!.uid + "/\(Int(NSDate.timeIntervalSinceReferenceDate * 1000))"
-        let metaData = FIRStorageMetadata()
+
+        guard let currentUser = Auth.auth().currentUser,
+              let imageData = img.jpegData(compressionQuality: 0.00) else {
+            return
+        }
+
+        let filePath = currentUser.uid + "/\(Int(NSDate.timeIntervalSinceReferenceDate * 1000))"
+        let metaData = StorageMetadata()
         metaData.contentType = "image/jpg"
-        storageRef.child(filePath).put(imageData!, metadata: metaData){(metaData,error) in
+        let imageRef = storageRef.child(filePath)
+        imageRef.putData(imageData, metadata: metaData){ (_, error) in
             if let error = error {
                 print(error.localizedDescription)
                 
                 return
-            }else{
-                //store downloadURL
-                    downloadURL = metaData!.downloadURL()!.absoluteString
-                    
-                
-                    //store downloadURL at database
-                    // DataService.ds.REF_USER_POSTS_USERID .updateChildValues(["avatar": downloadURL])
-                   /// self.postToFirebase( downloadURL,vidUrl: nil, mediaType: "PHOTO")
-                    self.tableView.reloadData()
-                    print("LINK_URLString: \(downloadURL)")
-                
-                    }
-           
+            }
+
+            imageRef.downloadURL { url, error in
+                if let error = error {
+                    print(error.localizedDescription)
+                    return
                 }
+
+                downloadURL = url?.absoluteString
+                self.tableView.reloadData()
+                print("LINK_URLString: \(downloadURL ?? "")")
+            }
+        }
                     
                     
                 let video  = self.videoPicker
                     
                 let videoData2 = NSData(contentsOf: video as! URL)
-                let filePath2 = FIRAuth.auth()!.currentUser!.uid + "/\(Int(NSDate.timeIntervalSinceReferenceDate * 1000))"
-                let metaData2 = FIRStorageMetadata()
+                let filePath2 = currentUser.uid + "/\(Int(NSDate.timeIntervalSinceReferenceDate * 1000))"
+                let metaData2 = StorageMetadata()
                 metaData2.contentType = "video/mp4"
-                _ = storageRef.child(filePath2).put(videoData2! as Data, metadata: metaData2){(metaData2,error) in
+                let videoRef = storageRef.child(filePath2)
+                _ = videoRef.putData(videoData2! as Data, metadata: metaData2){ (_, error) in
                     if let error = error {
                         print(error.localizedDescription)
                         
                         return
-                    }else{
-                        //store downloadURL
-                        let downloadVideoURL = metaData2!.downloadURL()!.absoluteString
-                        
-                        
-                        //store downloadURL at database
-                        // DataService.ds.REF_USER_POSTS_USERID .updateChildValues(["avatar": downloadURL])
-                        self.postToFirebase( imgUrl: downloadURL, vidUrl: downloadVideoURL, mediaType: "VIDEO")
+                    }
+
+                    videoRef.downloadURL { url, error in
+                        if let error = error {
+                            print(error.localizedDescription)
+                            return
+                        }
+
+                        guard let downloadVideoURL = url?.absoluteString else {
+                            return
+                        }
+
+                        self.postToFirebase(imgUrl: downloadURL, vidUrl: downloadVideoURL, mediaType: "VIDEO")
                         self.tableView.reloadData()
                         print("LINK_URLString: \(downloadVideoURL)")
-                        
                     }
-                    
                 }
                 
         }
@@ -652,7 +670,9 @@ let info = convertFromUIImagePickerControllerInfoKeyDictionary(info)
         
    
         
-     let key = ref.child("user-posts").childByAutoId().key
+        guard let key = ref.child("user-posts").childByAutoId().key else {
+            return
+        }
         
       let childUpadates = ["/posts/\(key)": post,
                            "/user-posts/\(activeUserId)/\(key)/":post]

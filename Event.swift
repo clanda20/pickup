@@ -7,7 +7,11 @@
 //
 
 import Foundation
-import Firebase
+import FirebaseAuth
+import FirebaseCore
+import FirebaseDatabase
+import FirebaseMessaging
+import FirebaseStorage
 
 class Event {
     private var _date: String!
@@ -15,10 +19,10 @@ class Event {
     private var _fullAddress: String!
     private var _fullAddressWithBreaks: String!
     private var _title: String!
-    private var _geo: FIRDatabaseReference!
+    private var _geo: DatabaseReference!
     private var _eventKey: String!
     private var _hostUid: String!
-    private var _eventRef: FIRDatabaseReference!
+    private var _eventRef: DatabaseReference!
     private var _placemark:  MKPlacemark!
     
     var date: String {
@@ -48,7 +52,7 @@ class Event {
         return _hostUid
     }
     
-    var geo: FIRDatabaseReference{
+    var geo: DatabaseReference{
         return _geo
     }
     
@@ -56,7 +60,7 @@ class Event {
         return _eventKey
     }
     
-    var eventRef: FIRDatabaseReference{
+    var eventRef: DatabaseReference{
         return _eventRef
     }
     

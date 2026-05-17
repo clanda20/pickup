@@ -7,7 +7,11 @@
 //
 
 import Foundation
-import Firebase
+import FirebaseAuth
+import FirebaseCore
+import FirebaseDatabase
+import FirebaseMessaging
+import FirebaseStorage
 
 class Post {
     private var _postDescription: String?
@@ -18,10 +22,10 @@ class Post {
     private var _fullName: String!
     private var _username: String!
     private var _postKey: String!
-    private var _postRef: FIRDatabaseReference!
-    private var _commentPostRef: FIRDatabaseReference!
-    private var _user_posts_Ref: FIRDatabaseReference!
-    private var __post_REf_By_USER: FIRDatabaseReference!
+    private var _postRef: DatabaseReference!
+    private var _commentPostRef: DatabaseReference!
+    private var _user_posts_Ref: DatabaseReference!
+    private var __post_REf_By_USER: DatabaseReference!
     private var _dislikes: Int!
     private var _uid: String?
     private var _followersList: [String]?
@@ -65,7 +69,7 @@ class Post {
         return _postKey
     }
     
-    var postRef: FIRDatabaseReference{
+    var postRef: DatabaseReference{
         return _postRef
     }
     

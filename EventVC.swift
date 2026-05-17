@@ -7,7 +7,11 @@
 //
 
 import UIKit
-import Firebase
+import FirebaseAuth
+import FirebaseCore
+import FirebaseDatabase
+import FirebaseMessaging
+import FirebaseStorage
 
 class EventVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
@@ -110,7 +114,7 @@ class EventVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
             
             self.events = []
             
-            if let snapshots = snapshot.children.allObjects as? [FIRDataSnapshot]  {
+            if let snapshots = snapshot.children.allObjects as? [DataSnapshot]  {
                 print("snapshot Events: \(snapshot)")
                 for snap in snapshots {
                     //   print("SNAP: july 26 \(snap)")

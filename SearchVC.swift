@@ -7,7 +7,11 @@
 //
 
 import UIKit
-import Firebase
+import FirebaseAuth
+import FirebaseCore
+import FirebaseDatabase
+import FirebaseMessaging
+import FirebaseStorage
 
 class SearchVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchResultsUpdating, UISearchBarDelegate, CustomSearchControllerDelegate {
 //    @available(iOS 8.0, *)
@@ -247,7 +251,7 @@ class SearchVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UI
     
     func QueryUsers(){
     
-    DataService.ds.REF_USERS.queryLimited(toLast: 8).observe(FIRDataEventType.value, with: { (snapshot) in
+    DataService.ds.REF_USERS.queryLimited(toLast: 8).observe(DataEventType.value, with: { (snapshot) in
     
     print(snapshot.value)
     
@@ -255,7 +259,7 @@ class SearchVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UI
     
     self.contacts = []
     
-    if let snapshots = snapshot.children.allObjects as? [FIRDataSnapshot]  {
+    if let snapshots = snapshot.children.allObjects as? [DataSnapshot]  {
     
     for snap in snapshots {
     print("SNAP: \(snap)")
@@ -305,7 +309,7 @@ class SearchVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UI
                 
                 self.filteredContacts = []
                 
-                if let snapshots = snapshot.children.allObjects as? [FIRDataSnapshot]  {
+                if let snapshots = snapshot.children.allObjects as? [DataSnapshot]  {
                     
                     for snap in snapshots {
                         print("SNAP Search: \(snap)")

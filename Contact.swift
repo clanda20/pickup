@@ -7,7 +7,11 @@
 //
 
 import Foundation
-import Firebase
+import FirebaseAuth
+import FirebaseCore
+import FirebaseDatabase
+import FirebaseMessaging
+import FirebaseStorage
 
 class Contact{
     private var _fullName: String!
@@ -21,7 +25,7 @@ class Contact{
     private var _followers: Int!
     private var _followings: NSDictionary?
     private var _contactKey: String!
-    private var _contactRef: FIRDatabaseReference!
+    private var _contactRef: DatabaseReference!
     private var _contactAdd: NSDictionary!
     private var _notifications: Int!
     
@@ -68,7 +72,7 @@ class Contact{
         return _contactKey
     }
     
-    var contactRef: FIRDatabaseReference{
+    var contactRef: DatabaseReference{
         return _contactRef
     }
     

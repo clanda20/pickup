@@ -7,7 +7,11 @@
 //  //segue_EventCommentVC
 
 import UIKit
-import Firebase
+import FirebaseAuth
+import FirebaseCore
+import FirebaseDatabase
+import FirebaseMessaging
+import FirebaseStorage
 
 
 
@@ -34,13 +38,13 @@ class EventCommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate
     
     
     var postID: String! = ""
-    var value:  FIRDatabaseReference!
-    lazy var ref: FIRDatabaseReference = FIRDatabase.database().reference()
+    var value:  DatabaseReference!
+    lazy var ref: DatabaseReference = Database.database().reference()
     
     
-    var eventcommentsRef: FIRDatabaseReference!
-    var firebaseCommentPost2 : FIRDatabaseReference!
-    var user_commentRef: FIRDatabaseReference!
+    var eventcommentsRef: DatabaseReference!
+    var firebaseCommentPost2 : DatabaseReference!
+    var user_commentRef: DatabaseReference!
     
     var activeUserInfo: NSDictionary?
     var profileName: String!
@@ -114,7 +118,7 @@ class EventCommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate
             self.eventcomments = []
             
             
-            if let snapshots = snapshot.children.allObjects as? [FIRDataSnapshot] {
+            if let snapshots = snapshot.children.allObjects as? [DataSnapshot] {
                 
                 for snap in snapshots {
                     
@@ -183,12 +187,14 @@ class EventCommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate
         
         if let txt = commentField.text, txt != "" {
             
-            let uid = FIRAuth.auth()?.currentUser?.uid
+            let uid = Auth.auth().currentUser?.uid
             //  commentsRef.observeSingleEventOfType(.Value, withBlock: { (snapshot) in
             
             DataService.ds.REF_BASE.observeSingleEvent(of: .value, with: { (snapshot) in
                 
-                let key = DataService.ds.REF_BASE.child("event-comments").childByAutoId().key  // creating CommentKey
+                guard let key = DataService.ds.REF_BASE.child("event-comments").childByAutoId().key else {
+                    return
+                }
                 
                 if let uid = uid, let commentField = self.commentField, let user = snapshot.value as? [String : AnyObject] {
                     
@@ -361,7 +367,7 @@ class EventCommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate
         
         DataService.ds.REF_USER_CURRENT.observe(.value, with: { (snapshot)  in
             
-            let item = snapshot as FIRDataSnapshot
+            let item = snapshot as DataSnapshot
             print("SNAP-Itemxxxxxxxxxxx: \(item)")
             
             // if let dict = item.value as? NSDictionary{
@@ -392,7 +398,7 @@ class EventCommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate
             
             //postInfo
             
-            let item = snapshot as FIRDataSnapshot
+            let item = snapshot as DataSnapshot
             print("SNAP-Itemx-EVent: \(item)")
             
             
@@ -506,7 +512,6 @@ class EventCommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate
     
     
 }
-
 
 
 

@@ -7,7 +7,10 @@
 //
 
 import UIKit
-import Firebase
+import FirebaseAuth
+import FirebaseCore
+import FirebaseDatabase
+import FirebaseMessaging
 import FirebaseStorage
 
 
@@ -39,21 +42,34 @@ class EditProfileVC: UIViewController, UINavigationControllerDelegate,UIImagePic
         self.dismiss(animated: true, completion: nil)
         
       // let avatarRef = DataService.ds.REF_USER_CURRENT
-        
-        let filePath = "\(FIRAuth.auth()!.currentUser!.uid)/\("userPhoto")"
-        let metaData = FIRStorageMetadata()
+
+        guard let currentUser = Auth.auth().currentUser else {
+            return
+        }
+
+        let filePath = "\(currentUser.uid)/userPhoto"
+        let metaData = StorageMetadata()
         metaData.contentType = "image/jpg"
-        storageRef.child(filePath).put(imageData as Data, metadata: metaData){(metaData,error) in
+        let avatarRef = storageRef.child(filePath)
+        avatarRef.putData(imageData as Data, metadata: metaData){ (_, error) in
             if let error = error {
                 print(error.localizedDescription)
                 return
-            }else{
-                //store downloadURL
-                let downloadURL = metaData!.downloadURL()!.absoluteString
-                //store downloadURL at database
+            }
+
+            avatarRef.downloadURL { url, error in
+                if let error = error {
+                    print(error.localizedDescription)
+                    return
+                }
+
+                guard let downloadURL = url?.absoluteString else {
+                    return
+                }
+
                 DataService.ds.REF_USER_CURRENT.updateChildValues(["avatar": downloadURL])
             }
-            
+
       /*  if let image = imageSaved {
             
             let post = ["avatar": image]

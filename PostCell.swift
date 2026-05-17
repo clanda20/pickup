@@ -8,7 +8,11 @@
 
 import UIKit
 //import Alamofire
-import Firebase
+import FirebaseAuth
+import FirebaseCore
+import FirebaseDatabase
+import FirebaseMessaging
+import FirebaseStorage
 
 protocol PostCellDelegate {
     func callSegueFromCell(myData dataobject: AnyObject)
@@ -74,16 +78,16 @@ class PostCell: UITableViewCell {
     
     var post: Post!
   //  var request: Request?
-    var likeRef: FIRDatabaseReference!
-    var dislikeRef: FIRDatabaseReference!
-    var postRefKey: FIRDatabaseReference!
+    var likeRef: DatabaseReference!
+    var dislikeRef: DatabaseReference!
+    var postRefKey: DatabaseReference!
     
-    var  DeleteRef: FIRDatabaseReference!
-    var  DeleteRef2: FIRDatabaseReference!
-    var  DeleteRef3: FIRDatabaseReference!
-    var  DeleteRef4: FIRDatabaseReference!
-    var  DeleteRef5: FIRDatabaseReference!
-    var  DeleteRef6: FIRDatabaseReference!
+    var  DeleteRef: DatabaseReference!
+    var  DeleteRef2: DatabaseReference!
+    var  DeleteRef3: DatabaseReference!
+    var  DeleteRef4: DatabaseReference!
+    var  DeleteRef5: DatabaseReference!
+    var  DeleteRef6: DatabaseReference!
 
     
     var postKey: String!
@@ -94,7 +98,7 @@ class PostCell: UITableViewCell {
     
     var activeUserInfo: NSDictionary?
    
-    var followersRef: FIRDatabaseReference!
+    var followersRef: DatabaseReference!
     var friendsArray: [String] = []
     var postFollowersArray: [String] = []
     
@@ -329,8 +333,8 @@ class PostCell: UITableViewCell {
             if img != nil {
                 self.showcaseImg.image = img
             } else {
-                let ref = FIRStorage.storage().reference(forURL: post.imageUrl!)
-                ref.data( withMaxSize: 2 * 1024 * 1024, completion: { (data, error) in
+                let ref = Storage.storage().reference(forURL: post.imageUrl!)
+                ref.getData(maxSize: 2 * 1024 * 1024, completion: { (data, error) in
                     if error != nil {
                         print("JESS: Unable to download image from Firebase storage")
                     } else {
@@ -425,7 +429,9 @@ class PostCell: UITableViewCell {
                 //adding notification
                  let time  = String(Int(NSDate().timeIntervalSince1970))
                 
-                 let key = DataService.ds.REF_BASE.child("notifications").childByAutoId().key
+                guard let key = DataService.ds.REF_BASE.child("notifications").childByAutoId().key else {
+                    return
+                }
                 
                 self.notificationKey = "N\(key)"  /// notificationKey is the same number of the commentKey but with and N before the number
                 
@@ -504,7 +510,9 @@ class PostCell: UITableViewCell {
                 //adding notification
                 let time  = String(Int(NSDate().timeIntervalSince1970))
                 
-                let key = DataService.ds.REF_BASE.child("notifications").childByAutoId().key
+                guard let key = DataService.ds.REF_BASE.child("notifications").childByAutoId().key else {
+                    return
+                }
                 
                 self.notificationKey = "N\(key)"  /// notificationKey is the same number of the commentKey but with and N before the number
                 
@@ -871,7 +879,7 @@ class PostCell: UITableViewCell {
             
             // self.notificationArray = []
             
-            if let snapshots = snapshot.children.allObjects as? [FIRDataSnapshot]  {
+            if let snapshots = snapshot.children.allObjects as? [DataSnapshot]  {
                 
                 for snap in snapshots {
                     
@@ -906,7 +914,7 @@ class PostCell: UITableViewCell {
         
         DataService.ds.REF_USER_CURRENT.observe(.value, with: { (snapshot)  in
             
-            let item = snapshot as FIRDataSnapshot
+            let item = snapshot as DataSnapshot
             print("SNAP-Itemxxxxxxxxxxx: \(item)")
             
             // if let dict = item.value as? NSDictionary{

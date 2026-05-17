@@ -7,9 +7,8 @@
 //
 
 import UIKit
-import FBSDKCoreKit
-import FBSDKLoginKit
-import Firebase
+import FirebaseAuth
+import FirebaseDatabase
 import MapKit
 
 
@@ -59,84 +58,6 @@ class ViewController: UIViewController, UITextFieldDelegate{
         }
     }
     
-    
-    
-    @IBAction func fbBtnPressed(sender: UIButton!) {
-       let facebookLogin = FBSDKLoginManager()
-    // let loginButton = FBSDKLoginButton()
-       //loginButton.delegate = self
-        
-      facebookLogin.logIn(withReadPermissions: ["email"], from: self) { (result, error) in
-             if error != nil {
-                print("Facebook login failed. Error \(error)")
-            } else  if result?.isCancelled  == true {
-                  print("Facebook login was cancelled.")
-            } else {
-               
-                
-               //  [START headless_facebook_auth]
- 
-                let credential = FIRFacebookAuthProvider.credential(withAccessToken: FBSDKAccessToken.current().tokenString)
-                
-                // [END headless_facebook_auth]
-              //  self.firebaseLogin(credential)
-               // FIRAuth.auth()?.signIn(with: credential, completion: { (authData, error) in //NOV 9
-                
-                    FIRAuth.auth()?.signIn(with: credential) { (authData, error) in
-
-            
-                    if error != nil {
-                        print("Login Failed. \(error)")
-                    } else {
-                         print("Logged In Xxxxxxxxx!\(authData?.uid)")
-                        
-                         print("Logged In Name!\(authData?.displayName)")
-                        
-                        
-                        print("Logged In email!\(authData?.email)")
-                        
-                        print("Logged In email!\(authData?.photoURL)")
-                        
-                        
-                       
-                        
-                        let authID = authData?.uid
-                        let fullName = authData?.displayName
-                        let email = authData?.email
-                        let photoURL =  authData?.photoURL
-                        
-                        
-                        let myFullNameString: String = "\(fullName!.uppercased())";
-                    //    var myFullNameStringArr = myFullNameString.componentsSeparatedByString(" ")
-                        var myFullNameStringArr = myFullNameString.components(separatedBy: " ")
-                        
-                        let firstName: String = myFullNameStringArr [0]
-                        let lastName: String = myFullNameStringArr [1]
-                        
-                        let interval = NSDate().timeIntervalSince1970
-                        let date = NSDate(timeIntervalSince1970: interval)
-                        
-                        
-                        UserDefaults.standard.setValue(authID, forKey: "uid")
-                         UserDefaults.standard.setValue(authData?.uid, forKey: "userID") /// temporal to prevent crash 
-                      //  let location = mapView.userLocation.location
-
-                        //Write DataBase
-                        
-                        let user = ["provider": credential.provider,"id": "\(authID!)", "fullName": "\(fullName!.uppercased())", "firstName": firstName, "lastName": lastName,  "avatar": "\(photoURL!)" , "email": "\(email!)","notifications": "0","postNumber": "0", "followers": "0", "following": "0", "time": "\(date)"]
-                      //  DataService.ds.createFirebaseUser(authID!, user: user )
-                        self.createFirebaseUser(uid: authID!, user: user )
-                        
-                       // NSUserDefaults.standardUserDefaults().setValue(authData?.uid, forKey: "uid")
-                        self.performSegue(withIdentifier: SEGUE_LOGGED_IN, sender: nil)
-                    }
-                }
-            }
-        
-    }
-
-
- }
     //  EMAIL LOGIN 
     
   
@@ -146,7 +67,7 @@ class ViewController: UIViewController, UITextFieldDelegate{
         
      /*   let email = emailField.text
     
-        FIRAuth.auth()?.sendPasswordResetWithEmail(email!, completion: { (error) in
+        Auth.auth()?.sendPasswordResetWithEmail(email!, completion: { (error) in
             
             
             NSOperationQueue.mainQueue().addOperationWithBlock {
@@ -195,7 +116,7 @@ class ViewController: UIViewController, UITextFieldDelegate{
                 let email = enteredText
                 
                 
-                FIRAuth.auth()?.sendPasswordReset(withEmail: email!, completion: { (error) in
+                Auth.auth().sendPasswordReset(withEmail: email!, completion: { (error) in
                     
                     
                     OperationQueue.main.addOperation {
@@ -274,7 +195,7 @@ class ViewController: UIViewController, UITextFieldDelegate{
        if let email = emailField.text, email != "", let pwd = passwordField.text, pwd != "" {
             
             
-            FIRAuth.auth()?.signIn(withEmail: email, password: pwd, completion: { authData, error in
+            Auth.auth().signIn(withEmail: email, password: pwd, completion: { authData, error in
                 
                 
                 
@@ -287,22 +208,22 @@ class ViewController: UIViewController, UITextFieldDelegate{
                         
                         
                         
-                        FIRAuth.auth()?.createUser(withEmail: email, password: pwd, completion: { authData, error in
+                        Auth.auth().createUser(withEmail: email, password: pwd, completion: { authData, error in
                             //
                             if error != nil {
-                                self.showErrorAlert(title: "Could not create account", msg: "Problem creating account. Try something else. This Email might be attached to Facebook")
+                                self.showErrorAlert(title: "Could not create account", msg: "Problem creating account. Try something else.")
                                 
                             } else{
                              
-                                print("Logged In Xxxxxxxxx!\(authData?.uid)")
+                                print("Logged In Xxxxxxxxx!\(authData?.user.uid)")
                                 
-                                let authID = authData?.uid
+                                let authID = authData?.user.uid
                                 print("Logged In Xxxxxxxxx!\(email)")
                                 UserDefaults.standard.setValue(authID, forKey: "uid")
-                                UserDefaults.standard.setValue(authData?.uid, forKey: "userID") /// temporal to prevent crash
+                                UserDefaults.standard.setValue(authData?.user.uid, forKey: "userID") /// temporal to prevent crash
                                 
                                 
-                                FIRAuth.auth()?.signIn(withEmail: email, password: pwd, completion: { authData, error in
+                                Auth.auth().signIn(withEmail: email, password: pwd, completion: { authData, error in
                                     
                                     let interval = NSDate().timeIntervalSince1970
                                     
@@ -310,11 +231,11 @@ class ViewController: UIViewController, UITextFieldDelegate{
                                     
                                   //  self.EmailAuthorization(authID, authData: authData, date: date)
                                     
-                                self.AddFullNamefromEMail(authID: authID, authData: authData, date: date)
+                                self.AddFullNamefromEMail(authID: authID, authData: authData?.user, date: date)
                                     
                                  })
                                 
-                          /*      FIRAuth.auth()?.signInWithEmail(email, password: pwd, completion: { authData, error in
+                          /*      Auth.auth()?.signInWithEmail(email, password: pwd, completion: { authData, error in
                                     
                                     var interval = NSDate().timeIntervalSince1970
                                     
@@ -347,8 +268,8 @@ class ViewController: UIViewController, UITextFieldDelegate{
                     
                 } else {
                     
-                    UserDefaults.standard.setValue(authData?.uid, forKey: "uid")
-                    UserDefaults.standard.setValue(authData?.uid, forKey: "userID") /// temporal to prevent crash
+                    UserDefaults.standard.setValue(authData?.user.uid, forKey: "uid")
+                    UserDefaults.standard.setValue(authData?.user.uid, forKey: "userID") /// temporal to prevent crash
                     
                     self.performSegue(withIdentifier: SEGUE_LOGGED_IN, sender: nil)
                     
@@ -365,7 +286,7 @@ class ViewController: UIViewController, UITextFieldDelegate{
     
  
     
-    func AddFullNamefromEMail(authID: String!, authData: FIRUser?, date:NSDate!){
+    func AddFullNamefromEMail(authID: String!, authData: User?, date:NSDate!){
         var alertController:UIAlertController?
         alertController = UIAlertController(title: "Enter Text", message: "Enter your Name and LastName", preferredStyle: .alert)
         
@@ -400,7 +321,7 @@ class ViewController: UIViewController, UITextFieldDelegate{
         
     }
     
-    func EmailAuthorization(authID: String!, authData: FIRUser?, date:NSDate! ){
+    func EmailAuthorization(authID: String!, authData: User?, date:NSDate! ){
         
         let authID = authID
         let authData = authData
@@ -443,6 +364,3 @@ class ViewController: UIViewController, UITextFieldDelegate{
 
     
 }
-
-
-

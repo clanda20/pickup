@@ -7,10 +7,12 @@
 //
 
 import UIKit
-import Firebase
+import FirebaseAuth
+import FirebaseCore
+import FirebaseDatabase
+import FirebaseMessaging
+import FirebaseStorage
 import Foundation
-import FirebaseDatabaseUI
-import FirebaseAuthUI
 
 class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource {
     
@@ -44,9 +46,9 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
     var isComing: Bool = false
     
     var coming_Array: [String] = []
-    var comingsRef: FIRDatabaseReference?
-    var friendReference: FIRDatabaseReference?
-    var followersRef: FIRDatabaseReference?
+    var comingsRef: DatabaseReference?
+    var friendReference: DatabaseReference?
+    var followersRef: DatabaseReference?
 
     var contacts = [Contact]()
     
@@ -55,8 +57,8 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
     
     var geoFire: GeoFire!
     var geoFireEvent: GeoFire!
-    var geoFireRef: FIRDatabaseReference!
-    var geoFireEventRef: FIRDatabaseReference!
+    var geoFireRef: DatabaseReference!
+    var geoFireEventRef: DatabaseReference!
     
     var postFollowersArray: [String] = []
     var activeUserInfo: NSDictionary?
@@ -202,7 +204,7 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
     }
     
     
-    func comingContact(isComing:Bool, completion:(_ comingRef:FIRDatabaseReference?) -> ())  {  //comingsRef = ref.child("users-event-coming").child(self.eventKey).child("coming")
+    func comingContact(isComing:Bool, completion:(_ comingRef:DatabaseReference?) -> ())  {  //comingsRef = ref.child("users-event-coming").child(self.eventKey).child("coming")
         
        let comingRef = self.comingsRef?.child(KEY_UID!)   //  not needed ,,
         
@@ -354,7 +356,7 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
         ref.child("events-timeline").child(KEY_UID!).child(self.eventKey!).observe(.value , with: { (snapshot) in  //observeSingleEventOfType
             
             
-            let item = snapshot as FIRDataSnapshot
+            let item = snapshot as DataSnapshot
             print("SNAP-Itemxxxxxxxxxxx: \(item)")
             
             // if let dict = item.value as? NSDictionary{
@@ -504,7 +506,7 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
         
         DataService.ds.REF_USER_CURRENT.observe(.value, with: { (snapshot)  in
             
-            let item = snapshot as FIRDataSnapshot
+            let item = snapshot as DataSnapshot
             print("SNAP-Itemxxxxxxxxxxx: \(item)")
             
             // if let dict = item.value as? NSDictionary{
@@ -543,7 +545,7 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
             
             //postInfo
             
-            let item = snapshot as FIRDataSnapshot
+            let item = snapshot as DataSnapshot
             print("SNAP-Itemx-EVent: \(item)")
             
             
@@ -701,12 +703,12 @@ class EventDetailVC: UIViewController,UITableViewDelegate, UITableViewDataSource
         ref.child("users").child(KEY_UID!).child("events").child(eventKey).removeValue()
  
  
-        geoFireEventRef = FIRDatabase.database().reference().child("geo-user-events").child(KEY_UID!)
+        geoFireEventRef = Database.database().reference().child("geo-user-events").child(KEY_UID!)
         geoFire = GeoFire(firebaseRef: geoFireEventRef)
         geoFire.removeKey(eventKey)
         
         
-        geoFireRef = FIRDatabase.database().reference().child("geo-events")
+        geoFireRef = Database.database().reference().child("geo-events")
         geoFireEvent = GeoFire(firebaseRef: geoFireRef)
         geoFireEvent.removeKey(eventKey)
         

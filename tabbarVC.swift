@@ -7,7 +7,11 @@
 //
 
 import UIKit
-import Firebase
+import FirebaseAuth
+import FirebaseCore
+import FirebaseDatabase
+import FirebaseMessaging
+import FirebaseStorage
 
 //global variable of icons
 
@@ -168,7 +172,7 @@ class tabbarVC: UITabBarController {
                 DataService.ds.REF_BASE.child("notifications").child(KEY_UID!).child(notificationUserID).observe(.value, with: { (snapshot)  in
                     
                     
-                    let item = snapshot as FIRDataSnapshot
+                    let item = snapshot as DataSnapshot
                     print("SNAP-ItemxTAbBARx: \(item)")
                     
                     //   var commentArray = []

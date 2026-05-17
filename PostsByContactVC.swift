@@ -7,15 +7,17 @@
 //
 
 import UIKit
-import Firebase
+import FirebaseAuth
+import FirebaseCore
+import FirebaseDatabase
+import FirebaseMessaging
+import FirebaseStorage
 import FirebaseDatabase
 import Photos
 import FirebaseAuth
 import FirebaseStorage
 //import Alamofire
 
-import FirebaseDatabaseUI
-import FirebaseAuthUI
 
 class PostsByContactVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate, PostsByContactCellDelegate {  //, PostsByUserCellDelegate
     
@@ -46,7 +48,7 @@ class PostsByContactVC: UIViewController, UITableViewDelegate, UITableViewDataSo
     var posts = [Post]()
     static var imageCache = NSCache<AnyObject, AnyObject>()
     
-    var storageRef:FIRStorageReference!
+    var storageRef:StorageReference!
     
     var delegate:PostsByContactCellDelegate!
     
@@ -65,20 +67,20 @@ class PostsByContactVC: UIViewController, UITableViewDelegate, UITableViewDataSo
         UserDefaults.standard.setValue(userID, forKey: "userID")
         UserDefaults.standard.synchronize()
         
-        let storage = FIRStorage.storage()
+        let storage = Storage.storage()
         storageRef = storage.reference(forURL: "gs://pickup-9b67a.appspot.com")
         
         print("Segue: ----------\(userID!)")
         
      //DataService.ds.REF_TIMELINE_POST_USERID.queryOrdered(byChild: "time").queryLimited(toLast: 50).observe(.value , with: { (snapshot) in  //observeSingleEventOfType
-       // DataService.ds.REF_USER_POST.child(userID!).observe(FIRDataEventType.value, with: { (snapshot) in
+       // DataService.ds.REF_USER_POST.child(userID!).observe(DataEventType.value, with: { (snapshot) in
         DataService.ds.REF_USER_POST.child(userID!).queryOrdered(byChild: "time").queryLimited(toLast: 50).observe(.value , with: { (snapshot) in  //observeSingleEventOfType
         // DataService.ds.REF_USER_POST.child(userID!).quer
             // print(snapshot.value)
             
             self.posts = []
             
-            if let snapshots = snapshot.children.allObjects as? [FIRDataSnapshot]  {
+            if let snapshots = snapshot.children.allObjects as? [DataSnapshot]  {
                 
                 for snap in snapshots {
                     print("SNAP: \(snap)")
@@ -109,13 +111,13 @@ class PostsByContactVC: UIViewController, UITableViewDelegate, UITableViewDataSo
         //  user-posts
         
         
-        /*     DataService.ds.REF_USER_POST.observeEventType(FIRDataEventType.Value, withBlock: { (snapshot) in
+        /*     DataService.ds.REF_USER_POST.observeEventType(DataEventType.Value, withBlock: { (snapshot) in
          
          // print(snapshot.value)
          
          self.posts = []
          
-         if let snapshots = snapshot.children.allObjects as? [FIRDataSnapshot]  {
+         if let snapshots = snapshot.children.allObjects as? [DataSnapshot]  {
          
          for snap in snapshots {
          print("SNAP user-posts: \(snap)")
@@ -275,7 +277,7 @@ class PostsByContactVC: UIViewController, UITableViewDelegate, UITableViewDataSo
 //                    asset?.requestContentEditingInput(with: nil, completionHandler: { (contentEditingInput,info) in
 //                        
 //                        let imageFile = contentEditingInput?.fullSizeImageURL
-//                        let filePath = FIRAuth.auth()!.currentUser!.uid + "/\(Int(NSDate.timeIntervalSinceReferenceDate * 1000))/\(imageFile!.lastPathComponent)"
+//                        let filePath = Auth.auth()!.currentUser!.uid + "/\(Int(NSDate.timeIntervalSinceReferenceDate * 1000))/\(imageFile!.lastPathComponent)"
 //                        
 //                        
 //                        // [START uploadimage]
@@ -313,8 +315,8 @@ class PostsByContactVC: UIViewController, UITableViewDelegate, UITableViewDataSo
 //                else {
 //                    let image = info[UIImagePickerControllerOriginalImage] as! UIImage
 //                    let imageData = UIImageJPEGRepresentation(image, 0.02)
-//                    let imagePath = FIRAuth.auth()!.currentUser!.uid + "/\(Int(NSDate.timeIntervalSinceReferenceDate * 1000)).jpg"
-//                    let metadata = FIRStorageMetadata()
+//                    let imagePath = Auth.auth()!.currentUser!.uid + "/\(Int(NSDate.timeIntervalSinceReferenceDate * 1000)).jpg"
+//                    let metadata = StorageMetadata()
 //                    metadata.contentType = "image/jpeg"
 //                    self.storageRef.child(imagePath).put(imageData!, metadata: metadata) { (metadata, error) in
 //                        if let error = error {
@@ -422,7 +424,7 @@ class PostsByContactVC: UIViewController, UITableViewDelegate, UITableViewDataSo
      }  */
     
     
-//    func uploadSuccess(metadata: FIRStorageMetadata, storagePath: String) {
+//    func uploadSuccess(metadata: StorageMetadata, storagePath: String) {
 //        print("Upload Succeeded!")
 //        //  self.urlTextView.text = metadata.downloadURL()!.absoluteString
 //        UserDefaults.standard.set(storagePath, forKey: "storagePath")

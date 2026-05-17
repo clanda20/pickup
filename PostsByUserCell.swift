@@ -9,7 +9,11 @@
 
     import UIKit
   //  import Alamofire
-    import Firebase
+    import FirebaseAuth
+import FirebaseCore
+import FirebaseDatabase
+import FirebaseMessaging
+import FirebaseStorage
     
    protocol PostsByUserCellDelegate {
         func callSegueFromCell(myData dataobject: AnyObject)
@@ -35,14 +39,14 @@
         
         var post: Post!
        // var request: Request?
-        var likeRef: FIRDatabaseReference!
-        var dislikeRef: FIRDatabaseReference!
-        var postRefKey: FIRDatabaseReference!
+        var likeRef: DatabaseReference!
+        var dislikeRef: DatabaseReference!
+        var postRefKey: DatabaseReference!
         
-        var  DeleteRef: FIRDatabaseReference!
-        var  DeleteRef2: FIRDatabaseReference!
-        var  DeleteRef3: FIRDatabaseReference!
-        var followersRef: FIRDatabaseReference!
+        var  DeleteRef: DatabaseReference!
+        var  DeleteRef2: DatabaseReference!
+        var  DeleteRef3: DatabaseReference!
+        var followersRef: DatabaseReference!
 
         
         var postKey: String!
@@ -143,8 +147,8 @@
                 if img != nil {
                     self.showcaseImg.image = img
                 } else {
-                    let ref = FIRStorage.storage().reference(forURL: post.imageUrl!)
-                    ref.data( withMaxSize: 2 * 1024 * 1024, completion: { (data, error) in
+                    let ref = Storage.storage().reference(forURL: post.imageUrl!)
+                    ref.getData(maxSize: 2 * 1024 * 1024, completion: { (data, error) in
                         if error != nil {
                             print("JESS: Unable to download image from Firebase storage")
                         } else {

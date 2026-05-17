@@ -24,7 +24,7 @@ class MapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UIA
     var mapHasCenteredOnce = false
     
     var geoFire: GeoFire!
-    var geoFireRef: FIRDatabaseReference!
+    var geoFireRef: DatabaseReference!
     var regionQuery: GFRegionQuery?   // Shows all key that have been geocoded on a specific region
     var annotations: Dictionary<String, MapUserAnnotation> = Dictionary(minimumCapacity: 1)
     var foundQuery: GFCircleQuery?
@@ -69,7 +69,7 @@ class MapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UIA
         mapView.delegate = self
         mapView.userTrackingMode = MKUserTrackingMode.followWithHeading
         
-        geoFireRef = FIRDatabase.database().reference().child("geo")
+        geoFireRef = Database.database().reference().child("geo")
         geoFire = GeoFire(firebaseRef: geoFireRef)
         
        // locationManager.requestWhenInUseAuthorization()
@@ -388,7 +388,7 @@ class MapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UIA
  
     func querryUser(){
         
-        DataService.ds.REF_USERS.observe(FIRDataEventType.value, with: { (snapshot) in
+        DataService.ds.REF_USERS.observe(DataEventType.value, with: { (snapshot) in
             
             print(snapshot.value)
             
@@ -396,7 +396,7 @@ class MapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UIA
             
             self.contacts = []
             
-            if let snapshots = snapshot.children.allObjects as? [FIRDataSnapshot]  {
+            if let snapshots = snapshot.children.allObjects as? [DataSnapshot]  {
                 
                 for snap in snapshots {
                     print("SNAP MAP-----Map: \(snap)")
@@ -434,7 +434,7 @@ class MapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, UIA
         
         DataService.ds.REF_USERS.child(key).observe(.value, with: { (snapshot) in
             
-            let item = snapshot as FIRDataSnapshot
+            let item = snapshot as DataSnapshot
             print("SNAP-Itemxxxxxxagodstttttooooxxxxx: \(item)")
             
             // if let dict = item.value as? NSDictionary{

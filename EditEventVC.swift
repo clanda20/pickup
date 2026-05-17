@@ -8,7 +8,11 @@
 
 import UIKit
 import MapKit
-import Firebase
+import FirebaseAuth
+import FirebaseCore
+import FirebaseDatabase
+import FirebaseMessaging
+import FirebaseStorage
 import FirebaseDatabase
 
 
@@ -52,13 +56,13 @@ class EditEventVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, U
     var selectedPin:MKPlacemark? = nil
     
     
-    var followersRef: FIRDatabaseReference!
+    var followersRef: DatabaseReference!
     var friendsArray: [String] = []
     
     var geoFire: GeoFire!
     var geoFireEvent: GeoFire!
-    var geoFireRef: FIRDatabaseReference!
-    var geoFireEventRef: FIRDatabaseReference!
+    var geoFireRef: DatabaseReference!
+    var geoFireEventRef: DatabaseReference!
     
     var latitude: CLLocationDegrees = 0
     var longitude: CLLocationDegrees = 0
@@ -455,12 +459,12 @@ class EditEventVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, U
         
         // GEO EVENT
         
-        geoFireEventRef = FIRDatabase.database().reference().child("geo-user-events").child(KEY_UID!)
+        geoFireEventRef = Database.database().reference().child("geo-user-events").child(KEY_UID!)
         geoFire = GeoFire(firebaseRef: geoFireEventRef)
         geoFire.setLocation(CLLocation(latitude: self.latitude, longitude: self.longitude), forKey: key!)
         
         
-        geoFireRef = FIRDatabase.database().reference().child("geo-events")
+        geoFireRef = Database.database().reference().child("geo-events")
         geoFireEvent = GeoFire(firebaseRef: geoFireRef)
         geoFireEvent.setLocation(CLLocation(latitude: self.latitude, longitude: self.longitude), forKey: key!)
         
@@ -551,7 +555,7 @@ class EditEventVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, U
         
         DataService.ds.REF_USER_CURRENT.observe(.value, with: { (snapshot)  in
             
-            let item = snapshot as FIRDataSnapshot
+            let item = snapshot as DataSnapshot
             print("SNAP-Itemxxxxxxxxxxx: \(item)")
             
             // if let dict = item.value as? NSDictionary{
@@ -580,7 +584,7 @@ class EditEventVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, U
     
         DataService.ds.REF_BASE.child("events").child(self.eventKey).observe(.value, with: { (snapshot)  in
             
-            let item = snapshot as FIRDataSnapshot
+            let item = snapshot as DataSnapshot
             print("SNAP-Itemxxxxxxxxxxx: \(item)")
             
             // if let dict = item.value as? NSDictionary{

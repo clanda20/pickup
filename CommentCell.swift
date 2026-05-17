@@ -7,7 +7,11 @@
 //
 
 import UIKit
-import Firebase
+import FirebaseAuth
+import FirebaseCore
+import FirebaseDatabase
+import FirebaseMessaging
+import FirebaseStorage
 
 protocol ContactIDCommentCellDelegate {
     func ContactIDCommentSegueFromCell(contactID dataobject: AnyObject)
@@ -37,17 +41,17 @@ class CommentCell: UITableViewCell {
     
     var value: Int!
     
-    var postRefKey: FIRDatabaseReference!
+    var postRefKey: DatabaseReference!
     
-    var userCommentsRef: FIRDatabaseReference!
+    var userCommentsRef: DatabaseReference!
     
     var postKey:String?
     
     var commentKeyID:String?
     
-    var  DeleteRef: FIRDatabaseReference!
-    var  DeleteRef2: FIRDatabaseReference!
-    var  DeleteRef3: FIRDatabaseReference!
+    var  DeleteRef: DatabaseReference!
+    var  DeleteRef2: DatabaseReference!
+    var  DeleteRef3: DatabaseReference!
     
     var myCommentsArray: [String] = []
     var myPostArray: [String] = []

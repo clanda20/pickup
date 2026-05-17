@@ -7,7 +7,11 @@
 //
 
 import UIKit
-import Firebase
+import FirebaseAuth
+import FirebaseCore
+import FirebaseDatabase
+import FirebaseMessaging
+import FirebaseStorage
 //import Alamofire
 
 class ContactsVC: UIViewController, UITableViewDataSource, UISearchBarDelegate {
@@ -80,7 +84,7 @@ class ContactsVC: UIViewController, UITableViewDataSource, UISearchBarDelegate {
         contactsTableView.dataSource = self
         
         
-       DataService.ds.REF_USERS.observe(FIRDataEventType.value, with: { (snapshot) in
+       DataService.ds.REF_USERS.observe(DataEventType.value, with: { (snapshot) in
             
          print(snapshot.value)
             
@@ -88,7 +92,7 @@ class ContactsVC: UIViewController, UITableViewDataSource, UISearchBarDelegate {
             
             self.contacts = []
             
-            if let snapshots = snapshot.children.allObjects as? [FIRDataSnapshot]  {
+            if let snapshots = snapshot.children.allObjects as? [DataSnapshot]  {
                 
                 for snap in snapshots {
                    print("SNAP: \(snap)")

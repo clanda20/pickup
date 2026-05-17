@@ -7,7 +7,11 @@
 //
 
 import UIKit
-import Firebase
+import FirebaseAuth
+import FirebaseCore
+import FirebaseDatabase
+import FirebaseMessaging
+import FirebaseStorage
 
 class NotificationVC: UITableViewController, ContactIDNotificationCellDelegate   {
   
@@ -48,7 +52,7 @@ class NotificationVC: UITableViewController, ContactIDNotificationCellDelegate  
             
             self.notifications = []
             
-            if let snapshots = snapshot.children.allObjects as? [FIRDataSnapshot]  {
+            if let snapshots = snapshot.children.allObjects as? [DataSnapshot]  {
                 
                 for snap in snapshots {
                     

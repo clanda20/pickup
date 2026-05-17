@@ -8,7 +8,11 @@
 
 import UIKit
 import MapKit
-import Firebase
+import FirebaseAuth
+import FirebaseCore
+import FirebaseDatabase
+import FirebaseMessaging
+import FirebaseStorage
 import FirebaseDatabase
 import AddressBookUI
 

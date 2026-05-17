@@ -7,7 +7,11 @@
 //
 
 import UIKit
-import Firebase
+import FirebaseAuth
+import FirebaseCore
+import FirebaseDatabase
+import FirebaseMessaging
+import FirebaseStorage
 
 protocol ContactIDEventCommentCellDelegate {
     func ContactIDEventCommentSegueFromCell(contactID dataobject: AnyObject)
@@ -37,9 +41,9 @@ class EventCommentCell: UITableViewCell {
     
     var value: Int!
     
-    var eventRefKey: FIRDatabaseReference!
+    var eventRefKey: DatabaseReference!
     
-    var userCommentsRef: FIRDatabaseReference!
+    var userCommentsRef: DatabaseReference!
     
     var postKey:String?
     
@@ -48,9 +52,9 @@ class EventCommentCell: UITableViewCell {
     
      var eventcommentKeyID:String?
     
-    var  DeleteRef: FIRDatabaseReference!
-    var  DeleteRef2: FIRDatabaseReference!
-    var  DeleteRef3: FIRDatabaseReference!
+    var  DeleteRef: DatabaseReference!
+    var  DeleteRef2: DatabaseReference!
+    var  DeleteRef3: DatabaseReference!
     
     var myCommentsArray: [String] = []
     var myEventCommentArray: [String] = []
@@ -320,7 +324,7 @@ class EventCommentCell: UITableViewCell {
             
             //postInfo
             
-            let item = snapshot as FIRDataSnapshot
+            let item = snapshot as DataSnapshot
             print("SNAP-Itemx-EVent: \(item)")
             
             

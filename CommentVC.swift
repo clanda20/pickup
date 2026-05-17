@@ -7,7 +7,11 @@
 //
 
 import UIKit
-import Firebase
+import FirebaseAuth
+import FirebaseCore
+import FirebaseDatabase
+import FirebaseMessaging
+import FirebaseStorage
 
 
 
@@ -30,13 +34,13 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
     var notifications = [Notification]()
     
     var postID: String! = ""
-    var value:  FIRDatabaseReference!
-   lazy var ref: FIRDatabaseReference = FIRDatabase.database().reference()
+    var value:  DatabaseReference!
+   lazy var ref: DatabaseReference = Database.database().reference()
    
  
-    var commentsRef: FIRDatabaseReference!
-    var firebaseCommentPost2 : FIRDatabaseReference!
-    var user_commentRef: FIRDatabaseReference!
+    var commentsRef: DatabaseReference!
+    var firebaseCommentPost2 : DatabaseReference!
+    var user_commentRef: DatabaseReference!
 
     var activeUserInfo: NSDictionary?
     var postInfo: NSDictionary?
@@ -112,7 +116,7 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
              self.comments = []
             
 
-            if let snapshots = snapshot.children.allObjects as? [FIRDataSnapshot] {
+            if let snapshots = snapshot.children.allObjects as? [DataSnapshot] {
                 
                 for snap in snapshots {
                     
@@ -180,7 +184,7 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
         
       if let txt = commentField.text, txt != "" {
         
-        let uid = FIRAuth.auth()?.currentUser?.uid
+        let uid = Auth.auth().currentUser?.uid
   
             
        DataService.ds.REF_BASE.observeSingleEvent(of: .value, with: { (snapshot) in
@@ -232,7 +236,9 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
                     
                     let  postID  = UserDefaults.standard.value(forKey: "postKey") as! String
 
-                    let key = DataService.ds.REF_BASE.child("post-comments").childByAutoId().key  //
+                    guard let key = DataService.ds.REF_BASE.child("post-comments").childByAutoId().key else {
+                        return
+                    }
                     
                   
                     
@@ -377,7 +383,7 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
             
             self.notifications = []
             
-            if let snapshots = snapshot.children.allObjects as? [FIRDataSnapshot]  {
+            if let snapshots = snapshot.children.allObjects as? [DataSnapshot]  {
                 
                 for snap in snapshots {
                     
@@ -403,7 +409,7 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
         
         DataService.ds.REF_USER_CURRENT.observe(.value, with: { (snapshot)  in
             
-            let item = snapshot as FIRDataSnapshot
+            let item = snapshot as DataSnapshot
             print("SNAP-Itemxxxxxxxxxxx: \(item)")
             
             // if let dict = item.value as? NSDictionary{
@@ -443,7 +449,7 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
             
             //postInfo
             
-            let item = snapshot as FIRDataSnapshot
+            let item = snapshot as DataSnapshot
             print("SNAP-Itemxxxxxxxxxxx: \(item)")
             
             // if let dict = item.value as? NSDictionary{
@@ -570,7 +576,6 @@ class CommentVC: UIViewController, UITableViewDelegate, UITextFieldDelegate, UIT
 
     
 }
-
 
 
 

@@ -116,49 +116,12 @@
 	                                    <constraint firstAttribute="bottom" secondItem="GNy-aR-YYX" secondAttribute="bottom" constant="16" id="Lgn-bottom-forgot"/>
 	                                </constraints>
 	                            </view>
-                            <view contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Pqh-ic-tO4" customClass="MaterialView" customModule="pickup" customModuleProvider="target">
-                                <rect key="frame" x="31" y="312" width="538" height="104"/>
-                                <subviews>
-                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="40" translatesAutoresizingMaskIntoConstraints="NO" id="cBp-Kt-gGQ">
-                                        <rect key="frame" x="20" y="8" width="219" height="87"/>
-                                        <subviews>
-                                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="fb-icon" translatesAutoresizingMaskIntoConstraints="NO" id="l4a-Yf-zvZ">
-                                                <rect key="frame" x="0.0" y="11" width="65" height="65"/>
-                                            </imageView>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XdO-Tg-ypK" customClass="MaterialButton" customModule="pickup" customModuleProvider="target">
-                                                <rect key="frame" x="105" y="28" width="114" height="31"/>
-                                                <color key="backgroundColor" red="0.11764705882352941" green="0.53333333333333333" blue="0.89803921568627454" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="width" relation="lessThanOrEqual" constant="150" id="h54-FT-RVV"/>
-                                                </constraints>
-                                                <fontDescription key="fontDescription" name="MarkerFelt-Thin" family="Marker Felt" pointSize="17"/>
-                                                <state key="normal" title="FACEBOOK LOGIN">
-                                                    <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                </state>
-                                                <connections>
-                                                    <action selector="fbBtnPressedWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="UZI-b7-2S9"/>
-                                                </connections>
-                                            </button>
-                                        </subviews>
-                                    </stackView>
-                                </subviews>
-                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="104" id="BMd-5v-jBR"/>
-                                    <constraint firstAttribute="bottom" secondItem="cBp-Kt-gGQ" secondAttribute="bottom" constant="9" id="Tbo-6V-CYV"/>
-                                    <constraint firstItem="cBp-Kt-gGQ" firstAttribute="leading" secondItem="Pqh-ic-tO4" secondAttribute="leading" constant="20" id="cVK-Wc-dcb"/>
-                                    <constraint firstItem="cBp-Kt-gGQ" firstAttribute="top" secondItem="Pqh-ic-tO4" secondAttribute="top" constant="8" id="xP3-TY-eZz"/>
-                                </constraints>
-                            </view>
                         </subviews>
                         <color key="backgroundColor" red="0.8901960784313725" green="0.94901960784313721" blue="0.99215686274509807" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="5mS-ge-jRh" firstAttribute="top" secondItem="Tbq-Ag-hvo" secondAttribute="bottom" constant="14" id="1E9-am-Kkd"/>
                             <constraint firstItem="Tbq-Ag-hvo" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="top" id="6OD-nr-fdk"/>
                             <constraint firstItem="5mS-ge-jRh" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" constant="11" id="6eb-Zc-eAO"/>
-                            <constraint firstItem="Pqh-ic-tO4" firstAttribute="top" secondItem="5mS-ge-jRh" secondAttribute="bottom" constant="42" id="GKh-gG-hpH"/>
-                            <constraint firstItem="Pqh-ic-tO4" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="11" id="JXx-2G-D8b"/>
-                            <constraint firstAttribute="trailingMargin" secondItem="Pqh-ic-tO4" secondAttribute="trailing" constant="11" id="LgB-bl-0iW"/>
                             <constraint firstAttribute="trailing" secondItem="Tbq-Ag-hvo" secondAttribute="trailing" id="Ry5-6a-x8p"/>
                             <constraint firstItem="Tbq-Ag-hvo" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="agL-qi-nE3"/>
                             <constraint firstAttribute="trailing" secondItem="5mS-ge-jRh" secondAttribute="trailing" constant="11" id="vpB-39-8ev"/>

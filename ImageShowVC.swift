@@ -7,7 +7,11 @@
 //
 
 import UIKit
-import Firebase
+import FirebaseAuth
+import FirebaseCore
+import FirebaseDatabase
+import FirebaseMessaging
+import FirebaseStorage
 
 
 class ImageShowVC: UIViewController, UIScrollViewDelegate {
@@ -44,7 +48,7 @@ class ImageShowVC: UIViewController, UIScrollViewDelegate {
         
         DataService.ds.REF_POSTS.child(postKey_Segue!).observe(.value, with: { (snapshot)  in
             
-            let item = snapshot as FIRDataSnapshot
+            let item = snapshot as DataSnapshot
             print("SNAP-Itemxxxxxxxxxxx: \(item)")
             
             

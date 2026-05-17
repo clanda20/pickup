@@ -7,7 +7,11 @@
 //
 
 import Foundation
-import Firebase
+import FirebaseAuth
+import FirebaseCore
+import FirebaseDatabase
+import FirebaseMessaging
+import FirebaseStorage
 
 class Notification {
     private var _commentID: String?
@@ -19,7 +23,7 @@ class Notification {
     private var _date: String!
     private var _type: String!
     private var _checked: Bool!
-    private var _notificationRef: FIRDatabaseReference!
+    private var _notificationRef: DatabaseReference!
     
     
     
@@ -61,7 +65,7 @@ class Notification {
     var date: String{
         return _date
     }
-    var notificationRef: FIRDatabaseReference{
+    var notificationRef: DatabaseReference{
         return _notificationRef
     }
     

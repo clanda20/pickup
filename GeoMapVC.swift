@@ -33,10 +33,10 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
     var mapHasCenteredOnce = false
     
     var geoFire: GeoFire!
-    var geoFireRef: FIRDatabaseReference!
+    var geoFireRef: DatabaseReference!
     
     var geoFireUserLocation: GeoFire!
-    var geoFireUserLocationRef: FIRDatabaseReference!
+    var geoFireUserLocationRef: DatabaseReference!
     
     var regionQuery: GFRegionQuery?   // Shows all key that have been geocoded on a specific region
     var annotations: Dictionary<String, MapUserAnnotation> = Dictionary(minimumCapacity: 1)
@@ -162,7 +162,7 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
     
     func QueryGeoEvent(){
         
-        geoFireRef = FIRDatabase.database().reference().child("geo-events")
+        geoFireRef = Database.database().reference().child("geo-events")
         geoFire = GeoFire(firebaseRef: geoFireRef)
         
         QueryLocation{ (location) ->() in
@@ -188,7 +188,7 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
              // very important   created the blue circle
             self.addRadiusCircle(location: (location?.coordinate)!)
             self.locationCoordinate = location?.coordinate
-            self.geoFireUserLocationRef = FIRDatabase.database().reference().child("geo-user-location")
+            self.geoFireUserLocationRef = Database.database().reference().child("geo-user-location")
             self.geoFireUserLocation  = GeoFire(firebaseRef: self.geoFireUserLocationRef)
             
             let center = CLLocation(latitude:  (location?.coordinate.latitude)!, longitude:  (location?.coordinate.longitude)!)
@@ -404,7 +404,7 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
                   //  coords.append(self.locations.last!.coordinate)
                     coords.append(location.coordinate)
                     
-                   let geoFireUserLocationSetLocationRef = FIRDatabase.database().reference().child("geo-user-location")
+                   let geoFireUserLocationSetLocationRef = Database.database().reference().child("geo-user-location")
                    let  geoFireUserLocationSetLocation  = GeoFire(firebaseRef: geoFireUserLocationSetLocationRef)
 
                     for comingIDx in self.coming_Array {
@@ -441,7 +441,7 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
     
  /*   func querryUser(){
         
-        DataService.ds.REF_USERS.observeEventType(FIRDataEventType.Value, withBlock: { (snapshot) in
+        DataService.ds.REF_USERS.observeEventType(DataEventType.Value, withBlock: { (snapshot) in
             
             print(snapshot.value)
             
@@ -449,7 +449,7 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
             
             self.contacts = []
             
-            if let snapshots = snapshot.children.allObjects as? [FIRDataSnapshot]  {
+            if let snapshots = snapshot.children.allObjects as? [DataSnapshot]  {
                 
                 for snap in snapshots {
                     print("SNAP MAP-----Map: \(snap)")
@@ -488,7 +488,7 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
         
         DataService.ds.REF_USERS.child(key).observe(.value, with: { (snapshot) in
             
-            let item = snapshot as FIRDataSnapshot
+            let item = snapshot as DataSnapshot
             print("SNAP-Itemxxxxxxagodstttttooooxxxxx: \(item)")
             
             // if let dict = item.value as? NSDictionary{
@@ -568,7 +568,7 @@ class GeoMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate, 
         ref.child("events").child(self.eventKey!).observeEventType(.Value , withBlock: { (snapshot) in  //observeSingleEventOfType
             
             
-            let item = snapshot as FIRDataSnapshot
+            let item = snapshot as DataSnapshot
             print("SNAP-Itemxxxxxxxxxxx: \(item)")
             
             // if let dict = item.value as? NSDictionary{

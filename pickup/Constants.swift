@@ -8,7 +8,11 @@
 
 import Foundation
 import UIKit
-import Firebase
+import FirebaseAuth
+import FirebaseCore
+import FirebaseDatabase
+import FirebaseMessaging
+import FirebaseStorage
 import FirebaseDatabase
 
 let SHADOW_COLOR: CGFloat = 157.0 / 255.0
@@ -19,14 +23,14 @@ let postKey = "postKey"
 
 // var POST_KEY_ID = "postKey"
 
-let ref = FIRDatabase.database().reference()
+let ref = Database.database().reference()
 var postRef  =  (ref.child("posts"))
 var userRef = ref.child("users")
 //var commentRef = ref.child("post-comments")
 var user_postsRef = ref.child("user-posts")
 //STORAGE
 
-let storage = FIRStorage.storage()
+let storage = Storage.storage()
 let storageRef = storage.reference(forURL: "gs://pickup-9b67a.appspot.com")
 
 

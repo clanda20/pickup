@@ -7,17 +7,21 @@
 //
 
 import UIKit
-import Firebase
+import FirebaseAuth
+import FirebaseCore
+import FirebaseDatabase
+import FirebaseMessaging
+import FirebaseStorage
 import CoreData
 
 class contactProfileVC: UIViewController {
     
-    var activeUserRef: FIRDatabaseReference?
-    var followingsRef: FIRDatabaseReference?
-    var followersRef: FIRDatabaseReference?
-    var eventTimelineRef: FIRDatabaseReference?
-    var followerRefContactID:FIRDatabaseReference?
-    var eventComingRef:FIRDatabaseReference?
+    var activeUserRef: DatabaseReference?
+    var followingsRef: DatabaseReference?
+    var followersRef: DatabaseReference?
+    var eventTimelineRef: DatabaseReference?
+    var followerRefContactID:DatabaseReference?
+    var eventComingRef:DatabaseReference?
     
     var contactId: String?  // from segue coming from FriendsVC
      var contacts = [Contact]()
@@ -152,7 +156,7 @@ class contactProfileVC: UIViewController {
     
     }
     
-    func followContact(isFollowing:Bool, completion:(_ followRef:FIRDatabaseReference?) -> ()) {
+    func followContact(isFollowing:Bool, completion:(_ followRef:DatabaseReference?) -> ()) {
         
         // followingsRef = users---> userID-----[avatar:, dislikes:, firstname, FOLLOWINGS:...]
         
@@ -268,7 +272,9 @@ class contactProfileVC: UIViewController {
             
             let time  = String(Int(NSDate().timeIntervalSince1970))
             
-            let key = DataService.ds.REF_BASE.child("notification").childByAutoId().key
+            guard let key = DataService.ds.REF_BASE.child("notification").childByAutoId().key else {
+                return
+            }
             
             self.notificationKey = "(N\(key))!"  /// notificationKey is the same number of the commentKey but with and N before the number
             
@@ -508,7 +514,7 @@ class contactProfileVC: UIViewController {
     
     DataService.ds.REF_USERS.child(contactId!).observe(.value, with: { (snapshot)  in
     
-    let item = snapshot as FIRDataSnapshot
+    let item = snapshot as DataSnapshot
     print("SNAP-Itemxxxxxxxxxxx: \(item)")
     
     // if let dict = item.value as? NSDictionary{
@@ -556,7 +562,7 @@ class contactProfileVC: UIViewController {
      
         DataService.ds.REF_USER_CURRENT.observe(.value, with: { (snapshot)  in
             
-            let item = snapshot as FIRDataSnapshot
+            let item = snapshot as DataSnapshot
             print("SNAP-Itemxxxxxxxxxxx: \(item)")
             
             

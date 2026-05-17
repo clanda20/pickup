@@ -7,13 +7,17 @@
 //
 
 import Foundation
-import Firebase
+import FirebaseAuth
+import FirebaseCore
+import FirebaseDatabase
+import FirebaseMessaging
+import FirebaseStorage
 
 
   struct ArrayList{
     
     let key: String!
-    let ref: FIRDatabaseReference?
+    let ref: DatabaseReference?
     var completed: Bool!
     
     // Initialize from arbitrary data
@@ -25,7 +29,7 @@ import Firebase
     
     }
     
-    init(snapshot: FIRDataSnapshot) {
+    init(snapshot: DataSnapshot) {
         key = snapshot.key
       // completed = snapshot.value!["completed"] as! Bool
         ref = snapshot.ref

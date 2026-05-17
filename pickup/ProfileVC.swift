@@ -7,7 +7,11 @@
 //
 
 import UIKit
-import Firebase
+import FirebaseAuth
+import FirebaseCore
+import FirebaseDatabase
+import FirebaseMessaging
+import FirebaseStorage
 
 class ProfileVC: UIViewController {
 
@@ -18,7 +22,7 @@ class ProfileVC: UIViewController {
     @IBOutlet weak var notificationLabel: UILabel!
     
    
-   // var followingsReg: FIRDatabaseReference?
+   // var followingsReg: DatabaseReference?
     
     
 
@@ -85,7 +89,7 @@ class ProfileVC: UIViewController {
         
         DataService.ds.REF_USER_CURRENT.observe(.value, with: { (snapshot)  in
             
-            let item = snapshot as FIRDataSnapshot
+            let item = snapshot as DataSnapshot
             print("SNAP-Itemxxxxxxxxxxx: \(item)")
             
             // if let dict = item.value as? NSDictionary{
@@ -160,7 +164,7 @@ class ProfileVC: UIViewController {
         
         // unauth() is the logout method for the current user.
         
-        try! FIRAuth.auth()!.signOut()
+        try! Auth.auth().signOut()
         
         // Remove the user's uid from storage.
         

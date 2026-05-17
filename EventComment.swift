@@ -7,7 +7,11 @@
 //
 
 import Foundation
-import Firebase
+import FirebaseAuth
+import FirebaseCore
+import FirebaseDatabase
+import FirebaseMessaging
+import FirebaseStorage
 
 
 class EventComment {
@@ -17,7 +21,7 @@ class EventComment {
     private var _fullName: String!
     private var _username2: String!
     private var _commentKey: String!
-    private var _commentRef: FIRDatabaseReference!
+    private var _commentRef: DatabaseReference!
     private var _uid: String!
     private var _date: String!
 
@@ -51,7 +55,7 @@ class EventComment {
         return _uid
     }
     
-    var commentRef: FIRDatabaseReference{
+    var commentRef: DatabaseReference{
         return _commentRef
     }
     

@@ -8,7 +8,11 @@
 
 import UIKit
 import MapKit
-import Firebase
+import FirebaseAuth
+import FirebaseCore
+import FirebaseDatabase
+import FirebaseMessaging
+import FirebaseStorage
 import FirebaseDatabase
 import AddressBookUI
 
@@ -54,8 +58,8 @@ class EditEventMapByTouchVC: UIViewController, MKMapViewDelegate {
     
     var geoFire: GeoFire!
     var geoFireEvent: GeoFire!
-    var geoFireRef: FIRDatabaseReference!
-    var geoFireEventRef: FIRDatabaseReference!
+    var geoFireRef: DatabaseReference!
+    var geoFireEventRef: DatabaseReference!
     
  
     
@@ -209,12 +213,12 @@ class EditEventMapByTouchVC: UIViewController, MKMapViewDelegate {
             
             // GEO EVENT
             
-            geoFireEventRef = FIRDatabase.database().reference().child("geo-user-events").child(KEY_UID!)
+            geoFireEventRef = Database.database().reference().child("geo-user-events").child(KEY_UID!)
             geoFire = GeoFire(firebaseRef: geoFireEventRef)
             geoFire.setLocation(CLLocation(latitude: self.latitude, longitude: self.longitude), forKey: key)
             
             
-            geoFireRef = FIRDatabase.database().reference().child("geo-events")
+            geoFireRef = Database.database().reference().child("geo-events")
             geoFireEvent = GeoFire(firebaseRef: geoFireRef)
             geoFireEvent.setLocation(CLLocation(latitude: self.latitude, longitude: self.longitude), forKey: key)
             
