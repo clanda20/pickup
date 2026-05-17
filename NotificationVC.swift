@@ -152,24 +152,14 @@ class NotificationVC: UITableViewController, ContactIDNotificationCellDelegate  
         
       //  DataService.ds.REF_BASE.child("post-commentsOnly").child(self.eventKey).observe(.value, with:  { snapshot in
         DataService.ds.REF_BASE.child("notifications-postUID").child(KEY_UID!).observe(.value, with:  { snapshot in
-    
-            self.postEventCommentArray = []
-            
+            // This used to re-walk the growing array for every child (O(n^2)).
+            // Delete each notification key exactly once (O(n)).
             for child in snapshot.children {
-                let postComment = (child as AnyObject).key as String
-                
-                self.postEventCommentArray.append(postComment)
-                
-                for eventComment in self.postEventCommentArray {
-                    print(" Array friendID tonight  PostCell \(eventComment)")
-                    
-                    DataService.ds.REF_BASE.child("notifications").child(KEY_UID!).child(eventComment).removeValue()
-                    DataService.ds.REF_BASE.child("notifications-postUID").child(KEY_UID!).child(eventComment).removeValue()
-                    
-                }
-                DataService.ds.REF_BASE.child("post-commentsOnly").child(self.eventKey).removeValue()
-                
+                let notificationKey = (child as AnyObject).key as String
+                DataService.ds.REF_BASE.child("notifications").child(KEY_UID!).child(notificationKey).removeValue()
+                DataService.ds.REF_BASE.child("notifications-postUID").child(KEY_UID!).child(notificationKey).removeValue()
             }
+            DataService.ds.REF_BASE.child("post-commentsOnly").child(self.eventKey).removeValue()
             self.myNotificationArrays = []
         })
         //self.myNotificationArrays = []
@@ -183,19 +173,11 @@ class NotificationVC: UITableViewController, ContactIDNotificationCellDelegate  
         
         
         DataService.ds.REF_BASE.child("notifications-postUID").child(KEY_UID!).observe(.value, with:  { snapshot in
-            
+            // Keep this linear; no need to re-loop the whole array for each child.
             self.myNotificationArrays = []
-            
             for child in snapshot.children {
                 let postComment = (child as AnyObject).key as String
-                
                 self.myNotificationArrays.append(postComment)
-                
-                for myNotification in self.myNotificationArrays {
-                    print(" Array friendID tonight  PostCell \(myNotification)")
-                   
-                }
-               
             }
         })
         
