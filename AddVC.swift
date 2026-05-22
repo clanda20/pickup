@@ -80,6 +80,68 @@ import FirebaseDatabase
     var eventKey: String!
     
     var dateRaw: String!
+
+    private func normalize(_ value: String?) -> String {
+        guard let value, value != "nil" else { return "" }
+        return value.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private func formattedAddress(from placemark: CLPlacemark) -> (multiline: String, singleLine: String) {
+        let name = normalize(placemark.name)
+        let number = normalize(placemark.subThoroughfare)
+        let street = normalize(placemark.thoroughfare)
+        let city = normalize(placemark.locality)
+        let state = normalize(placemark.administrativeArea)
+        let postal = normalize(placemark.postalCode)
+        let country = normalize(placemark.country)
+
+        var line1Parts = [name]
+        let streetLine = [number, street].filter { !$0.isEmpty }.joined(separator: " ")
+        if !streetLine.isEmpty { line1Parts.append(streetLine) }
+        let line1 = line1Parts.filter { !$0.isEmpty }.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
+
+        let line2 = [city, state, postal].filter { !$0.isEmpty }.joined(separator: ", ").trimmingCharacters(in: .whitespacesAndNewlines)
+        let single = [name, streetLine, line2, country].filter { !$0.isEmpty }.joined(separator: " ").trimmingCharacters(in: .whitespacesAndNewlines)
+        let multi = [line1, line2].filter { !$0.isEmpty }.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
+
+        return (multi.isEmpty ? "Unknown Place" : multi, single.isEmpty ? "Unknown Place" : single)
+    }
+
+    private func ensureAddressFromCurrentLocationIfNeeded(completion: @escaping @MainActor (Bool) -> Void) {
+        // If we already have an address, we're good.
+        if fullAddressString != nil, fullAddressString_no_breakLine != nil {
+            completion(true)
+            return
+        }
+
+        // If we have coordinates (from earlier location updates), try to reverse-geocode them.
+        let coord: CLLocationCoordinate2D?
+        if let lat = latitude, let lon = longitude {
+            coord = CLLocationCoordinate2D(latitude: lat, longitude: lon)
+        } else {
+            coord = locationManager.location?.coordinate
+        }
+
+        guard let coord else {
+            completion(false)
+            return
+        }
+
+        let loc = CLLocation(latitude: coord.latitude, longitude: coord.longitude)
+        CLGeocoder().reverseGeocodeLocation(loc) { placemarks, _ in
+            Task { @MainActor in
+                guard let pm = placemarks?.first else {
+                    completion(false)
+                    return
+                }
+                let addr = self.formattedAddress(from: pm)
+                self.fullAddressString = addr.multiline
+                self.fullAddressString_no_breakLine = addr.singleLine
+                self.placemark = "\(addr.singleLine), \(coord.latitude), \(coord.longitude)"
+                completion(true)
+            }
+        }
+    }
     
 //    var titleTextFieldSegue: String!
 //    
@@ -349,8 +411,28 @@ import FirebaseDatabase
     
     @IBAction func saveBtn(sender: AnyObject) {
         
-        
-if self.titleTextField.text != "" && self.descriptionTextView.text  != "" && self.fullAddressString_no_breakLine != nil && self.strDate != nil && self.fullAddressString != nil {
+        guard self.titleTextField.text != "",
+              self.descriptionTextView.text  != "",
+              self.strDate != nil else {
+            typeInSomethingAlert()
+            return
+        }
+
+        // If user didn't pick a place yet, fall back to current GPS location.
+        ensureAddressFromCurrentLocationIfNeeded { [weak self] ok in
+            guard let self else { return }
+            guard ok,
+                  self.fullAddressString_no_breakLine != nil,
+                  self.fullAddressString != nil else {
+                self.typeInSomethingAlert()
+                return
+            }
+
+            self.persistNewEvent()
+        }
+    }
+
+    @MainActor private func persistNewEvent() {
        
         
         guard let key = ref.child("user-events").childByAutoId().key else {
@@ -466,11 +548,6 @@ if self.titleTextField.text != "" && self.descriptionTextView.text  != "" && sel
 
         
         performSegue(withIdentifier: "segueToEventVC", sender: nil)
-            
-    } else {
-            typeInSomethingAlert()
-        }
-    
     }
     
  
@@ -650,67 +727,22 @@ extension AddVC: HandleMapSearch {
         
         
         annotation.title = placemark.name
-        if let city = placemark.locality,
-            let state = placemark.administrativeArea {
-            
-            var locationName = placemark.name
-            if locationName == "nil" || locationName == nil{
-                locationName = ""
-            } else {
-                locationName = placemark.name
-            }
-            
-            
-            var locationNumber = placemark.subThoroughfare
-            
-            if locationNumber == nil || locationNumber == "nil" {
-                locationNumber = ""
-            } else {
-                locationNumber = (placemark.subThoroughfare)
-            }
-            
-            
-            var locationStreet = placemark.thoroughfare
-            // var locationStreet2:String?
-            
-            if locationStreet == "nil" || locationStreet == nil {
-                locationStreet = ""
-            } else {
-                locationStreet = placemark.thoroughfare
-            }
-            
-            
-            annotation.subtitle = "\(city) \(state)"
-            
-            // Full Address to be Displayed
-            print("Placemark@@@@@@@@: \(placemark)")
-            
-            self.placemark = "\(placemark)"
-            
-            // self.fullAddressString =  "\(placemark.name!)\n \(placemark.subThoroughfare!) \(placemark.thoroughfare!) \n \(city), \(state)"
-            // print("New Address: \(self.fullAddressString)")
-            
-            
-            self.fullAddressString =  "\(locationName!)\n \(locationNumber!) \(locationStreet!) \n \(city), \(state)"
-            print("New Address: \(self.fullAddressString!)")
-            
-            // String Without  \n
-            
-            self.fullAddressString_no_breakLine =  "\(locationName!) \(locationNumber!) \(locationStreet!)  \(city), \(state)"
-            print("New Address: \(self.fullAddressString_no_breakLine!)")
-            
-            mapViewLarge.addAnnotation(annotation)
-            mapView.addAnnotation(annotation)  //
-            
-            let span = MKCoordinateSpan.init(latitudeDelta: 0.05, longitudeDelta: 0.05)
-            let region = MKCoordinateRegion.init(center: placemark.coordinate, span: span)
-            
-            mapViewLarge.setRegion(region, animated: true)
-            mapView.setRegion(region, animated: true)
-        }  else {
-            
-            typeInSomethingAlert()
-        }
+
+        // Full Address to be Displayed (no longer requires city/state).
+        let addr = formattedAddress(from: placemark)
+        annotation.subtitle = addr.singleLine
+        self.fullAddressString = addr.multiline
+        self.fullAddressString_no_breakLine = addr.singleLine
+        self.placemark = "\(addr.singleLine), \(placemark.coordinate.latitude), \(placemark.coordinate.longitude)"
+
+        mapViewLarge.addAnnotation(annotation)
+        mapView.addAnnotation(annotation)  //
+
+        let span = MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+        let region = MKCoordinateRegion(center: placemark.coordinate, span: span)
+
+        mapViewLarge.setRegion(region, animated: true)
+        mapView.setRegion(region, animated: true)
         
     }
     
@@ -755,13 +787,12 @@ extension AddVC: HandleMapSearch {
  mapView.setRegion(region, animated: true)
     
     
-    let location:CLLocationCoordinate2D = (manager.location?.coordinate)!
-    
-   // self.latitude = location.latitude
-   // self.longitude = location.longitude
+    let coord:CLLocationCoordinate2D = location.coordinate
+    self.latitude = coord.latitude
+    self.longitude = coord.longitude
  
  
- print("location:: \(location)")
+ print("location:: \(coord)")
  }
  }
  

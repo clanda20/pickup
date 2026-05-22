@@ -16,19 +16,45 @@ import FirebaseStorage
 import FirebaseDatabase
 import AddressBookUI
 
-class EventMapByTouchVC: UIViewController, MKMapViewDelegate {
+@MainActor class EventMapByTouchVC: UIViewController, MKMapViewDelegate {
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var doneBtn: UIBarButtonItem!
     @IBOutlet weak var saveBtn: UIBarButtonItem!
     
-    var addressButton: String!
-    var fullAddressStringByTouch: String!
-    var fullAddressString_no_breakLineByTouch: String!
-   var placemark: String!
+    var addressButton: String?
+    var fullAddressStringByTouch: String?
+    var fullAddressString_no_breakLineByTouch: String?
+    var placemark: String?
    // var annotation: MKPointAnnotation!
     
-    var latitude: CLLocationDegrees!
-    var longitude: CLLocationDegrees!
+    var latitude: CLLocationDegrees?
+    var longitude: CLLocationDegrees?
+
+    private func normalize(_ value: String?) -> String {
+        guard let value, value != "nil" else { return "" }
+        return value.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private func formattedAddress(from placemark: CLPlacemark) -> (multiline: String, singleLine: String) {
+        let name = normalize(placemark.name)
+        let number = normalize(placemark.subThoroughfare)
+        let street = normalize(placemark.thoroughfare)
+        let city = normalize(placemark.locality)
+        let state = normalize(placemark.administrativeArea)
+        let postal = normalize(placemark.postalCode)
+        let country = normalize(placemark.country)
+
+        var line1Parts = [name]
+        let streetLine = [number, street].filter { !$0.isEmpty }.joined(separator: " ")
+        if !streetLine.isEmpty { line1Parts.append(streetLine) }
+        let line1 = line1Parts.filter { !$0.isEmpty }.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
+
+        let line2 = [city, state, postal].filter { !$0.isEmpty }.joined(separator: ", ").trimmingCharacters(in: .whitespacesAndNewlines)
+        let single = [name, streetLine, line2, country].filter { !$0.isEmpty }.joined(separator: " ").trimmingCharacters(in: .whitespacesAndNewlines)
+        let multi = [line1, line2].filter { !$0.isEmpty }.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
+
+        return (multi.isEmpty ? "Unknown Place" : multi, single.isEmpty ? "Unknown Place" : single)
+    }
     
 //    var titleTextField: String!
 //    
@@ -65,9 +91,15 @@ class EventMapByTouchVC: UIViewController, MKMapViewDelegate {
         
         mapView.showsUserLocation = true
         
-        let uilgr = UILongPressGestureRecognizer(target: self, action: #selector(MKMapView.addAnnotation(_:)))
+        let uilgr = UILongPressGestureRecognizer(target: self, action: #selector(addAnnotation(_:)))
         uilgr.minimumPressDuration = 1.0
         mapView.addGestureRecognizer(uilgr)
+
+        saveBtn.isEnabled = false
+
+        // Without an explicit region, MapKit can start zoomed out to the whole world.
+        locationManager.requestWhenInUseAuthorization()
+        locationManager.requestLocation()
         
 //        print("titleTextField    : \(titleTextField)")
 //        print("descriptionTextView    : \(descriptionTextView)")
@@ -76,7 +108,15 @@ class EventMapByTouchVC: UIViewController, MKMapViewDelegate {
 
     }
     @IBAction func saveBtnFn(sender: AnyObject) {
-        
+        guard fullAddressStringByTouch != nil,
+              fullAddressString_no_breakLineByTouch != nil,
+              placemark != nil,
+              latitude != nil,
+              longitude != nil else {
+            typeInSomethingAlert()
+            return
+        }
+
         performSegue(withIdentifier: "segue_ToAddVC", sender: nil)
         
     }
@@ -93,17 +133,13 @@ class EventMapByTouchVC: UIViewController, MKMapViewDelegate {
         if forsegue.identifier == "segue_ToAddVC"
         {
             
-            let destinationVC = forsegue.destination as? AddVC
-            
-            destinationVC!.fullAddressStringByTouch =  self.fullAddressStringByTouch
-            
-            destinationVC!.fullAddressString_no_breakLineByTouch =  self.fullAddressString_no_breakLineByTouch
-            
-            destinationVC!.self.placemark = self.placemark
-            
-            destinationVC!.self.latitude = self.latitude
-            
-            destinationVC!.self.longitude = self.longitude
+            guard let destinationVC = forsegue.destination as? AddVC else { return }
+
+            destinationVC.fullAddressStringByTouch = self.fullAddressStringByTouch
+            destinationVC.fullAddressString_no_breakLineByTouch = self.fullAddressString_no_breakLineByTouch
+            destinationVC.placemark = self.placemark
+            destinationVC.latitude = self.latitude
+            destinationVC.longitude = self.longitude
             
             
             //            destinationVC!.titleTextFieldSegue =  self.titleTextField
@@ -118,139 +154,42 @@ class EventMapByTouchVC: UIViewController, MKMapViewDelegate {
         
     }
     
-    func addAnnotation(_ gestureRecognizer:UIGestureRecognizer){
-        if gestureRecognizer.state == UIGestureRecognizer.State.began {
-            let touchPoint = gestureRecognizer.location(in: mapView)
-            let newCoordinates = mapView.convert(touchPoint, toCoordinateFrom: mapView)
-            let annotation = MKPointAnnotation()
-            annotation.coordinate = newCoordinates
-            
-            CLGeocoder().reverseGeocodeLocation(CLLocation(latitude: newCoordinates.latitude, longitude: newCoordinates.longitude), completionHandler: {(placemarks, error) -> Void in
-               
-                
-                if error != nil {
-                    print("Reverse geocoder failed with error" + error!.localizedDescription)
-                    return
-                }
-                
-//                var addressString = ABCreateStringWithAddressDictionary(placemark.addressDictionary, true)
-//                addressString = addressString.stringByReplacingOccurrencesOfString("\n", withString: ", ")
-//                cell.textLabel?.text = addressString
-//
-                
-                if error == nil, let pm = placemarks, !pm.isEmpty {
-                
-                print("PLACEMARK: \( placemarks!)")
-                    
-                self.latitude   = newCoordinates.latitude
-                self.longitude  = newCoordinates.longitude
-                    
-                 print("PLACEMARK Latitude: \( newCoordinates.latitude)")
-                 print("PLACEMARK Longitude: \( newCoordinates.longitude)")
-                    
-              //  var LocationActual: CLLocation = CLLocation(latitude: newCoordinates.latitude, longitude: newCoordinates.longitude)
-                    
-                    var LocationActual: CLLocation = CLLocation(latitude: newCoordinates.latitude, longitude: newCoordinates.longitude)
-                
-                if placemarks!.count > 0 {
-                    let pm = placemarks![0]
-                    
-//                    if let addressDict = placemarks.addressDictionary, coordinate = LocationActual {
-//                        let mkPlacemark = MKPlacemark(coordinate: coordinate, addressDictionary: addressDict)
-//                    }
-                    
-//                    let firstPlacemark:CLPlacemark = placemarks![1]
-//                    let  mapPlacemark = MKPlacemark(placemark: firstPlacemark)
-                    
-                  //   print("PLACEMARK mapPlacemark: \(mkPlacemark)")
-                    
-                    // not all places have thoroughfare & subThoroughfare so validate those values
-//                    annotation.title =  pm.subThoroughfare! + ", " + pm.thoroughfare!
-//                    annotation.subtitle = pm.subLocality
-                    self.mapView.addAnnotation(annotation )
-                    print("Print PM: \(pm)")
-                    // self.displayLocationInfo(pm)
-                    
-                    if let city = pm.locality,
-                        let state = pm.administrativeArea {
-                        
-                        var locationName = pm.name
-                        if locationName == "nil" || locationName == nil{
-                            locationName = ""
-                        } else {
-                            locationName = pm.name
-                        }
-                        
-                        
-                        var locationNumber = pm.subThoroughfare
-                        
-                        if locationNumber == nil || locationNumber == "nil" {
-                            locationNumber = ""
-                        } else {
-                            locationNumber = (pm.subThoroughfare)
-                        }
-                        
-                        
-                        var locationStreet = pm.thoroughfare
-                        // var locationStreet2:String?
-                        
-                        if locationStreet! == "nil" || locationStreet == nil {
-                            locationStreet = ""
-                        } else {
-                            locationStreet = pm.thoroughfare
-                        }
-                        
-                        
-                        annotation.title =  locationNumber! + ", " + locationStreet!
-                        annotation.subtitle = pm.subLocality
-                        
-                        annotation.subtitle = "\(city) \(state)"
-                        
-                        // Full Address to be Displayed
-                        print("Placemark@@@@@@@@: \(pm)")
-                        
-                       
-                        
-                        // self.fullAddressString =  "\(placemark.name!)\n \(placemark.subThoroughfare!) \(placemark.thoroughfare!) \n \(city), \(state)"
-                        // print("New Address: \(self.fullAddressString)")
-                        
-                        
-                        self.fullAddressStringByTouch =  "\(locationName!)\n \(locationNumber!) \(locationStreet!) \n \(city), \(state)"
-                        print("New Address: \(self.fullAddressStringByTouch)")
-                        
-                        // String Without  \n
-                        
-                        self.fullAddressString_no_breakLineByTouch =  "\(locationName!) \(locationNumber!) \(locationStreet!)  \(city), \(state)"
-                        print("New Address 2: \(self.fullAddressString_no_breakLineByTouch)")
-                        
-                        
-                         self.placemark = "\(self.fullAddressString_no_breakLineByTouch), \( newCoordinates.latitude), \( newCoordinates.longitude)"
-                        
-                        self.mapView.addAnnotation(annotation)
-                        
-                        let span = MKCoordinateSpan.init(latitudeDelta: 0.05, longitudeDelta: 0.05)
-                      //  let region = MKCoordinateRegionMake(placemark., span)
-                        
-                     //   mapView.setRegion(region, animated: true)
-                    } else {
-                        
-                        self.typeInSomethingAlert()
-                    }
-                    
-                    
-                }
-                else {
+    @objc func addAnnotation(_ gestureRecognizer: UIGestureRecognizer) {
+        guard gestureRecognizer.state == .began else { return }
+
+        let touchPoint = gestureRecognizer.location(in: mapView)
+        let newCoordinates = mapView.convert(touchPoint, toCoordinateFrom: mapView)
+        let geocodeLocation = CLLocation(latitude: newCoordinates.latitude, longitude: newCoordinates.longitude)
+
+        CLGeocoder().reverseGeocodeLocation(geocodeLocation) { placemarks, error in
+            if let error = error {
+                print("Reverse geocoder failed with error \(error.localizedDescription)")
+                return
+            }
+
+            Task { @MainActor in
+                self.latitude = newCoordinates.latitude
+                self.longitude = newCoordinates.longitude
+
+                let annotation = MKPointAnnotation()
+                annotation.coordinate = newCoordinates
+
+                guard let pm = placemarks?.first else {
                     annotation.title = "Unknown Place"
                     self.mapView.addAnnotation(annotation)
-                    print("Problem with the data received from geocoder")
+                    self.saveBtn.isEnabled = false
+                    return
                 }
-                //  places.append(["name":annotation.title,"latitude":"\(newCoordinates.latitude)","longitude":"\(newCoordinates.longitude)"])
-                
-                
-                //self.mapView!.addAnnotation(annotation)
-                    
-                } // end of the  if error == nil, let p = placemarks where !p.isEmpty
-            })
+
+                let addr = self.formattedAddress(from: pm)
+                annotation.title = addr.singleLine
+                self.fullAddressStringByTouch = addr.multiline
+                self.fullAddressString_no_breakLineByTouch = addr.singleLine
+                self.placemark = "\(addr.singleLine), \(newCoordinates.latitude), \(newCoordinates.longitude)"
+
+                self.mapView.addAnnotation(annotation)
+                self.saveBtn.isEnabled = true
+            }
         }
     }
     
@@ -291,7 +230,7 @@ class EventMapByTouchVC: UIViewController, MKMapViewDelegate {
 
 }
 
-extension EventMapByTouchVC : CLLocationManagerDelegate {
+@MainActor extension EventMapByTouchVC : @preconcurrency CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         
         if status == .authorizedWhenInUse {
@@ -301,7 +240,8 @@ extension EventMapByTouchVC : CLLocationManagerDelegate {
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         if let location = locations.first {
-            let span = MKCoordinateSpan.init(latitudeDelta: 0.05, longitudeDelta: 0.05)
+            // ~50 miles radius-ish view (roughly). Good starting point for picking by touch.
+            let span = MKCoordinateSpan(latitudeDelta: 0.8, longitudeDelta: 0.8)
             let region = MKCoordinateRegion(center: location.coordinate, span: span)
             mapView.setRegion(region, animated: true)
             

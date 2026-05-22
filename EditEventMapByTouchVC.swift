@@ -111,6 +111,10 @@ import AddressBookUI
 
         // Enable once reverse-geocoding finishes and we have a complete pick.
         saveBtn.isEnabled = false
+
+        // Ensure we start zoomed near the user's area instead of "the whole world".
+        locationManager.requestWhenInUseAuthorization()
+        locationManager.requestLocation()
         
         //        print("titleTextField    : \(titleTextField)")
         //        print("descriptionTextView    : \(descriptionTextView)")
@@ -430,7 +434,8 @@ import AddressBookUI
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         if let location = locations.first {
-            let span = MKCoordinateSpan.init(latitudeDelta: 0.05, longitudeDelta: 0.05)
+            // ~50 miles radius-ish view (roughly).
+            let span = MKCoordinateSpan(latitudeDelta: 0.8, longitudeDelta: 0.8)
             let region = MKCoordinateRegion(center: location.coordinate, span: span)
             mapView.setRegion(region, animated: true)
             
