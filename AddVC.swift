@@ -119,7 +119,7 @@ import FirebaseDatabase
         if let lat = latitude, let lon = longitude {
             coord = CLLocationCoordinate2D(latitude: lat, longitude: lon)
         } else {
-            coord = locationManager.location?.coordinate
+            coord = locationManager.location?.coordinate ?? mapViewLarge.region.center
         }
 
         guard let coord else {
@@ -127,13 +127,22 @@ import FirebaseDatabase
             return
         }
 
+        // Make sure we always have coordinates for GeoFire, even if geocoding fails.
+        self.latitude = coord.latitude
+        self.longitude = coord.longitude
+
         let loc = CLLocation(latitude: coord.latitude, longitude: coord.longitude)
         CLGeocoder().reverseGeocodeLocation(loc) { placemarks, _ in
             Task { @MainActor in
                 guard let pm = placemarks?.first else {
-                    completion(false)
+                    // If reverse-geocoding fails, still allow save with a coordinate-based fallback.
+                    self.fullAddressString = "Unknown Place"
+                    self.fullAddressString_no_breakLine = "Unknown Place"
+                    self.placemark = "Unknown Place, \(coord.latitude), \(coord.longitude)"
+                    completion(true)
                     return
                 }
+
                 let addr = self.formattedAddress(from: pm)
                 self.fullAddressString = addr.multiline
                 self.fullAddressString_no_breakLine = addr.singleLine
@@ -434,6 +443,17 @@ import FirebaseDatabase
 
     @MainActor private func persistNewEvent() {
        
+        // Ensure we always have coordinates, even if location services are slow/off.
+        if latitude == nil || longitude == nil {
+            let center = mapViewLarge.region.center
+            latitude = center.latitude
+            longitude = center.longitude
+        }
+        if placemark == nil, let lat = latitude, let lon = longitude {
+            placemark = "Unknown Place, \(lat), \(lon)"
+        }
+        if fullAddressString == nil { fullAddressString = "Unknown Place" }
+        if fullAddressString_no_breakLine == nil { fullAddressString_no_breakLine = "Unknown Place" }
         
         guard let key = ref.child("user-events").childByAutoId().key else {
             return
@@ -532,16 +552,16 @@ import FirebaseDatabase
         
             ref.child("users").child(KEY_UID!).child("events").child(key).setValue(true)
         
-        // GEO EVENT
-            
+        // GEO EVENT (only if we have coordinates)
+        if let lat = self.latitude, let lon = self.longitude {
             geoFireEventRef = Database.database().reference().child("geo-user-events").child(KEY_UID!)
             geoFire = GeoFire(firebaseRef: geoFireEventRef)
-            geoFire.setLocation(CLLocation(latitude: self.latitude, longitude: self.longitude), forKey: key)
-        
-        
+            geoFire.setLocation(CLLocation(latitude: lat, longitude: lon), forKey: key)
+            
             geoFireRef = Database.database().reference().child("geo-events")
             geoFireEvent = GeoFire(firebaseRef: geoFireRef)
-            geoFireEvent.setLocation(CLLocation(latitude: self.latitude, longitude: self.longitude), forKey: key)
+            geoFireEvent.setLocation(CLLocation(latitude: lat, longitude: lon), forKey: key)
+        }
 
         
            // geoFireEventRef =
