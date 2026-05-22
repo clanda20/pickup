@@ -135,27 +135,21 @@ import FirebaseDatabase
         
         //ByTouch
         
-        if self.fullAddressStringByTouch == nil {
+        guard let addr = self.fullAddressStringByTouch?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !addr.isEmpty else {
             self.searchBtnByTouch.setTitle("Find a Location by Touch", for: .normal)
             self.searchBtnByTouch.titleLabel!.font = UIFont(name: "Marker Felt", size: 18)
-            
-            
-            
-        } else{
-            // self.addressButton = self.fullAddressString
-            let addr = self.fullAddressStringByTouch ?? ""
-            self.searchBtnByTouch.setTitle(addr.isEmpty ? "Find a Location by Touch" : addr, for: .normal)
-            self.searchBtnByTouch.titleLabel!.font = UIFont(name: "Marker Felt", size: 15)
-            self.searchBtnByTouch.titleLabel!.textColor = UIColor.red
-            self.searchBtnByTouch.titleLabel?.textAlignment = NSTextAlignment.center
-            
-            let tempFullAdressText = addr.isEmpty ? nil : addr
-            
-            self.fullAddressString = tempFullAdressText
-            
-            self.fullAddressString_no_breakLine = self.fullAddressString_no_breakLineByTouch
-            
+            return
         }
+
+        // self.addressButton = self.fullAddressString
+        self.searchBtnByTouch.setTitle(addr, for: .normal)
+        self.searchBtnByTouch.titleLabel!.font = UIFont(name: "Marker Felt", size: 15)
+        self.searchBtnByTouch.titleLabel!.textColor = UIColor.red
+        self.searchBtnByTouch.titleLabel?.textAlignment = NSTextAlignment.center
+
+        self.fullAddressString = addr
+        self.fullAddressString_no_breakLine = self.fullAddressString_no_breakLineByTouch
         
     }
     
