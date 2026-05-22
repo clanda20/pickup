@@ -80,6 +80,8 @@ import FirebaseDatabase
     var eventKey: String!
     
     var dateRaw: String!
+    private var isResolvingAddressForSave = false
+    private var saveSpinner: UIActivityIndicatorView?
 
     private func normalize(_ value: String?) -> String {
         guard let value, value != "nil" else { return "" }
@@ -115,11 +117,12 @@ import FirebaseDatabase
         }
 
         // If we have coordinates (from earlier location updates), try to reverse-geocode them.
+        // NOTE: We do NOT fall back to "Unknown Place" here; if we can't resolve an address we fail and prompt the user.
         let coord: CLLocationCoordinate2D?
         if let lat = latitude, let lon = longitude {
             coord = CLLocationCoordinate2D(latitude: lat, longitude: lon)
         } else {
-            coord = locationManager.location?.coordinate ?? mapViewLarge.region.center
+            coord = locationManager.location?.coordinate
         }
 
         guard let coord else {
@@ -127,7 +130,7 @@ import FirebaseDatabase
             return
         }
 
-        // Make sure we always have coordinates for GeoFire, even if geocoding fails.
+        // Keep coordinates in sync.
         self.latitude = coord.latitude
         self.longitude = coord.longitude
 
@@ -135,11 +138,7 @@ import FirebaseDatabase
         CLGeocoder().reverseGeocodeLocation(loc) { placemarks, _ in
             Task { @MainActor in
                 guard let pm = placemarks?.first else {
-                    // If reverse-geocoding fails, still allow save with a coordinate-based fallback.
-                    self.fullAddressString = "Unknown Place"
-                    self.fullAddressString_no_breakLine = "Unknown Place"
-                    self.placemark = "Unknown Place, \(coord.latitude), \(coord.longitude)"
-                    completion(true)
+                    completion(false)
                     return
                 }
 
@@ -150,6 +149,45 @@ import FirebaseDatabase
                 completion(true)
             }
         }
+    }
+
+    private func setSavingUI(_ saving: Bool) {
+        if saving {
+            if saveSpinner == nil {
+                let spinner = UIActivityIndicatorView(style: .medium)
+                spinner.hidesWhenStopped = true
+                saveSpinner = spinner
+            }
+            saveSpinner?.startAnimating()
+            navigationItem.rightBarButtonItem = UIBarButtonItem(customView: saveSpinner!)
+        } else {
+            saveSpinner?.stopAnimating()
+            navigationItem.rightBarButtonItem = saveBtnItem
+        }
+        saveBtnItem?.isEnabled = !saving
+    }
+
+    private func promptForLocationRequired() {
+        let alert = UIAlertController(
+            title: "Location Needed",
+            message: "Please choose an address before saving. You can search for a place or pick one by touching the map.",
+            preferredStyle: .actionSheet
+        )
+        alert.addAction(UIAlertAction(title: "Search Address", style: .default, handler: { [weak self] _ in
+            guard let self else { return }
+            // Focus the search UI the user already has.
+            self.searchBtnText.sendActions(for: .touchUpInside)
+        }))
+        alert.addAction(UIAlertAction(title: "Find by Touch", style: .default, handler: { [weak self] _ in
+            self?.performSegue(withIdentifier: "segue_To_Find_Location_Touch", sender: nil)
+        }))
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+
+        // iPad popover anchor
+        if let pop = alert.popoverPresentationController {
+            pop.barButtonItem = saveBtnItem
+        }
+        present(alert, animated: true)
     }
     
 //    var titleTextFieldSegue: String!
@@ -427,13 +465,22 @@ import FirebaseDatabase
             return
         }
 
-        // If user didn't pick a place yet, fall back to current GPS location.
+        // If user didn't pick a place yet, try to resolve from current location. If that fails, prompt for explicit pick.
+        guard !isResolvingAddressForSave else { return }
+        isResolvingAddressForSave = true
+        setSavingUI(true)
+
         ensureAddressFromCurrentLocationIfNeeded { [weak self] ok in
             guard let self else { return }
+            self.isResolvingAddressForSave = false
+            self.setSavingUI(false)
+
             guard ok,
                   self.fullAddressString_no_breakLine != nil,
-                  self.fullAddressString != nil else {
-                self.typeInSomethingAlert()
+                  self.fullAddressString != nil,
+                  self.latitude != nil,
+                  self.longitude != nil else {
+                self.promptForLocationRequired()
                 return
             }
 
@@ -443,17 +490,15 @@ import FirebaseDatabase
 
     @MainActor private func persistNewEvent() {
        
-        // Ensure we always have coordinates, even if location services are slow/off.
-        if latitude == nil || longitude == nil {
-            let center = mapViewLarge.region.center
-            latitude = center.latitude
-            longitude = center.longitude
+        // At this point we expect a real address; if not, don't save.
+        guard fullAddressString != nil,
+              fullAddressString_no_breakLine != nil,
+              placemark != nil,
+              latitude != nil,
+              longitude != nil else {
+            promptForLocationRequired()
+            return
         }
-        if placemark == nil, let lat = latitude, let lon = longitude {
-            placemark = "Unknown Place, \(lat), \(lon)"
-        }
-        if fullAddressString == nil { fullAddressString = "Unknown Place" }
-        if fullAddressString_no_breakLine == nil { fullAddressString_no_breakLine = "Unknown Place" }
         
         guard let key = ref.child("user-events").childByAutoId().key else {
             return
@@ -552,16 +597,16 @@ import FirebaseDatabase
         
             ref.child("users").child(KEY_UID!).child("events").child(key).setValue(true)
         
-        // GEO EVENT (only if we have coordinates)
-        if let lat = self.latitude, let lon = self.longitude {
-            geoFireEventRef = Database.database().reference().child("geo-user-events").child(KEY_UID!)
-            geoFire = GeoFire(firebaseRef: geoFireEventRef)
-            geoFire.setLocation(CLLocation(latitude: lat, longitude: lon), forKey: key)
-            
-            geoFireRef = Database.database().reference().child("geo-events")
-            geoFireEvent = GeoFire(firebaseRef: geoFireRef)
-            geoFireEvent.setLocation(CLLocation(latitude: lat, longitude: lon), forKey: key)
-        }
+        // GEO EVENT
+        let lat = self.latitude!
+        let lon = self.longitude!
+        geoFireEventRef = Database.database().reference().child("geo-user-events").child(KEY_UID!)
+        geoFire = GeoFire(firebaseRef: geoFireEventRef)
+        geoFire.setLocation(CLLocation(latitude: lat, longitude: lon), forKey: key)
+        
+        geoFireRef = Database.database().reference().child("geo-events")
+        geoFireEvent = GeoFire(firebaseRef: geoFireRef)
+        geoFireEvent.setLocation(CLLocation(latitude: lat, longitude: lon), forKey: key)
 
         
            // geoFireEventRef =
