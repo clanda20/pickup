@@ -17,12 +17,12 @@ import FirebaseDatabase
 
 
 
-protocol HandleMapSearch {
+@MainActor protocol HandleMapSearch {
     func dropPinZoomIn(placemark:MKPlacemark)
 }
 
 
-class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextViewDelegate{
+@MainActor class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextViewDelegate{
     
     @IBOutlet  var saveBtnItem: UIBarButtonItem!
     @IBOutlet  var doneBtnItem: UIBarButtonItem!
@@ -143,12 +143,13 @@ class AddVC: UIViewController, UISearchBarDelegate, UITextFieldDelegate, UITextV
             
         } else{
             // self.addressButton = self.fullAddressString
-            self.searchBtnByTouch.setTitle("\(self.fullAddressStringByTouch)", for: .normal)
+            let addr = self.fullAddressStringByTouch ?? ""
+            self.searchBtnByTouch.setTitle(addr.isEmpty ? "Find a Location by Touch" : addr, for: .normal)
             self.searchBtnByTouch.titleLabel!.font = UIFont(name: "Marker Felt", size: 15)
             self.searchBtnByTouch.titleLabel!.textColor = UIColor.red
             self.searchBtnByTouch.titleLabel?.textAlignment = NSTextAlignment.center
             
-            let tempFullAdressText = self.fullAddressStringByTouch
+            let tempFullAdressText = addr.isEmpty ? nil : addr
             
             self.fullAddressString = tempFullAdressText
             
@@ -744,7 +745,7 @@ extension AddVC: HandleMapSearch {
 
 
 // EXTENSION:
-extension AddVC : CLLocationManagerDelegate {
+@MainActor extension AddVC : @preconcurrency CLLocationManagerDelegate {
  func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
   
  if status == .authorizedWhenInUse {
